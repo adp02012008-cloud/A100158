@@ -1,0 +1,104 @@
+import { useState } from "react";
+
+export default function Modal({ student, onClose }) {
+  const [tab, setTab] = useState("details");
+
+  const fixLink = (url) => {
+    if (!url) return "#";
+    return url.startsWith("http") ? url : `https://${url}`;
+  };
+
+  const skills = [
+    student.Primary1,
+    student.Primary2,
+    student.Secondary1,
+    student.Secondary2,
+    student.Spec1,
+    student.Spec2,
+  ].filter(Boolean);
+
+  return (
+    <div className="modal" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="tabs">
+          <button
+            className={tab === "details" ? "active" : ""}
+            onClick={() => setTab("details")}
+          >
+            Details
+          </button>
+
+          <button
+            className={tab === "courses" ? "active" : ""}
+            onClick={() => setTab("courses")}
+          >
+            Courses
+          </button>
+        </div>
+
+        {tab === "details" && (
+          <>
+            <div className="modal-header">
+              <h2>{student.Name}</h2>
+
+              <div className="social-icons">
+                {student.LINKEDIN && (
+                  <a
+                    href={fixLink(student.LINKEDIN)}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="LinkedIn"
+                  >
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png"
+                      className="social-icon linkedin-icon"
+                      alt="LinkedIn"
+                    />
+                  </a>
+                )}
+
+                {student.GITHUB && (
+                  <a
+                    href={fixLink(student.GITHUB)}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="GitHub"
+                  >
+                    <img
+                      src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                      className="social-icon github-icon"
+                      alt="GitHub"
+                    />
+                  </a>
+                )}
+              </div>
+            </div>
+
+            <p>{student.POSITION}</p>
+            <p>Joined: {student.JOINED}</p>
+            <p>Activity: {student.ACTIVITY}</p>
+            <p>Reward: {student.REWARD}</p>
+
+            <div className="skill-preview">
+              {skills.map((x, i) => (
+                <span key={i}>{x}</span>
+              ))}
+            </div>
+          </>
+        )}
+
+        {tab === "courses" && (
+          <>
+            <h3>Courses ({student.COURSE_COUNT})</h3>
+
+            {student.COURSES.map((c, i) => (
+              <div key={i} className="course">
+                {c}
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
