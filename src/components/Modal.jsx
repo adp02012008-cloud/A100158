@@ -1,7 +1,33 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+function getInitials(name = "") {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() || "")
+    .join("");
+}
+
+function getStatus(activity, avgActivity) {
+  const diff = activity - avgActivity;
+
+  if (diff > 5) {
+    return { text: "Top Performer", className: "status-good", icon: "🟢" };
+  }
+
+  if (Math.abs(diff) <= 5) {
+    return { text: "Average", className: "status-average", icon: "🟡" };
+  }
+
+  return { text: "Needs Improvement", className: "status-low", icon: "🔴" };
+}
 
 export default function Modal({ student, onClose }) {
+  if (!student) return null;
+
   const [tab, setTab] = useState("details");
+  const [priorityMode, setPriorityMode] = useState("best");
 
   const fixLink = (url) => {
     if (!url) return "#";
@@ -19,6 +45,68 @@ export default function Modal({ student, onClose }) {
 
   const isBelowAverage = student.ACTIVITY < student.AVG_ACTIVITY;
   const isAboveAverage = student.ACTIVITY > student.AVG_ACTIVITY;
+  const status = getStatus(student.ACTIVITY, student.AVG_ACTIVITY);
+
+  const sortedCombos = useMemo(() => {
+    const combos = [...(student.SUGGESTION_COMBINATIONS || [])];
+
+    if (priorityMode === "fastest") {
+      return combos.sort((a, b) => {
+        if (a.courses.length !== b.courses.length) {
+          return a.courses.length - b.courses.length;
+        }
+        return a.diff - b.diff;
+      });
+    }
+
+    if (priorityMode === "easy") {
+      const score = (combo) => {
+        const nextLevelCount = combo.courses.filter(
+          (x) => x.source === "next-level"
+        ).length;
+        return {
+          nextLevelCount,
+          count: combo.courses.length,
+          diff: combo.diff,
+        };
+      };
+
+      return combos.sort((a, b) => {
+        const A = score(a);
+        const B = score(b);
+
+        if (A.nextLevelCount !== B.nextLevelCount) {
+          return B.nextLevelCount - A.nextLevelCount;
+        }
+        if (A.count !== B.count) return A.count - B.count;
+        return A.diff - B.diff;
+      });
+    }
+
+    return combos.sort((a, b) => {
+      if (a.diff !== b.diff) return a.diff - b.diff;
+      if (a.courses.length !== b.courses.length) {
+        return a.courses.length - b.courses.length;
+      }
+      return b.total - a.total;
+    });
+  }, [student.SUGGESTION_COMBINATIONS, priorityMode]);
+
+  const modeLabel =
+    priorityMode === "best"
+      ? "⭐ BEST OPTION"
+      : priorityMode === "fastest"
+      ? "⚡ FASTEST OPTION"
+      : "💡 EASY OPTION";
+
+  const copyId = async () => {
+    try {
+      await navigator.clipboard.writeText(student["ENROLMENT NUMBER"] || "");
+      alert("ID copied");
+    } catch (error) {
+      console.error("Copy failed:", error);
+    }
+  };
 
   return (
     <div className="modal" onClick={onClose}>
@@ -52,8 +140,18 @@ export default function Modal({ student, onClose }) {
 
         {tab === "details" && (
           <>
-            <div className="modal-header">
-              <h2>{student.Name}</h2>
+            <div className="modal-header modal-profile">
+              <div className="modal-profile-left">
+                <div className="avatar large-avatar">{getInitials(student.Name)}</div>
+
+                <div>
+                  <h2>{student.Name}</h2>
+                  <p>{student.POSITION}</p>
+                  <div className={`status-tag ${status.className}`}>
+                    {status.icon} {status.text}
+                  </div>
+                </div>
+              </div>
 
               <div className="social-icons">
                 {student.LINKEDIN && (
@@ -88,11 +186,55 @@ export default function Modal({ student, onClose }) {
               </div>
             </div>
 
-            <p>{student.POSITION}</p>
-            <p>Joined: {student.JOINED}</p>
-            <p>Activity: {student.ACTIVITY}</p>
-            <p>Reward: {student.REWARD}</p>
-            <p>Average Activity: {student.AVG_ACTIVITY?.toFixed(2)}</p>
+            <div className="quick-actions">
+              {student.LINKEDIN && (
+                <a
+                  className="quick-action-btn"
+                  href={fixLink(student.LINKEDIN)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open LinkedIn
+                </a>
+              )}
+
+              {student.GITHUB && (
+                <a
+                  className="quick-action-btn"
+                  href={fixLink(student.GITHUB)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open GitHub
+                </a>
+              )}
+
+              <button className="quick-action-btn" onClick={copyId}>
+                Copy ID
+              </button>
+            </div>
+
+            <div className="modal-stats-grid">
+              <div className="modal-stat-card">
+                <span>Joined</span>
+                <strong>{student.JOINED}</strong>
+              </div>
+
+              <div className="modal-stat-card">
+                <span>Activity</span>
+                <strong>{student.ACTIVITY}</strong>
+              </div>
+
+              <div className="modal-stat-card">
+                <span>Reward</span>
+                <strong>{student.REWARD}</strong>
+              </div>
+
+              <div className="modal-stat-card">
+                <span>Average</span>
+                <strong>{student.AVG_ACTIVITY?.toFixed(2)}</strong>
+              </div>
+            </div>
 
             <div className="skill-preview">
               {skills.map((x, i) => (
@@ -106,7 +248,7 @@ export default function Modal({ student, onClose }) {
           <>
             <h3>Courses ({student.COURSE_COUNT})</h3>
 
-            {student.COURSES.map((c, i) => (
+            {(student.COURSES || []).map((c, i) => (
               <div key={i} className="course">
                 {c}
               </div>
@@ -116,7 +258,19 @@ export default function Modal({ student, onClose }) {
 
         {tab === "suggestions" && (
           <>
-            <h3>Suggestions</h3>
+            <div className="suggestion-topbar">
+              <h3>Suggestions</h3>
+
+              <select
+                className="priority-select"
+                value={priorityMode}
+                onChange={(e) => setPriorityMode(e.target.value)}
+              >
+                <option value="best">Best Option</option>
+                <option value="fastest">Fastest Option</option>
+                <option value="easy">Easy Option</option>
+              </select>
+            </div>
 
             {isAboveAverage && (
               <div className="suggestion-summary good-summary">
@@ -138,12 +292,16 @@ export default function Modal({ student, onClose }) {
                   Needs <b>{student.GAP_TO_AVG}</b> more points to reach average.
                 </div>
 
-                {student.SUGGESTION_COMBINATIONS?.length > 0 ? (
+                {sortedCombos?.length > 0 ? (
                   <>
-                    <h4 className="other-title">Best possible patterns</h4>
+                    <h4 className="other-title">Recommended patterns</h4>
 
-                    {student.SUGGESTION_COMBINATIONS.map((combo, comboIndex) => (
+                    {sortedCombos.map((combo, comboIndex) => (
                       <div key={comboIndex} className="suggestion-card">
+                        {comboIndex === 0 && (
+                          <div className="priority-badge">{modeLabel}</div>
+                        )}
+
                         <div className="suggestion-course">
                           Option {comboIndex + 1}
                         </div>
@@ -167,7 +325,8 @@ export default function Modal({ student, onClose }) {
                         <div className="suggestion-line">
                           {combo.total >= student.GAP_TO_AVG ? (
                             <>
-                              Extra above target: <b>{combo.total - student.GAP_TO_AVG}</b>
+                              Extra above target:{" "}
+                              <b>{combo.total - student.GAP_TO_AVG}</b>
                             </>
                           ) : (
                             <>
@@ -178,7 +337,7 @@ export default function Modal({ student, onClose }) {
                       </div>
                     ))}
 
-                    {student.ALL_SUGGESTIONS?.length > 0 && (
+                    {(student.ALL_SUGGESTIONS || []).length > 0 && (
                       <>
                         <h4 className="other-title">Available options</h4>
 

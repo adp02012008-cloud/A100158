@@ -1,3 +1,5 @@
+import logo from "../assets/logo.png";
+
 export default function Navbar({
   page,
   setPage,
@@ -8,16 +10,30 @@ export default function Navbar({
 }) {
   return (
     <div className="nav">
-      <h1 className="logo">Bug Slayers Dashboard</h1>
-
-      <div className="nav-right">
-        <input
-          className="search"
-          placeholder="Search students..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+      {/* LOGO SECTION */}
+      <div className="logo-wrap">
+        <img
+          src={logo}
+          className="logo-img"
+          alt="Bug Slayers Logo"
         />
+        <h1 className="logo">Bug Slayers</h1>
+      </div>
 
+      {/* RIGHT SIDE */}
+      <div className="nav-right">
+        {/* SEARCH */}
+        <div className="search-wrap">
+          <span className="search-icon">🔍</span>
+          <input
+            className="search"
+            placeholder="Search students..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {/* BUTTONS */}
         <div className="controls">
           <button
             className={page === "dashboard" ? "active" : ""}

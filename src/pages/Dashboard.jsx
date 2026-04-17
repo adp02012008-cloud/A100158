@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { STUDENT_URL, COURSE_URL, POINTS_URL } from "../utils/api";
+import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import StudentCard from "../components/StudentCard";
 import Modal from "../components/Modal";
 
 export default function Dashboard({ search }) {
   const [students, setStudents] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [clusterFilter, setClusterFilter] = useState("All");
+  const [targetActivity, setTargetActivity] = useState(200);
 
   useEffect(() => {
     loadData();
@@ -51,11 +54,12 @@ export default function Dashboard({ search }) {
     const studentCluster = normalize(student.CLUSTER);
     const access = normalize(pointRow["Cluster Access"]);
 
-    // If sheet cell is empty, safest default = allow both
     if (!access || access === "") return true;
-
     if (access === normalize("Both")) return true;
-    if (access === normalize("Core") && studentCluster === normalize("Core")) return true;
+
+    if (access === normalize("Core") && studentCluster === normalize("Core")) {
+      return true;
+    }
 
     if (
       access === normalize("Computer Cluster") &&
@@ -218,7 +222,7 @@ export default function Dashboard({ search }) {
 
     const results = [];
     const seen = new Set();
-    const maxDepth = options.length;
+    const maxDepth = Math.min(options.length, 5);
 
     const backtrack = (start, combo, total) => {
       if (combo.length > 0) {
@@ -284,16 +288,17 @@ export default function Dashboard({ search }) {
         axios.get(POINTS_URL),
       ]);
 
-      const studentsRaw = studentRes.data;
-      const coursesRaw = courseRes.data;
-      const pointsRaw = pointsRes.data;
+      const studentsRaw = studentRes.data || [];
+      const coursesRaw = courseRes.data || [];
+      const pointsRaw = pointsRes.data || [];
 
       const cleaned = studentsRaw.map((st) => {
-        const courseDetails = getStudentCourseDetails(st.Name, coursesRaw);
+        const safeName = String(st.Name || "").trim();
+        const courseDetails = getStudentCourseDetails(safeName, coursesRaw);
 
         return {
           ...st,
-          Name: String(st.Name || "").trim(),
+          Name: safeName,
           POSITION: String(st.POSITION || "").trim(),
           JOINED: String(st.JOINED || "").trim(),
           CLUSTER: String(st.CLUSTER || "").trim(),
@@ -326,20 +331,92 @@ export default function Dashboard({ search }) {
       setStudents(enriched);
     } catch (error) {
       console.error("Error loading data:", error);
+      setStudents([]);
     }
   };
 
-  const filtered = students.filter((s) =>
-    s.Name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    return students.filter((s) => {
+      const matchesSearch = (s.Name || "")
+        .toLowerCase()
+        .includes((search || "").toLowerCase());
+
+      const matchesCluster =
+        clusterFilter === "All" ? true : s.CLUSTER === clusterFilter;
+
+      return matchesSearch && matchesCluster;
+    });
+  }, [students, search, clusterFilter]);
 
   const totalActivity = students.reduce((sum, s) => sum + s.ACTIVITY, 0);
   const avgActivity =
     students.length > 0 ? totalActivity / students.length : 0;
 
+  const belowAverageCount = students.filter((s) => s.ACTIVITY < avgActivity).length;
+  const topPerformersCount = students.filter((s) => s.ACTIVITY > avgActivity + 5).length;
+  const coreCount = students.filter((s) => s.CLUSTER === "Core").length;
+  const computerCount = students.filter(
+    (s) => s.CLUSTER === "Computer Cluster"
+  ).length;
+
+  const topFive = [...filtered]
+    .sort((a, b) => b.ACTIVITY - a.ACTIVITY)
+    .slice(0, 5);
+
+  const chartMax =
+    topFive.length > 0 ? Math.max(...topFive.map((s) => s.ACTIVITY), 1) : 1;
+
   return (
     <div>
-      <div className="stats">
+      <div className="dashboard-toolbar">
+        <div className="filter-group">
+          <div className="cluster-filter">
+            <button
+              className={clusterFilter === "All" ? "active" : ""}
+              onClick={() => setClusterFilter("All")}
+            >
+              All
+            </button>
+
+            <button
+              className={clusterFilter === "Core" ? "active" : ""}
+              onClick={() => setClusterFilter("Core")}
+            >
+              Core
+            </button>
+
+            <button
+              className={clusterFilter === "Computer Cluster" ? "active" : ""}
+              onClick={() => setClusterFilter("Computer Cluster")}
+            >
+              Computer Cluster
+            </button>
+          </div>
+
+          <div className="target-box">
+            <label>Target Activity</label>
+            <input
+              type="number"
+              min="1"
+              value={targetActivity}
+              onChange={(e) =>
+                setTargetActivity(Math.max(1, Number(e.target.value) || 1))
+              }
+            />
+          </div>
+        </div>
+
+        <div className="export-buttons">
+          <button onClick={() => exportToExcel(filtered)}>
+            📊 Export Excel
+          </button>
+          <button onClick={() => exportToPDF(filtered)}>
+            📄 Export PDF
+          </button>
+        </div>
+      </div>
+
+      <div className="stats stats-upgraded">
         <div className="stat-box">
           <h3>Total Activity</h3>
           <p>{totalActivity}</p>
@@ -349,21 +426,88 @@ export default function Dashboard({ search }) {
           <h3>Average Activity</h3>
           <p>{avgActivity.toFixed(2)}</p>
         </div>
+
+        <div className="stat-box">
+          <h3>Below Average</h3>
+          <p>{belowAverageCount}</p>
+        </div>
+
+        <div className="stat-box">
+          <h3>Top Performers</h3>
+          <p>{topPerformersCount}</p>
+        </div>
       </div>
 
-      <div className="grid">
-        {filtered.map((s, i) => (
-          <StudentCard
-            key={i}
-            student={s}
-            avgActivity={avgActivity}
-            onClick={setSelected}
-          />
-        ))}
+      <div className="analytics-grid">
+        <div className="analytics-card">
+          <h3>Top 5 Students by Activity</h3>
+
+          <div className="mini-chart">
+            {topFive.length > 0 ? (
+              topFive.map((student, i) => (
+                <div key={i} className="mini-chart-row">
+                  <div className="mini-chart-label">{student.Name}</div>
+
+                  <div className="mini-chart-track">
+                    <div
+                      className="mini-chart-fill"
+                      style={{
+                        width: `${(student.ACTIVITY / chartMax) * 100}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="mini-chart-value">{student.ACTIVITY}</div>
+                </div>
+              ))
+            ) : (
+              <div className="leader-empty">No data available for chart.</div>
+            )}
+          </div>
+        </div>
+
+        <div className="analytics-card">
+          <h3>Cluster Distribution</h3>
+
+          <div className="distribution-grid">
+            <div className="distribution-box">
+              <span>Core</span>
+              <strong>{coreCount}</strong>
+            </div>
+
+            <div className="distribution-box">
+              <span>Computer Cluster</span>
+              <strong>{computerCount}</strong>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {filtered.length > 0 ? (
+        <div className="grid">
+          {filtered.map((s, i) => (
+            <StudentCard
+              key={i}
+              student={s}
+              avgActivity={avgActivity}
+              targetActivity={targetActivity}
+              onClick={setSelected}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <div className="empty-icon">🔍</div>
+          <h3>No matching students</h3>
+          <p>Try a different search</p>
+        </div>
+      )}
 
       {selected && (
-        <Modal student={selected} onClose={() => setSelected(null)} />
+        <Modal
+          student={selected}
+          onClose={() => setSelected(null)}
+        />
       )}
     </div>
   );

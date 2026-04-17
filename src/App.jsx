@@ -20,8 +20,10 @@ export default function App() {
         setSearch={setSearch}
       />
 
-      {page === "dashboard" && <Dashboard search={search} />}
-      {page === "leaderboard" && <Leaderboard search={search} />}
+      <div className="page-content">
+        {page === "dashboard" && <Dashboard search={search} />}
+        {page === "leaderboard" && <Leaderboard search={search} />}
+      </div>
     </div>
   );
 }
