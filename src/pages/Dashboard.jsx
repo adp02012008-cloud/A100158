@@ -34,6 +34,19 @@ export default function Dashboard({ search }) {
     );
   };
 
+  const WEB_COURSES = [
+    "HTML / CSS",
+    "Version Control – Git, GitHub",
+    "JavaScript",
+    "React",
+    "NodeJS",
+  ];
+
+  const ELECTRICAL_BLOCKED_FOR_COMPUTER = [
+    "Electrical Skills - Common",
+    "Electronics (Electrical Domain)",
+  ];
+
   const PREREQUISITES = {
     [normalize("Version Control – Git, GitHub")]: [normalize("HTML / CSS")],
     [normalize("JavaScript")]: [normalize("Version Control – Git, GitHub")],
@@ -41,13 +54,41 @@ export default function Dashboard({ search }) {
     [normalize("NodeJS")]: [normalize("React")],
   };
 
+  const isComputerClusterStudent = (student) =>
+    normalize(student.CLUSTER) === normalize("Computer Cluster");
+
+  const isCoreStudent = (student) =>
+    normalize(student.CLUSTER) === normalize("Core");
+
   const hasCompleted = (studentCourses, courseName) => {
     return studentCourses.some(
       (c) => normalize(c.courseName) === normalize(courseName)
     );
   };
 
-  const canTakeCourse = (courseName, studentCourses) => {
+  const canTakeCourseByCluster = (student, courseName) => {
+    const courseKey = normalize(courseName);
+
+    if (isComputerClusterStudent(student)) {
+      const blocked = ELECTRICAL_BLOCKED_FOR_COMPUTER.some(
+        (name) => normalize(name) === courseKey
+      );
+      if (blocked) return false;
+      return true;
+    }
+
+    if (isCoreStudent(student)) {
+      const isWebCourse = WEB_COURSES.some(
+        (name) => normalize(name) === courseKey
+      );
+      if (isWebCourse) return false;
+      return true;
+    }
+
+    return true;
+  };
+
+  const canTakeCourseByPrerequisite = (courseName, studentCourses) => {
     const key = normalize(courseName);
 
     if (!PREREQUISITES[key]) return true;
@@ -124,7 +165,7 @@ export default function Dashboard({ search }) {
     return null;
   };
 
-  const buildAvailableOptions = (studentCourseDetails, pointsRows) => {
+  const buildAvailableOptions = (student, studentCourseDetails, pointsRows) => {
     const studentCourseMap = {};
 
     studentCourseDetails.forEach((course) => {
@@ -138,7 +179,8 @@ export default function Dashboard({ search }) {
       const courseName = String(row[keys[0]] || "").trim();
       if (!courseName) return;
 
-      if (!canTakeCourse(courseName, studentCourseDetails)) return;
+      if (!canTakeCourseByCluster(student, courseName)) return;
+      if (!canTakeCourseByPrerequisite(courseName, studentCourseDetails)) return;
 
       const levelColumns = getLevelColumns(row);
       if (levelColumns.length === 0) return;
@@ -241,7 +283,11 @@ export default function Dashboard({ search }) {
 
   const buildSuggestions = (student, avgActivity, pointsRows) => {
     const gap = Math.max(0, Math.ceil(avgActivity - student.ACTIVITY));
-    const allOptions = buildAvailableOptions(student.COURSE_DETAILS, pointsRows);
+    const allOptions = buildAvailableOptions(
+      student,
+      student.COURSE_DETAILS,
+      pointsRows
+    );
     const combinations = buildCombinationSuggestions(allOptions, gap);
 
     return {
@@ -271,6 +317,7 @@ export default function Dashboard({ search }) {
           Name: String(st.Name || "").trim(),
           POSITION: String(st.POSITION || "").trim(),
           JOINED: String(st.JOINED || "").trim(),
+          CLUSTER: String(st.CLUSTER || "").trim(),
           ACTIVITY: Number(st["ACTIVITY POINT"] || 0),
           REWARD: Number(st["REWARD POINT"] || 0),
           LINKEDIN: st.LINKEDIN || st["LinkedIn"] || st["Linked In"] || "",
