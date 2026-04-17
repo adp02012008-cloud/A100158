@@ -648,3 +648,81 @@ body {
 .app:not(.dark) .high {
   color: #16a34a; /* darker green for light bg */
 }
+
+/* ================= SUGGESTIONS TAB ================= */
+
+.suggestion-summary {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+.app.dark .suggestion-summary {
+  background: #232329;
+  color: #f5f5f7;
+}
+
+.app:not(.dark) .suggestion-summary {
+  background: #eef2f7;
+  color: #111827;
+}
+
+.good-summary {
+  border-left: 4px solid #22c55e;
+}
+
+.equal-summary {
+  border-left: 4px solid #facc15;
+}
+
+.warning-summary {
+  border-left: 4px solid #ff9f0a;
+}
+
+.suggestion-total {
+  margin-top: 14px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.suggestion-card {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  transition: 0.25s ease;
+}
+
+.app.dark .suggestion-card {
+  background: #2c2c2e;
+}
+
+.app:not(.dark) .suggestion-card {
+  background: #eef2f7;
+}
+
+.suggestion-course {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.suggestion-line {
+  font-size: 14px;
+  margin-bottom: 4px;
+  opacity: 0.9;
+}
+
+.suggestion-points {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.other-title {
+  margin-top: 18px;
+  margin-bottom: 10px;
+  font-size: 15px;
+}

@@ -1,7 +1,7 @@
 export default function Navbar({ page, setPage, dark, setDark, search, setSearch }) {
   return (
     <div className="nav">
-      <h1 className="logo">Team Dashboard</h1>
+      <h1 className="logo">Bug Slayers Dashboard</h1>
 
       <div className="nav-right">
         {/* SEARCH IN NAVBAR (TOP RIGHT) */}
