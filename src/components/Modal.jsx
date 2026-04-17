@@ -23,6 +23,10 @@ export default function Modal({ student, onClose }) {
   return (
     <div className="modal" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <button className="close-btn" onClick={onClose}>
+          ✕
+        </button>
+
         <div className="tabs">
           <button
             className={tab === "details" ? "active" : ""}

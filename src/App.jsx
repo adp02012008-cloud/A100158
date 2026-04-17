@@ -20,13 +20,8 @@ export default function App() {
         setSearch={setSearch}
       />
 
-      {page === "dashboard" && (
-        <Dashboard search={search} />
-      )}
-
-      {page === "leaderboard" && (
-        <Leaderboard />
-      )}
+      {page === "dashboard" && <Dashboard search={search} />}
+      {page === "leaderboard" && <Leaderboard search={search} />}
     </div>
   );
 }

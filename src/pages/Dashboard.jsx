@@ -34,19 +34,6 @@ export default function Dashboard({ search }) {
     );
   };
 
-  const WEB_COURSES = [
-    "HTML / CSS",
-    "Version Control – Git, GitHub",
-    "JavaScript",
-    "React",
-    "NodeJS",
-  ];
-
-  const ELECTRICAL_BLOCKED_FOR_COMPUTER = [
-    "Electrical Skills - Common",
-    "Electronics (Electrical Domain)",
-  ];
-
   const PREREQUISITES = {
     [normalize("Version Control – Git, GitHub")]: [normalize("HTML / CSS")],
     [normalize("JavaScript")]: [normalize("Version Control – Git, GitHub")],
@@ -54,38 +41,30 @@ export default function Dashboard({ search }) {
     [normalize("NodeJS")]: [normalize("React")],
   };
 
-  const isComputerClusterStudent = (student) =>
-    normalize(student.CLUSTER) === normalize("Computer Cluster");
-
-  const isCoreStudent = (student) =>
-    normalize(student.CLUSTER) === normalize("Core");
-
   const hasCompleted = (studentCourses, courseName) => {
     return studentCourses.some(
       (c) => normalize(c.courseName) === normalize(courseName)
     );
   };
 
-  const canTakeCourseByCluster = (student, courseName) => {
-    const courseKey = normalize(courseName);
+  const canTakeCourseByCluster = (student, pointRow) => {
+    const studentCluster = normalize(student.CLUSTER);
+    const access = normalize(pointRow["Cluster Access"]);
 
-    if (isComputerClusterStudent(student)) {
-      const blocked = ELECTRICAL_BLOCKED_FOR_COMPUTER.some(
-        (name) => normalize(name) === courseKey
-      );
-      if (blocked) return false;
+    // If sheet cell is empty, safest default = allow both
+    if (!access || access === "") return true;
+
+    if (access === normalize("Both")) return true;
+    if (access === normalize("Core") && studentCluster === normalize("Core")) return true;
+
+    if (
+      access === normalize("Computer Cluster") &&
+      studentCluster === normalize("Computer Cluster")
+    ) {
       return true;
     }
 
-    if (isCoreStudent(student)) {
-      const isWebCourse = WEB_COURSES.some(
-        (name) => normalize(name) === courseKey
-      );
-      if (isWebCourse) return false;
-      return true;
-    }
-
-    return true;
+    return false;
   };
 
   const canTakeCourseByPrerequisite = (courseName, studentCourses) => {
@@ -179,7 +158,7 @@ export default function Dashboard({ search }) {
       const courseName = String(row[keys[0]] || "").trim();
       if (!courseName) return;
 
-      if (!canTakeCourseByCluster(student, courseName)) return;
+      if (!canTakeCourseByCluster(student, row)) return;
       if (!canTakeCourseByPrerequisite(courseName, studentCourseDetails)) return;
 
       const levelColumns = getLevelColumns(row);

@@ -73,7 +73,7 @@ export default function StudentCard({ student, onClick, avgActivity }) {
         <p className="high">↑ {difference} above avg</p>
       )}
 
-      {student.ACTIVITY === avgActivity && (
+      {Math.abs(student.ACTIVITY - avgActivity) < 0.01 && (
         <p className="equal">= At average</p>
       )}
 
