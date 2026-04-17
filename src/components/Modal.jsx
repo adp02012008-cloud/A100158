@@ -161,7 +161,15 @@ export default function Modal({ student, onClose }) {
                         </div>
 
                         <div className="suggestion-line">
-                          Extra above target: <b>{combo.excess}</b>
+                          {combo.total >= student.GAP_TO_AVG ? (
+                            <>
+                              Extra above target: <b>{combo.total - student.GAP_TO_AVG}</b>
+                            </>
+                          ) : (
+                            <>
+                              Still need: <b>{student.GAP_TO_AVG - combo.total}</b>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}

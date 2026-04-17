@@ -13,7 +13,10 @@ export default function Dashboard({ search }) {
   }, []);
 
   const normalize = (str) =>
-    String(str || "").toLowerCase().replace(/\s+/g, "").trim();
+    String(str || "")
+      .toLowerCase()
+      .replace(/\s+/g, "")
+      .trim();
 
   const isEmptyValue = (val) => {
     if (val === null || val === undefined) return true;
@@ -190,16 +193,14 @@ export default function Dashboard({ search }) {
       .join("|");
 
   const buildCombinationSuggestions = (options, gap) => {
-    if (gap <= 0 || options.length === 0) return [];
+    if (options.length === 0) return [];
 
     const results = [];
     const seen = new Set();
-
-    // no fixed max 5 limit now
     const maxDepth = options.length;
 
     const backtrack = (start, combo, total) => {
-      if (combo.length > 0 && total >= gap) {
+      if (combo.length > 0) {
         const key = makeComboKey(combo);
 
         if (!seen.has(key)) {
@@ -207,32 +208,28 @@ export default function Dashboard({ search }) {
           results.push({
             courses: [...combo],
             total,
+            diff: Math.abs(gap - total),
             excess: total - gap,
           });
         }
-
-        // once reached target, don't keep adding extra courses to same combo
-        return;
       }
 
       if (combo.length >= maxDepth) return;
-
-      // safety stop to avoid freezing
-      if (results.length >= 200) return;
+      if (results.length >= 300) return;
 
       for (let i = start; i < options.length; i++) {
         combo.push(options[i]);
         backtrack(i + 1, combo, total + options[i].points);
         combo.pop();
 
-        if (results.length >= 200) return;
+        if (results.length >= 300) return;
       }
     };
 
     backtrack(0, [], 0);
 
     results.sort((a, b) => {
-      if (a.excess !== b.excess) return a.excess - b.excess;
+      if (a.diff !== b.diff) return a.diff - b.diff;
       if (a.courses.length !== b.courses.length) {
         return a.courses.length - b.courses.length;
       }
