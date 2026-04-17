@@ -123,6 +123,7 @@ export default function Dashboard({ search }) {
 
   const buildAvailableOptions = (studentCourseDetails, pointsRows) => {
     const studentCourseMap = {};
+
     studentCourseDetails.forEach((course) => {
       studentCourseMap[normalize(course.courseName)] = course.currentLevel;
     });
@@ -166,6 +167,7 @@ export default function Dashboard({ search }) {
         }
       } else {
         const first = getFirstAvailableLevel(row, levelColumns);
+
         if (first) {
           options.push({
             courseName,
@@ -192,11 +194,14 @@ export default function Dashboard({ search }) {
 
     const results = [];
     const seen = new Set();
-    const maxDepth = Math.min(5, options.length);
+
+    // no fixed max 5 limit now
+    const maxDepth = options.length;
 
     const backtrack = (start, combo, total) => {
       if (combo.length > 0 && total >= gap) {
         const key = makeComboKey(combo);
+
         if (!seen.has(key)) {
           seen.add(key);
           results.push({
@@ -205,15 +210,22 @@ export default function Dashboard({ search }) {
             excess: total - gap,
           });
         }
+
+        // once reached target, don't keep adding extra courses to same combo
+        return;
       }
 
       if (combo.length >= maxDepth) return;
-      if (results.length >= 80) return;
+
+      // safety stop to avoid freezing
+      if (results.length >= 200) return;
 
       for (let i = start; i < options.length; i++) {
         combo.push(options[i]);
         backtrack(i + 1, combo, total + options[i].points);
         combo.pop();
+
+        if (results.length >= 200) return;
       }
     };
 
