@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo.jpg";
 
 export default function Navbar({ page, setPage, dark, setDark, search, setSearch }) {
   const { auth, effectiveRole, logout, toggleViewMode } = useAuth();

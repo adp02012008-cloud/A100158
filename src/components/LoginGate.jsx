@@ -5,7 +5,7 @@ import { auth as firebaseAuth, googleProvider } from "../firebase";
 import { STUDENT_URL } from "../utils/api";
 import { getUserRole, normalizeEmail, findStudentByEmail } from "../utils/roles";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo.jpg";
 
 export default function LoginGate({ children }) {
   const { auth, login } = useAuth();
