@@ -16,6 +16,7 @@ import "./App.css";
 export default function App() {
   const { isTeamMember } = useAuth();
   const [page, setPage] = useState("dashboard");
+  const [dark, setDark] = useState(true);
   const [search, setSearch] = useState("");
 
   const visiblePage =
@@ -30,10 +31,12 @@ export default function App() {
 
   return (
     <LoginGate>
-      <div className="app">
+      <div className={dark ? "app dark" : "app"}>
         <Navbar
           page={visiblePage}
           setPage={changePage}
+          dark={dark}
+          setDark={setDark}
           search={search}
           setSearch={setSearch}
         />
