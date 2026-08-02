@@ -1,14 +1,17 @@
+/* eslint-disable react-refresh/only-export-components */
 // src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
+import { signOut } from "firebase/auth";
+import { auth as firebaseAuth } from "../firebase";
 
 const AuthContext = createContext();
 
 const DEFAULT_AUTH = {
   isLoggedIn: false,
   email: "",
-  role: "public",        // "admin" | "student" | "public"
-  viewMode: "admin",     // "admin" | "student" — only relevant for admins
-  ownedEnrolment: null,  // enrolment number of the logged-in student
+  role: "public",
+  viewMode: "admin",
+  ownedEnrolment: null,
 };
 
 export function AuthProvider({ children }) {
@@ -35,26 +38,43 @@ export function AuthProvider({ children }) {
     });
   };
 
-  const logout = () => {
-    setAuth(DEFAULT_AUTH);
-    localStorage.removeItem("bugSlayersAuth");
+  const logout = async () => {
+    try {
+      await signOut(firebaseAuth);
+    } catch (error) {
+      console.warn("Firebase logout warning:", error.message);
+    } finally {
+      setAuth(DEFAULT_AUTH);
+      localStorage.removeItem("bugSlayersAuth");
+    }
   };
 
-  // Toggle admin's view between "admin" and "student"
   const toggleViewMode = () => {
     if (auth.role !== "admin") return;
-    setAuth((prev) => ({
-      ...prev,
-      viewMode: prev.viewMode === "admin" ? "student" : "admin",
+    setAuth((previous) => ({
+      ...previous,
+      viewMode: previous.viewMode === "admin" ? "student" : "admin",
     }));
   };
 
-  // Effective role taking view-mode into account
   const effectiveRole =
     auth.role === "admin" && auth.viewMode === "student" ? "student" : auth.role;
 
+  const isTeamMember = auth.role === "student" || auth.role === "admin";
+  const isAdmin = auth.role === "admin";
+
   return (
-    <AuthContext.Provider value={{ auth, effectiveRole, login, logout, toggleViewMode }}>
+    <AuthContext.Provider
+      value={{
+        auth,
+        effectiveRole,
+        isTeamMember,
+        isAdmin,
+        login,
+        logout,
+        toggleViewMode,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
