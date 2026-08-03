@@ -10,7 +10,7 @@ const TEAM_LINKS = [
   { key: "opportunities", icon: "🚀", label: "Opportunities" },
 ];
 
-export default function Navbar({ page, setPage, dark, setDark, search, setSearch }) {
+export default function Navbar({ page, setPage, search, setSearch }) {
   const { auth, isTeamMember, logout, toggleViewMode } = useAuth();
 
   const roleLabel =
@@ -72,10 +72,6 @@ export default function Navbar({ page, setPage, dark, setDark, search, setSearch
               onClick={() => setPage("leaderboard")}
             >
               🥇 <span>Leaderboard</span>
-            </button>
-
-            <button type="button" onClick={() => setDark(!dark)} title="Change theme">
-              {dark ? "☀️" : "🌙"}
             </button>
 
             {auth.role === "admin" && (
