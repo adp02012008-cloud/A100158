@@ -9,6 +9,7 @@ import Projects from "./pages/Projects";
 import Certificates from "./pages/Certificates";
 import Opportunities from "./pages/Opportunities";
 import LoginGate from "./components/LoginGate";
+import InstallPWA from "./components/InstallPWA";
 import { useAuth } from "./context/AuthContext";
 import { TEAM_PAGE_KEYS } from "./config/teamSections";
 import "./App.css";
@@ -48,6 +49,8 @@ export default function App() {
           {isTeamMember && visiblePage === "certificates" && <Certificates search={search} />}
           {isTeamMember && visiblePage === "opportunities" && <Opportunities search={search} />}
         </main>
+        
+        <InstallPWA />
       </div>
     </LoginGate>
   );

@@ -7,7 +7,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.png'],
+      includeAssets: ['logo.png', 'favicon.svg', 'icons.svg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+      },
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: 'Bug Slayers Dashboard',
         short_name: 'Bug Slayers',
@@ -15,6 +21,7 @@ export default defineConfig({
         theme_color: '#007aff',
         background_color: '#0a0a0a',
         display: 'standalone',
+        orientation: 'any',
         start_url: '/',
         icons: [
           {

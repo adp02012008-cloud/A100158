@@ -24,3 +24,11 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Android & Capacitor Build Outputs
+android/gradle-*.zip
+android/.gradle
+android/build
+android/app/build
+*.apk
+*.aab

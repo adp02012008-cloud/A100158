@@ -1,6 +1,12 @@
 // src/components/LoginGate.jsx
 import { useEffect, useState } from "react";
-import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import { 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  setPersistence, 
+  browserLocalPersistence 
+} from "firebase/auth";
 import { auth as firebaseAuth, googleProvider } from "../firebase";
 import { STUDENT_URL } from "../utils/api";
 import { getUserRole, normalizeEmail, findStudentByEmail } from "../utils/roles";
@@ -16,6 +22,31 @@ export default function LoginGate({ children }) {
   const [loading, setLoading]             = useState(true);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError]                 = useState("");
+
+  // Set persistence and check for redirect result on mount
+  useEffect(() => {
+    setPersistence(firebaseAuth, browserLocalPersistence).catch(() => {});
+
+    getRedirectResult(firebaseAuth)
+      .then((result) => {
+        if (result && result.user) {
+          const googleEmail = normalizeEmail(result.user.email || "");
+          if (googleEmail) {
+            const role = getUserRole(googleEmail, students);
+            const ownedStudent = findStudentByEmail(googleEmail, students);
+            const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
+            if (role !== "public") {
+              login(googleEmail, role, ownedEnrolment);
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        if (err.code !== "auth/credential-already-in-use") {
+          console.warn("Redirect sign-in error:", err.message);
+        }
+      });
+  }, [students]);
 
   useEffect(() => {
     fetch(STUDENT_URL)
@@ -40,7 +71,21 @@ export default function LoginGate({ children }) {
 
     try {
       setGoogleLoading(true);
-      const result = await signInWithPopup(firebaseAuth, googleProvider);
+      let result;
+      try {
+        result = await signInWithPopup(firebaseAuth, googleProvider);
+      } catch (popupErr) {
+        if (
+          popupErr.code === "auth/popup-blocked" || 
+          popupErr.code === "auth/operation-not-supported-in-this-environment"
+        ) {
+          // Fallback to redirect mode on mobile webviews/browsers that block popups
+          await signInWithRedirect(firebaseAuth, googleProvider);
+          return;
+        }
+        throw popupErr;
+      }
+
       const googleEmail = normalizeEmail(result.user?.email || "");
 
       if (!googleEmail) {
