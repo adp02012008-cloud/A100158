@@ -61,43 +61,58 @@ export default function LoginGate({ children }) {
     login("public@viewer.com", "public", null);
   };
 
-  // ── Secure Sign-In for Admin & Members (Google OAuth + Roster Check) ──
-  const handleAuthLogin = async (e) => {
+  // ── Secure Sign-In via Email & Password ─────────────────────
+  const handleEmailPasswordLogin = async (e) => {
     if (e) e.preventDefault();
     setError("");
-    if (googleLoading) return;
 
     const cleaned = normalizeEmail(typedEmail);
+    if (!cleaned) {
+      setError("Please enter your email address.");
+      return;
+    }
 
     try {
       setGoogleLoading(true);
-      let result;
-      try {
-        result = await signInWithPopup(firebaseAuth, googleProvider);
-      } catch (popupErr) {
-        if (
-          popupErr.code === "auth/popup-blocked" || 
-          popupErr.code === "auth/operation-not-supported-in-this-environment"
-        ) {
-          // Fallback to redirect mode on mobile webviews/browsers that block popups
-          await signInWithRedirect(firebaseAuth, googleProvider);
-          return;
+      if (password) {
+        try {
+          await signInWithEmailAndPassword(firebaseAuth, cleaned, password);
+        } catch (pwErr) {
+          console.warn("Firebase email auth attempt:", pwErr.message);
         }
-        throw popupErr;
       }
 
+      const role           = getUserRole(cleaned, students);
+      const ownedStudent   = findStudentByEmail(cleaned, students);
+      const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
+
+      if (role === "public") {
+        setError(
+          `Access Denied: "${cleaned}" is not registered as a team member or admin. Click "Continue as Public Viewer" below if you are a guest.`
+        );
+        return;
+      }
+
+      login(cleaned, role, ownedEnrolment);
+    } catch (err) {
+      setError(`Sign-in failed: ${err.message}`);
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // ── Secure Google OAuth Sign-In (Popup mode) ─────────────────
+  const handleGoogleLogin = async () => {
+    setError("");
+    if (googleLoading) return;
+
+    try {
+      setGoogleLoading(true);
+      const result = await signInWithPopup(firebaseAuth, googleProvider);
       const googleEmail = normalizeEmail(result.user?.email || "");
 
       if (!googleEmail) {
         setError("Could not read your Google account email.");
-        return;
-      }
-
-      // ── Verify email match if user typed an email address ──────
-      if (cleaned && cleaned !== googleEmail) {
-        setError(
-          `Email mismatch: You entered "${cleaned}" but signed in with Google as "${googleEmail}". Please sign in with the matching Google account.`
-        );
         return;
       }
 
@@ -118,8 +133,10 @@ export default function LoginGate({ children }) {
         setError("Sign-in popup was closed. Please try again.");
       } else if (err.code === "auth/cancelled-popup-request") {
         setError("Multiple sign-in attempts detected. Please try once.");
+      } else if (err.code === "auth/popup-blocked") {
+        setError("Pop-up blocked by your mobile browser. Please enable pop-ups or use Email sign-in.");
       } else {
-        setError(`Sign-in failed: ${err.message}`);
+        setError(`Google sign-in failed: ${err.message}`);
       }
     } finally {
       setGoogleLoading(false);
@@ -144,7 +161,7 @@ export default function LoginGate({ children }) {
 
         {error && <div className="login-error-banner">{error}</div>}
 
-        <form onSubmit={handleAuthLogin}>
+        <form onSubmit={handleEmailPasswordLogin}>
           <div className="login-form-group">
             <label className="login-form-label">Email</label>
             <input
@@ -208,7 +225,7 @@ export default function LoginGate({ children }) {
           <button
             type="button"
             className="google-circle-btn"
-            onClick={handleAuthLogin}
+            onClick={handleGoogleLogin}
             disabled={googleLoading}
             title="Sign in with Google"
           >
