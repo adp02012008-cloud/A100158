@@ -1,12 +1,14 @@
-// src/components/LoginGate.jsx
 import { useEffect, useState } from "react";
 import { 
   signInWithPopup, 
   signInWithRedirect, 
   getRedirectResult, 
   setPersistence, 
-  browserLocalPersistence 
+  browserLocalPersistence,
+  signInWithEmailAndPassword
 } from "firebase/auth";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth, googleProvider } from "../firebase";
 import { STUDENT_URL } from "../utils/api";
 import { getUserRole, normalizeEmail, findStudentByEmail } from "../utils/roles";
@@ -101,15 +103,24 @@ export default function LoginGate({ children }) {
     }
   };
 
-  // ── Secure Google OAuth Sign-In (Popup mode with mobile safety) ──
+  // ── Secure Google Sign-In (Native Android + Web Popup) ─────
   const handleGoogleLogin = async () => {
     setError("");
     if (googleLoading) return;
 
     try {
       setGoogleLoading(true);
-      const result = await signInWithPopup(firebaseAuth, googleProvider);
-      const googleEmail = normalizeEmail(result.user?.email || "");
+      let googleEmail = "";
+
+      if (Capacitor.isNativePlatform()) {
+        // Native Android Google Credential Manager
+        const res = await FirebaseAuthentication.signInWithGoogle();
+        googleEmail = normalizeEmail(res.user?.email || "");
+      } else {
+        // Standard Web Browser Popup
+        const result = await signInWithPopup(firebaseAuth, googleProvider);
+        googleEmail = normalizeEmail(result.user?.email || "");
+      }
 
       if (!googleEmail) {
         setError("Could not read your Google account email.");
@@ -129,10 +140,14 @@ export default function LoginGate({ children }) {
 
       login(googleEmail, role, ownedEnrolment);
     } catch (err) {
-      console.warn("Google popup error:", err);
-      setError(
-        "Google web sign-in is restricted by mobile browser policies. Please enter your email address above and tap 'Sign in', or continue as Public Viewer."
-      );
+      console.warn("Google authentication error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        setError("Sign-in popup was closed. Please try again.");
+      } else {
+        setError(
+          "Google web sign-in was restricted by browser/device policies. Please enter your email address above and tap 'Sign in'."
+        );
+      }
     } finally {
       setGoogleLoading(false);
     }
