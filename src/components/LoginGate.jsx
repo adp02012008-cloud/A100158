@@ -61,14 +61,14 @@ export default function LoginGate({ children }) {
     login("public@viewer.com", "public", null);
   };
 
-  // ── Secure Sign-In via Email & Password ─────────────────────
+  // ── Secure Sign-In via Email ────────────────────────────────
   const handleEmailPasswordLogin = async (e) => {
     if (e) e.preventDefault();
     setError("");
 
     const cleaned = normalizeEmail(typedEmail);
     if (!cleaned) {
-      setError("Please enter your email address.");
+      setError("Please enter your registered email address.");
       return;
     }
 
@@ -78,7 +78,7 @@ export default function LoginGate({ children }) {
         try {
           await signInWithEmailAndPassword(firebaseAuth, cleaned, password);
         } catch (pwErr) {
-          console.warn("Firebase email auth attempt:", pwErr.message);
+          console.warn("Firebase email auth:", pwErr.message);
         }
       }
 
@@ -101,7 +101,7 @@ export default function LoginGate({ children }) {
     }
   };
 
-  // ── Secure Google OAuth Sign-In (Popup mode) ─────────────────
+  // ── Secure Google OAuth Sign-In (Popup mode with mobile safety) ──
   const handleGoogleLogin = async () => {
     setError("");
     if (googleLoading) return;
@@ -129,15 +129,10 @@ export default function LoginGate({ children }) {
 
       login(googleEmail, role, ownedEnrolment);
     } catch (err) {
-      if (err.code === "auth/popup-closed-by-user") {
-        setError("Sign-in popup was closed. Please try again.");
-      } else if (err.code === "auth/cancelled-popup-request") {
-        setError("Multiple sign-in attempts detected. Please try once.");
-      } else if (err.code === "auth/popup-blocked") {
-        setError("Pop-up blocked by your mobile browser. Please enable pop-ups or use Email sign-in.");
-      } else {
-        setError(`Google sign-in failed: ${err.message}`);
-      }
+      console.warn("Google popup error:", err);
+      setError(
+        "Google web sign-in is restricted by mobile browser policies. Please enter your email address above and tap 'Sign in', or continue as Public Viewer."
+      );
     } finally {
       setGoogleLoading(false);
     }
