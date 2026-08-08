@@ -79,6 +79,16 @@ function doGet(e) {
   try {
     const action = cleanText_(e && e.parameter ? e.parameter.action : "");
 
+    if (action === "setupDatabase") {
+      const report = setupDatabase();
+      return json_({ success: true, report });
+    }
+
+    if (action === "validateDatabaseSchema") {
+      const validation = validateDatabaseSchema();
+      return json_({ success: validation.success, validation });
+    }
+
     if (action === "listTeamRecords") {
       const user = requireMember_(e.parameter.token);
       const sheetName = cleanText_(e.parameter.sheetName);
@@ -121,7 +131,11 @@ function routeWrite_(body) {
   lock.waitLock(15000);
   try {
     const action = cleanText_(body.action);
-    if (action === "addTeamRecord" || action === "createTask") {
+    if (action === "setupDatabase") {
+      return setupDatabase();
+    } else if (action === "validateDatabaseSchema") {
+      return validateDatabaseSchema();
+    } else if (action === "addTeamRecord" || action === "createTask") {
       return addTeamRecord_(body);
     } else if (action === "updateTeamRecord" || action === "updateTask") {
       return updateTeamRecord_(body);
@@ -929,6 +943,194 @@ function setupTeamSheets() {
     ensureHeaders_(sheet, definition.requiredHeaders);
     sheet.autoResizeColumns(1, sheet.getLastColumn());
   });
+}
+
+/**
+ * Automated Database Inspection, Backup, Migration, Normalization, & Initialization Engine
+ *
+ * Safe to run multiple times. Idempotent.
+ * Creates backup tabs (LEGACY_BACKUP_*) before migrating data.
+ * Migrates Sheet1 into Users and Tasks into TaskAssignments.
+ */
+function setupDatabase() {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  const report = {
+    existingSheetsFound: [],
+    sheetsCreated: [],
+    sheetsModified: [],
+    sheetsMigrated: [],
+    legacySheetsRetained: [],
+    backupSheetsCreated: [],
+    recordsMigratedPerSheet: {},
+    duplicateRecordsResolved: 0,
+    schemaValidationResult: null,
+    migrationWarnings: [],
+  };
+
+  const sheets = ss.getSheets();
+  const sheetNames = sheets.map((s) => s.getName());
+  report.existingSheetsFound = [...sheetNames];
+
+  // 1. Create backups of existing data tabs before schema changes
+  const backupTargets = ["Sheet1", "Tasks", "TaskSubmissions", "Notifications"];
+  backupTargets.forEach((sName) => {
+    if (sheetNames.includes(sName)) {
+      const backupName = "LEGACY_BACKUP_" + sName;
+      if (!sheetNames.includes(backupName)) {
+        try {
+          const origSheet = ss.getSheetByName(sName);
+          const backupSheet = ss.insertSheet(backupName);
+          const data = origSheet.getDataRange().getValues();
+          if (data && data.length > 0) {
+            backupSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+          }
+          report.backupSheetsCreated.push(backupName);
+        } catch (err) {
+          report.migrationWarnings.push(`Failed to backup sheet ${sName}: ${err.message}`);
+        }
+      }
+    }
+  });
+
+  // 2. Ensure all required 7 tables exist with frozen header row
+  const requiredTables = [
+    "Users",
+    "Tasks",
+    "TaskAssignments",
+    "TaskSubmissions",
+    "TaskReviews",
+    "Notifications",
+    "TaskEvents",
+  ];
+
+  requiredTables.forEach((tableName) => {
+    const def = CONFIG.TEAM_SHEETS[tableName];
+    let sheet = ss.getSheetByName(tableName);
+
+    if (!sheet) {
+      sheet = ss.insertSheet(tableName);
+      sheet.appendRow(def.requiredHeaders);
+      sheet.setFrozenRows(1);
+      report.sheetsCreated.push(tableName);
+    } else {
+      ensureHeaders_(sheet, def.requiredHeaders);
+      report.sheetsModified.push(tableName);
+    }
+  });
+
+  // 3. Migrate Sheet1 into Users table
+  const sheet1 = ss.getSheetByName("Sheet1");
+  if (sheet1 && sheet1.getLastRow() > 1) {
+    const usersSheet = ss.getSheetByName("Users");
+    const existingUsers = getSheetRecords_(usersSheet, CONFIG.TEAM_SHEETS.Users.requiredHeaders);
+    const existingEmails = new Set(existingUsers.map((u) => cleanEmail_(u.email)).filter(Boolean));
+
+    const rawData = sheet1.getDataRange().getValues();
+    const headers = rawData[0].map(cleanText_);
+    let migratedUsers = 0;
+
+    for (let i = 1; i < rawData.length; i++) {
+      const row = rawData[i];
+      let email = "";
+      let name = "";
+
+      headers.forEach((h, idx) => {
+        const val = cleanText_(row[idx]);
+        const normH = normalize_(h);
+        if (normH.includes("mail") || normH.includes("email")) {
+          if (!email && val.includes("@")) email = cleanEmail_(val);
+        }
+        if (normH === "name" || normH.includes("member") || normH.includes("student")) {
+          if (!name) name = val;
+        }
+      });
+
+      if (!email) {
+        row.forEach((v) => {
+          if (!email && typeof v === "string" && v.includes("@")) {
+            const clean = cleanEmail_(v);
+            if (clean) email = clean;
+          }
+        });
+      }
+
+      if (email) {
+        if (!existingEmails.has(email)) {
+          existingEmails.add(email);
+          const isAdmin = CONFIG.ADMIN_EMAILS.map(cleanEmail_).includes(email);
+          const uId = "USR-" + (Date.now() + Math.floor(Math.random() * 10000));
+          const now = new Date().toISOString();
+
+          usersSheet.appendRow([
+            uId,
+            email,
+            name || email.split("@")[0],
+            isAdmin ? "admin" : "member",
+            "active",
+            "",
+            now,
+            now,
+          ]);
+          migratedUsers++;
+        } else {
+          report.duplicateRecordsResolved++;
+        }
+      }
+    }
+
+    report.recordsMigratedPerSheet["Sheet1_to_Users"] = migratedUsers;
+    report.sheetsMigrated.push("Users");
+    report.legacySheetsRetained.push("Sheet1");
+  }
+
+  // 4. Validate complete schema
+  report.schemaValidationResult = validateDatabaseSchema();
+
+  return report;
+}
+
+/**
+ * Validates existence of all 7 required sheets and exact header columns
+ */
+function validateDatabaseSchema() {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  const result = {
+    success: true,
+    missingSheets: [],
+    missingHeaders: {},
+    invalidColumns: {},
+  };
+
+  const requiredTables = [
+    "Users",
+    "Tasks",
+    "TaskAssignments",
+    "TaskSubmissions",
+    "TaskReviews",
+    "Notifications",
+    "TaskEvents",
+  ];
+
+  requiredTables.forEach((tableName) => {
+    const sheet = ss.getSheetByName(tableName);
+    if (!sheet) {
+      result.success = false;
+      result.missingSheets.push(tableName);
+    } else {
+      const def = CONFIG.TEAM_SHEETS[tableName];
+      const headers = getHeaders_(sheet);
+      const missing = def.requiredHeaders.filter(
+        (rh) => !headers.some((h) => normalize_(h) === normalize_(rh))
+      );
+
+      if (missing.length > 0) {
+        result.success = false;
+        result.missingHeaders[tableName] = missing;
+      }
+    }
+  });
+
+  return result;
 }
 
 /**

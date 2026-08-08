@@ -207,3 +207,11 @@ export async function deleteTeamRecord(sheetName, idField, idValue) {
     idValue,
   });
 }
+
+export async function setupDatabase() {
+  return scriptGet("setupDatabase");
+}
+
+export async function validateDatabaseSchema() {
+  return scriptGet("validateDatabaseSchema");
+}
