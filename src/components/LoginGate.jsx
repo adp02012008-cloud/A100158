@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import {
   browserLocalPersistence,
   browserSessionPersistence,
+  getRedirectResult,
   onAuthStateChanged,
   sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signInWithRedirect,
   signOut as firebaseSignOut,
 } from "firebase/auth";
@@ -157,14 +159,24 @@ export default function LoginGate({ children }) {
       if (!cancelled) setCheckingSession(false);
     };
 
-    const getWebFirebaseEmail = () =>
-      new Promise((resolve) => {
+    const getWebFirebaseEmail = async () => {
+      try {
+        const redirectResult = await getRedirectResult(firebaseAuth);
+        if (redirectResult?.user?.email) {
+          return redirectResult.user.email;
+        }
+      } catch (redirectError) {
+        console.error("Firebase redirect result error:", redirectError);
+      }
+
+      return new Promise((resolve) => {
         let unsubscribe = () => {};
         unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
           unsubscribe();
           resolve(user?.email || "");
         });
       });
+    };
 
     const getCurrentSessionEmail = async () => {
       if (Capacitor.isNativePlatform()) {
@@ -251,11 +263,30 @@ export default function LoginGate({ children }) {
         }
         await completeRegisteredLogin(googleEmail);
       } else {
-        await signInWithRedirect(firebaseAuth, googleProvider);
+        try {
+          const result = await signInWithPopup(firebaseAuth, googleProvider);
+          const googleEmail = normalizeEmail(result.user?.email || "");
+          if (!googleEmail) {
+            await clearFirebaseSession();
+            setError("Could not read your Google account email.");
+            return;
+          }
+          await completeRegisteredLogin(googleEmail);
+        } catch (popupErr) {
+          if (
+            popupErr?.code === "auth/popup-blocked" ||
+            popupErr?.code === "auth/popup-closed-by-user"
+          ) {
+            await signInWithRedirect(firebaseAuth, googleProvider);
+          } else {
+            throw popupErr;
+          }
+        }
       }
     } catch (authError) {
       await clearFirebaseSession();
       setError(getAuthErrorMessage(authError, "Google sign-in failed. Please try again."));
+    } finally {
       setAuthLoading(false);
     }
   };
