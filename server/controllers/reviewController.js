@@ -4,6 +4,7 @@ import { TaskReview } from "../models/TaskReview.js";
 import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
 import { canReviewSubmission, isAdmin } from "../utils/authHelpers.js";
+import { calculateTaskCoverage } from "../utils/coverageEngine.js";
 
 /**
  * POST /api/reviews
@@ -81,6 +82,9 @@ export async function createReview(req, res) {
         await task.save();
       }
     }
+
+    // 4. Recalculate Task Coverage & Update Completion State Atomically
+    const coverage = await calculateTaskCoverage(submission.taskId);
 
     // 4. Log TaskEvent
     await TaskEvent.create({

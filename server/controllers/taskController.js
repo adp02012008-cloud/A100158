@@ -3,6 +3,7 @@ import { TaskAssignment } from "../models/TaskAssignment.js";
 import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
 import { canViewTask, canModifyTask, isAdmin } from "../utils/authHelpers.js";
+import { calculateTaskCoverage } from "../utils/coverageEngine.js";
 
 /**
  * GET /api/tasks
@@ -278,6 +279,9 @@ export async function updateTask(req, res) {
       details: { title: task.title, status: task.status },
     });
 
+    // Recalculate coverage and completion state after assignment changes
+    await calculateTaskCoverage(task.taskId);
+
     const doc = task.toObject();
     doc.assignedEmails = finalAssignedEmails;
 
@@ -318,5 +322,19 @@ export async function deleteTask(req, res) {
     return res.status(200).json({ success: true, message: "Task deleted successfully." });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Error deleting task: " + error.message });
+  }
+}
+
+/**
+ * GET /api/tasks/:taskId/coverage
+ * Returns the coverage breakdown object for a task.
+ */
+export async function getTaskCoverage(req, res) {
+  try {
+    const { taskId } = req.params;
+    const coverage = await calculateTaskCoverage(taskId);
+    return res.status(200).json({ success: true, coverage });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Error calculating task coverage: " + error.message });
   }
 }

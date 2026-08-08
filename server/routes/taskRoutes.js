@@ -6,6 +6,7 @@ import {
   createTask,
   updateTask,
   deleteTask,
+  getTaskCoverage,
 } from "../controllers/taskController.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.use(verifyAuthToken);
 
 router.get("/", getTasks);
 router.get("/:taskId", getTaskById);
+router.get("/:taskId/coverage", getTaskCoverage);
 router.post("/", createTask);
 router.put("/:taskId", updateTask);
 router.delete("/:taskId", deleteTask);
