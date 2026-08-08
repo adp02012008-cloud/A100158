@@ -111,11 +111,27 @@ export async function createTask(req, res) {
       createdBy: createdByEmail,
     });
 
-    // 2. Create TaskAssignments for assigned users
+    // 2. Validate assignedEmails against active User records in MongoDB
     const rawAssigned = Array.isArray(assignedEmails) ? assignedEmails : [];
     const normalizedAssigned = Array.from(
       new Set(rawAssigned.map((e) => String(e).trim().toLowerCase()).filter(Boolean))
     );
+
+    if (normalizedAssigned.length > 0) {
+      const validUsers = await User.find({
+        email: { $in: normalizedAssigned },
+        status: "ACTIVE",
+      }).exec();
+      const validUserEmails = new Set(validUsers.map((u) => u.email.toLowerCase()));
+
+      const invalidEmails = normalizedAssigned.filter((e) => !validUserEmails.has(e));
+      if (invalidEmails.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot assign nonexistent or inactive user(s): ${invalidEmails.join(", ")}`,
+        });
+      }
+    }
 
     const createdAssignments = [];
     for (const assigneeEmail of normalizedAssigned) {
@@ -193,7 +209,14 @@ export async function updateTask(req, res) {
     if (priority) task.priority = priority;
     if (dueDate !== undefined) task.dueDate = dueDate;
     if (submissionMode) task.submissionMode = submissionMode;
-    if (status) task.status = status.toUpperCase();
+
+    // Backend controls COMPLETED and UNDER_REVIEW statuses via coverage engine; ignore client claims for these
+    if (status) {
+      const cleanStatus = status.toUpperCase().trim();
+      if (cleanStatus !== "COMPLETED" && cleanStatus !== "UNDER_REVIEW") {
+        task.status = cleanStatus;
+      }
+    }
 
     await task.save();
 
@@ -203,6 +226,23 @@ export async function updateTask(req, res) {
       const targetEmails = Array.from(
         new Set(assignedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean))
       );
+
+      // Validate targetEmails against active User records in MongoDB
+      if (targetEmails.length > 0) {
+        const validUsers = await User.find({
+          email: { $in: targetEmails },
+          status: "ACTIVE",
+        }).exec();
+        const validUserEmails = new Set(validUsers.map((u) => u.email.toLowerCase()));
+
+        const invalidEmails = targetEmails.filter((e) => !validUserEmails.has(e));
+        if (invalidEmails.length > 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Cannot assign nonexistent or inactive user(s): ${invalidEmails.join(", ")}`,
+          });
+        }
+      }
 
       const currentAssignments = await TaskAssignment.find({ taskId: task.taskId }).exec();
       const activeMap = new Map();
@@ -255,7 +295,7 @@ export async function updateTask(req, res) {
         }
       }
 
-      // Handle removals
+      // Handle removals (mark REMOVED, preserve history)
       for (const [email, asn] of activeMap.entries()) {
         if (!targetEmails.includes(email)) {
           asn.status = "REMOVED";
