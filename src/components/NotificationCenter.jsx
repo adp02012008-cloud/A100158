@@ -22,17 +22,21 @@ export default function NotificationCenter({ onSelectTask }) {
   useEffect(() => {
     if (!userEmail) return;
 
-    const loadNotifs = () => {
-      const list = getNotificationsForUser(userEmail, students);
-      setNotifications(list);
+    const loadNotifs = async () => {
+      try {
+        const list = await getNotificationsForUser(userEmail);
+        setNotifications(list || []);
+      } catch (err) {
+        console.warn("Notification load error:", err?.message);
+      }
     };
 
     loadNotifs();
 
     // Check periodically for new notifications
-    const interval = setInterval(loadNotifs, 4000);
+    const interval = setInterval(loadNotifs, 5000);
     return () => clearInterval(interval);
-  }, [userEmail, students]);
+  }, [userEmail]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -48,10 +52,14 @@ export default function NotificationCenter({ onSelectTask }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const handleToggle = () => {
+  const handleToggle = async () => {
     if (!open && unreadCount > 0) {
-      markNotificationsRead(userEmail);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      try {
+        await markNotificationsRead(userEmail);
+      } catch (err) {
+        console.warn("Mark read error:", err?.message);
+      }
     }
     setOpen((prev) => !prev);
   };

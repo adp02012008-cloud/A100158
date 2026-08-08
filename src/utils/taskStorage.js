@@ -1,195 +1,162 @@
 // src/utils/taskStorage.js
 import { scriptGet, scriptPost } from "./api";
-import { isUserAssignedToTask, normalizeEmail, parseAssignedEmails } from "./roles";
+import { normalizeEmail, parseAssignedEmails } from "./roles";
 
-// ── Notifications API ─────────────────────────────────────────
-export async function syncNotificationsRemote() {
-  try {
-    const remote = await scriptGet("listTeamRecords", { sheetName: "Notifications" });
-    if (Array.isArray(remote?.records) && remote.records.length > 0) {
-      const parsed = remote.records.map((r) => ({
-        ...r,
-        read: r.read === "true" || r.read === true,
-      }));
-      const existing = getLocalNotifications();
-      const map = new Map();
-      existing.forEach((item) => map.set(item.id, item));
-      parsed.forEach((item) => map.set(item.id, { ...map.get(item.id), ...item }));
-      const merged = Array.from(map.values());
-      saveLocalNotifications(merged);
-      return merged;
-    }
-  } catch (err) {
-    console.warn("Using local notifications cache:", err?.message);
-  }
-  return getLocalNotifications();
-}
-
-export function getNotificationsForUser(userEmail, students = []) {
+// ── User-Scoped LocalStorage Helpers ──────────────────────────
+function getScopedKey(prefix, userEmail) {
   const clean = normalizeEmail(userEmail);
-  if (!clean) return [];
-
-  // Trigger remote background sync
-  syncNotificationsRemote().catch(() => {});
-
-  const tasks = getLocalTasks();
-  const allNotifs = getLocalNotifications();
-  const notifIds = new Set(allNotifs.map((n) => n.id));
-  const notifTaskKeys = new Set(
-    allNotifs.map((n) => `${normalizeEmail(n.targetEmail)}_${n.taskId}_${n.title}`)
-  );
-
-  let addedNew = false;
-  tasks.forEach((t) => {
-    const isAssigned = isUserAssignedToTask(clean, t.assignedEmails, students);
-    if (isAssigned) {
-      const key = `${clean}_${t.id}_New Task Assigned! 🎯`;
-      if (!notifTaskKeys.has(key)) {
-        const derivedId = `NTF-${t.id}-${clean.replace(/[^a-zA-Z0-9]/g, "")}`;
-        if (!notifIds.has(derivedId)) {
-          const derived = {
-            id: derivedId,
-            targetEmail: clean,
-            title: "New Task Assigned! 🎯",
-            message: `You were assigned to "${t.title}" (${t.domain || "General"}).`,
-            taskId: t.id,
-            createdAt: t.createdAt || new Date().toISOString(),
-            read: false,
-          };
-          allNotifs.unshift(derived);
-          notifTaskKeys.add(key);
-          notifIds.add(derivedId);
-          addedNew = true;
-        }
-      }
-    }
-  });
-
-  if (addedNew) {
-    saveLocalNotifications(allNotifs);
-  }
-
-  return allNotifs
-    .filter((n) => {
-      const target = normalizeEmail(n.targetEmail);
-      if (target === clean) return true;
-      return isUserAssignedToTask(clean, [n.targetEmail], students);
-    })
-    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  return clean ? `bugslayers_${prefix}_${clean}` : `bugslayers_${prefix}_anon`;
 }
 
-const TASKS_KEY = "bugslayers_tasks_v1";
-const SUBMISSIONS_KEY = "bugslayers_submissions_v1";
-const NOTIFICATIONS_KEY = "bugslayers_notifications_v1";
-
-// ── Default Sample Initial Tasks ──────────────────────────────
-const DEFAULT_TASKS = [
-  {
-    id: "TSK-101",
-    title: "AI Chatbot & LLM Integration",
-    domain: "Agentic AI & LLM Optimization",
-    description: "Develop a domain-aware RAG pipeline and connect it with the student portal assistant.",
-    priority: "High",
-    dueDate: "2026-08-20",
-    assignedEmails: ["dhashaprakasha.cs25@bitsathy.ac.in", "harishkarthikkbs.ad25@bitsathy.ac.in"],
-    createdBy: "adp02012008@gmail.com",
-    createdAt: new Date().toISOString(),
-    status: "In Progress",
-  },
-  {
-    id: "TSK-102",
-    title: "Cloud Infrastructure Setup & CI/CD",
-    domain: "DevOps and IT Infra",
-    description: "Configure GitHub Actions workflow for automated testing and Capacitor Android APK build.",
-    priority: "Medium",
-    dueDate: "2026-08-25",
-    assignedEmails: ["haris12768@gmail.com", "vishal02oct2007@gmail.com"],
-    createdBy: "adp02012008@gmail.com",
-    createdAt: new Date().toISOString(),
-    status: "Pending",
-  },
-];
-
-// ── Local Storage Helpers ─────────────────────────────────────
-export function getLocalTasks() {
+export function getLocalTasks(userEmail = "") {
   try {
-    const raw = localStorage.getItem(TASKS_KEY);
-    if (!raw) {
-      localStorage.setItem(TASKS_KEY, JSON.stringify(DEFAULT_TASKS));
-      return DEFAULT_TASKS;
-    }
+    const key = getScopedKey("tasks", userEmail);
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed)
       ? parsed.map((t) => ({ ...t, assignedEmails: parseAssignedEmails(t.assignedEmails) }))
-      : DEFAULT_TASKS;
+      : [];
   } catch {
-    return DEFAULT_TASKS;
+    return [];
   }
 }
 
-export function saveLocalTasks(tasks) {
+export function saveLocalTasks(tasks, userEmail = "") {
   try {
-    localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    const key = getScopedKey("tasks", userEmail);
+    localStorage.setItem(key, JSON.stringify(tasks));
   } catch (err) {
     console.error("Error saving local tasks:", err);
   }
 }
 
-export function getLocalSubmissions() {
+export function getLocalSubmissions(userEmail = "") {
   try {
-    const raw = localStorage.getItem(SUBMISSIONS_KEY);
+    const key = getScopedKey("submissions", userEmail);
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function saveLocalSubmissions(submissions) {
+export function saveLocalSubmissions(submissions, userEmail = "") {
   try {
-    localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(submissions));
+    const key = getScopedKey("submissions", userEmail);
+    localStorage.setItem(key, JSON.stringify(submissions));
   } catch (err) {
     console.error("Error saving local submissions:", err);
   }
 }
 
-export function getLocalNotifications() {
+export function getLocalNotifications(userEmail = "") {
   try {
-    const raw = localStorage.getItem(NOTIFICATIONS_KEY);
+    const key = getScopedKey("notifications", userEmail);
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function saveLocalNotifications(notifications) {
+export function saveLocalNotifications(notifications, userEmail = "") {
   try {
-    localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+    const key = getScopedKey("notifications", userEmail);
+    localStorage.setItem(key, JSON.stringify(notifications));
   } catch (err) {
     console.error("Error saving local notifications:", err);
   }
 }
 
+// ── Notifications API ─────────────────────────────────────────
+export async function getNotificationsForUser(userEmail = "") {
+  const clean = normalizeEmail(userEmail);
+  if (!clean) return [];
+
+  try {
+    const remote = await scriptGet("listTeamRecords", { sheetName: "Notifications" });
+    if (Array.isArray(remote?.records)) {
+      const parsed = remote.records.map((r) => ({
+        ...r,
+        read: r.read === "true" || r.read === true,
+      }));
+      saveLocalNotifications(parsed, clean);
+      return parsed.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
+  } catch (err) {
+    console.warn("Using local notifications cache fallback:", err?.message);
+  }
+
+  const local = getLocalNotifications(clean);
+  return local.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+}
+
+export async function addNotification({ targetEmail, title, message, taskId }) {
+  const cleanTarget = normalizeEmail(targetEmail);
+  if (!cleanTarget) return null;
+
+  const notif = {
+    id: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    targetEmail: cleanTarget,
+    title,
+    message,
+    taskId: taskId || "",
+    createdAt: new Date().toISOString(),
+    read: false,
+  };
+
+  await scriptPost({
+    action: "addTeamRecord",
+    sheetName: "Notifications",
+    idField: "id",
+    idValue: notif.id,
+    record: notif,
+  });
+
+  return notif;
+}
+
+export async function markNotificationsRead(userEmail = "") {
+  const clean = normalizeEmail(userEmail);
+  const all = getLocalNotifications(clean);
+  const unread = all.filter((n) => !n.read);
+
+  for (const n of unread) {
+    const readNotif = { ...n, read: true };
+    await scriptPost({
+      action: "updateTeamRecord",
+      sheetName: "Notifications",
+      idField: "id",
+      idValue: n.id,
+      record: readNotif,
+    });
+  }
+
+  const updated = all.map((n) => ({ ...n, read: true }));
+  saveLocalNotifications(updated, clean);
+  return updated;
+}
+
 // ── Task Management API ───────────────────────────────────────
-export async function getTasks() {
-  let local = getLocalTasks();
+export async function getTasks(userEmail = "") {
   try {
     const remote = await scriptGet("listTeamRecords", { sheetName: "Tasks" });
-    if (Array.isArray(remote?.records) && remote.records.length > 0) {
+    if (Array.isArray(remote?.records)) {
       const parsed = remote.records.map((r) => ({
         ...r,
         assignedEmails: parseAssignedEmails(r.assignedEmails),
       }));
-      saveLocalTasks(parsed);
+      saveLocalTasks(parsed, userEmail);
       return parsed;
     }
   } catch (err) {
-    console.warn("Using local tasks cache:", err?.message);
+    console.warn("Using local tasks cache fallback due to error:", err?.message);
   }
-  return local;
+  return getLocalTasks(userEmail);
 }
 
-export async function saveTask(taskData) {
-  const tasks = getLocalTasks();
+export async function saveTask(taskData, userEmail = "") {
   const isEdit = Boolean(taskData.id);
   const taskId = taskData.id || `TSK-${Date.now().toString().slice(-4)}`;
   
@@ -203,24 +170,8 @@ export async function saveTask(taskData) {
     status: taskData.status || "Pending",
   };
 
-  const nextTasks = isEdit
-    ? tasks.map((t) => (t.id === taskId ? updatedTask : t))
-    : [updatedTask, ...tasks];
-
-  saveLocalTasks(nextTasks);
-
-  // Notify assigned members
-  updatedTask.assignedEmails.forEach((email) => {
-    addNotification({
-      targetEmail: email,
-      title: isEdit ? "Task Updated 📌" : "New Task Assigned! 🎯",
-      message: `You were ${isEdit ? "updated on" : "assigned to"} "${updatedTask.title}" (${updatedTask.domain}).`,
-      taskId: taskId,
-    });
-  });
-
-  // Sync to backend sheet asynchronously
-  scriptPost({
+  // 1. Await backend confirmation first
+  await scriptPost({
     action: isEdit ? "updateTeamRecord" : "addTeamRecord",
     sheetName: "Tasks",
     idField: "id",
@@ -229,29 +180,40 @@ export async function saveTask(taskData) {
       ...updatedTask,
       assignedEmails: updatedTask.assignedEmails.join(", "),
     },
-  }).catch((err) => console.warn("Backend task sync warning:", err?.message));
+  });
 
-  return updatedTask;
+  // 2. Notify assigned members
+  for (const email of updatedTask.assignedEmails) {
+    try {
+      await addNotification({
+        targetEmail: email,
+        title: isEdit ? "Task Updated 📌" : "New Task Assigned! 🎯",
+        message: `You were ${isEdit ? "updated on" : "assigned to"} "${updatedTask.title}" (${updatedTask.domain || "General"}).`,
+        taskId: taskId,
+      });
+    } catch (e) {
+      console.warn("Notification delivery warning:", e?.message);
+    }
+  }
+
+  return getTasks(userEmail);
 }
 
-export async function deleteTask(taskId) {
-  const tasks = getLocalTasks().filter((t) => t.id !== taskId);
-  saveLocalTasks(tasks);
-
-  scriptPost({
+export async function deleteTask(taskId, userEmail = "") {
+  await scriptPost({
     action: "deleteTeamRecord",
     sheetName: "Tasks",
     idField: "id",
     idValue: taskId,
-  }).catch((err) => console.warn("Backend task deletion warning:", err?.message));
+  });
+  return getTasks(userEmail);
 }
 
 // ── Deliverables & Submissions API ────────────────────────────
-export async function getSubmissions(taskId = null) {
-  let local = getLocalSubmissions();
+export async function getSubmissions(userEmail = "") {
   try {
     const remote = await scriptGet("listTeamRecords", { sheetName: "TaskSubmissions" });
-    if (Array.isArray(remote?.records) && remote.records.length > 0) {
+    if (Array.isArray(remote?.records)) {
       const parsed = remote.records.map((r) => {
         let files = r.files;
         if (typeof files === "string") {
@@ -266,57 +228,30 @@ export async function getSubmissions(taskId = null) {
           files: Array.isArray(files) ? files : [],
         };
       });
-      saveLocalSubmissions(parsed);
-      local = parsed;
+      saveLocalSubmissions(parsed, userEmail);
+      return parsed;
     }
   } catch (err) {
-    console.warn("Using local submissions cache:", err?.message);
+    console.warn("Using local submissions cache fallback due to error:", err?.message);
   }
-
-  if (taskId) {
-    return local.filter((s) => s.taskId === taskId);
-  }
-  return local;
+  return getLocalSubmissions(userEmail);
 }
 
-export async function saveSubmission(submissionData) {
-  const submissions = getLocalSubmissions();
-  const subId = submissionData.id || `SUB-${Date.now().toString().slice(-5)}`;
-  const isEdit = Boolean(submissions.some((s) => s.id === subId));
+export async function saveSubmission(subData, userEmail = "") {
+  const isEdit = Boolean(subData.id);
+  const subId = subData.id || `SUB-${Date.now().toString().slice(-5)}`;
+  const now = new Date().toISOString();
 
   const newSub = {
-    ...submissionData,
+    ...subData,
     id: subId,
-    studentEmail: normalizeEmail(submissionData.studentEmail),
-    submittedAt: new Date().toISOString(),
-    status: submissionData.status || "Submitted",
+    studentEmail: normalizeEmail(subData.studentEmail),
+    submittedAt: subData.submittedAt || now,
+    status: subData.status || "Submitted",
   };
 
-  const nextSubmissions = [newSub, ...submissions.filter((s) => s.id !== subId)];
-  saveLocalSubmissions(nextSubmissions);
-
-  // Update parent task status to In Progress / Submitted
-  const tasks = getLocalTasks();
-  const parentTask = tasks.find((t) => t.id === newSub.taskId);
-  if (parentTask) {
-    saveTask({
-      ...parentTask,
-      status: newSub.status === "Completed" ? "Completed" : "In Progress",
-    });
-
-    // Notify task creator/admin
-    if (parentTask.createdBy) {
-      addNotification({
-        targetEmail: parentTask.createdBy,
-        title: "Deliverable Submitted 📥",
-        message: `${newSub.studentName || newSub.studentEmail} submitted work for "${parentTask.title}".`,
-        taskId: parentTask.id,
-      });
-    }
-  }
-
-  // Sync to backend sheet
-  scriptPost({
+  // Await backend write confirmation first
+  await scriptPost({
     action: isEdit ? "updateTeamRecord" : "addTeamRecord",
     sheetName: "TaskSubmissions",
     idField: "id",
@@ -325,60 +260,9 @@ export async function saveSubmission(submissionData) {
       ...newSub,
       files: JSON.stringify(newSub.files || []),
     },
-  }).catch((err) => console.warn("Backend submission sync warning:", err?.message));
-
-  return newSub;
-}
-
-
-
-export function addNotification({ targetEmail, title, message, taskId }) {
-  const cleanTarget = normalizeEmail(targetEmail);
-  if (!cleanTarget) return null;
-
-  const all = getLocalNotifications();
-  const notif = {
-    id: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-    targetEmail: cleanTarget,
-    title,
-    message,
-    taskId: taskId || "",
-    createdAt: new Date().toISOString(),
-    read: false,
-  };
-
-  const updated = [notif, ...all.filter((item) => item.id !== notif.id)];
-  saveLocalNotifications(updated);
-
-  scriptPost({
-    action: "addTeamRecord",
-    sheetName: "Notifications",
-    idField: "id",
-    idValue: notif.id,
-    record: notif,
-  }).catch((err) => console.warn("Backend notification sync warning:", err?.message));
-
-  return notif;
-}
-
-export function markNotificationsRead(userEmail) {
-  const clean = normalizeEmail(userEmail);
-  const all = getLocalNotifications();
-  const updated = all.map((n) => {
-    if (normalizeEmail(n.targetEmail) === clean && !n.read) {
-      const readNotif = { ...n, read: true };
-      scriptPost({
-        action: "updateTeamRecord",
-        sheetName: "Notifications",
-        idField: "id",
-        idValue: n.id,
-        record: readNotif,
-      }).catch(() => {});
-      return readNotif;
-    }
-    return n;
   });
-  saveLocalNotifications(updated);
+
+  return getSubmissions(userEmail);
 }
 
 export function clearUserCache() {

@@ -149,11 +149,11 @@ export async function scriptPost(body) {
   try {
     data = JSON.parse(text);
   } catch {
-    return { success: true };
+    throw new Error("Invalid non-JSON backend response from server.");
   }
 
-  if (!data.success) {
-    throw new Error(data.message || "Backend operation failed.");
+  if (!data || !data.success) {
+    throw new Error(data?.message || "Backend operation failed.");
   }
 
   return data;

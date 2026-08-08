@@ -164,8 +164,15 @@ function addTeamRecord_(body) {
       if (!canCreateTask_(user)) {
         throw new Error("Only admins can create tasks.");
       }
+      validateTaskStatus_(safeRecord.status || "Pending");
       safeRecord.createdBy = user.email;
       safeRecord.CREATED_BY = user.email;
+    }
+
+    if (sheetName === "Notifications") {
+      if (user.role !== "admin") {
+        throw new Error("Only admins can send task notifications.");
+      }
     }
 
     if (sheetName === "TaskSubmissions") {
@@ -208,6 +215,14 @@ function addTeamRecord_(body) {
   }
 }
 
+function validateTaskStatus_(status) {
+  var norm = normalize_(status);
+  var valid = ["pending", "in progress", "completed"];
+  if (valid.indexOf(norm) === -1) {
+    throw new Error("Invalid task status: '" + status + "'. Status must be Pending, In Progress, or Completed.");
+  }
+}
+
 function updateTeamRecord_(body) {
   const user = requireMember_(body.token);
   const sheetName = cleanText_(body.sheetName);
@@ -231,6 +246,10 @@ function updateTeamRecord_(body) {
     const currentRecord = getRecordFromRow_(sheet, headers, rowNumber);
 
     if (sheetName === "Tasks") {
+      if (Object.prototype.hasOwnProperty.call(submittedRecord, "status")) {
+        validateTaskStatus_(submittedRecord.status);
+      }
+
       var statusChanged = Object.prototype.hasOwnProperty.call(submittedRecord, "status") &&
         normalize_(submittedRecord.status) !== normalize_(currentRecord.status);
 
@@ -240,14 +259,14 @@ function updateTeamRecord_(body) {
         }
       }
 
-      var adminFields = ["title", "domain", "priority", "dueDate", "assignedEmails"];
+      var adminFields = ["title", "domain", "description", "priority", "dueDate", "assignedEmails", "createdBy", "createdAt"];
       var adminModified = adminFields.some(function(f) {
         return Object.prototype.hasOwnProperty.call(submittedRecord, f) &&
           String(submittedRecord[f]) !== String(currentRecord[f]);
       });
 
       if (adminModified && !canEditTask_(user, currentRecord)) {
-        throw new Error("Only admins can modify task properties.");
+        throw new Error("Only admins can modify administrative task properties.");
       }
     } else if (sheetName === "TaskSubmissions") {
       if (!canEditSubmission_(user, currentRecord)) {

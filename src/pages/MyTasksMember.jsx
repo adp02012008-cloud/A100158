@@ -33,8 +33,8 @@ export default function MyTasksMember({ search = "" }) {
     setLoading(true);
     try {
       const [tList, sList, sheetStudents] = await Promise.all([
-        getTasks(),
-        getSubmissions(),
+        getTasks(userEmail),
+        getSubmissions(userEmail),
         fetchSheetData("Sheet1").catch(() => []),
       ]);
       setTasks(tList || []);
@@ -134,7 +134,7 @@ export default function MyTasksMember({ search = "" }) {
         notes: notes.trim(),
         status,
         files,
-      });
+      }, userEmail);
 
       setActiveTask(null);
       await loadData();

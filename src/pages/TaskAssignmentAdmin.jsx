@@ -55,7 +55,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     setLoading(true);
     try {
       const [tList, sheetStudents] = await Promise.all([
-        getTasks(),
+        getTasks(auth.email),
         fetchSheetData("Sheet1").catch(() => []),
       ]);
       setTasks(tList || []);
@@ -159,17 +159,20 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     setSaving(true);
     setFormError("");
     try {
-      await saveTask({
-        id: editingTask?.id || null,
-        title: formTitle.trim(),
-        domain: finalDomain,
-        description: formDescription.trim(),
-        priority: formPriority,
-        dueDate: formDueDate,
-        assignedEmails: formAssigned,
-        createdBy: auth.email || "admin",
-        status: editingTask?.status || "Pending",
-      });
+      await saveTask(
+        {
+          id: editingTask?.id || null,
+          title: formTitle.trim(),
+          domain: finalDomain,
+          description: formDescription.trim(),
+          priority: formPriority,
+          dueDate: formDueDate,
+          assignedEmails: formAssigned,
+          createdBy: auth.email || "admin",
+          status: editingTask?.status || "Pending",
+        },
+        auth.email
+      );
       setModalOpen(false);
       await loadAll();
     } catch (err) {
@@ -181,15 +184,19 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
   const handleDeleteTask = async (taskId) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
-      await deleteTask(taskId);
+      await deleteTask(taskId, auth.email);
       await loadAll();
     }
   };
 
   const openSubmissionsModal = async (task) => {
     setSubmissionsModalTask(task);
-    const subs = await getSubmissions(task.id);
-    setTaskSubmissions(subs);
+    try {
+      const subs = await getSubmissions(auth.email);
+      setTaskSubmissions(subs.filter((s) => s.taskId === task.id));
+    } catch (err) {
+      console.error("Error loading submissions:", err);
+    }
   };
 
   const filteredTasks = useMemo(() => {
