@@ -47,6 +47,24 @@ export function AuthProvider({ children }) {
     }
   }, [auth]);
 
+  // Subscribe to Firebase Auth state changes to wipe private local cache on account switch
+  useEffect(() => {
+    const unsubscribe = firebaseAuth.onAuthStateChanged((user) => {
+      if (!user) {
+        clearUserCache();
+      } else {
+        // If logged-in user email changed, clear cache to prevent cross-user leakage
+        const cleanCurrent = (user.email || "").trim().toLowerCase();
+        const cleanAuth = (auth.email || "").trim().toLowerCase();
+        if (cleanAuth && cleanCurrent !== cleanAuth) {
+          clearUserCache();
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth.email]);
+
   const login = useCallback((email, role, ownedEnrolment = null) => {
     setAuth({
       isLoggedIn: true,

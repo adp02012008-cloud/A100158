@@ -35,7 +35,7 @@ async function waitForFirebaseUser(timeoutMs = 8000) {
   });
 }
 
-export async function getIdToken() {
+export async function getIdToken(forceRefresh = false) {
   if (Capacitor.isNativePlatform()) {
     try {
       const result = await FirebaseAuthentication.getIdToken();
@@ -47,7 +47,7 @@ export async function getIdToken() {
 
   if (firebaseAuth.currentUser) {
     try {
-      return await firebaseAuth.currentUser.getIdToken();
+      return await firebaseAuth.currentUser.getIdToken(forceRefresh);
     } catch {
       return "";
     }
@@ -55,17 +55,17 @@ export async function getIdToken() {
 
   try {
     const user = await waitForFirebaseUser(2000);
-    return user ? await user.getIdToken() : "";
+    return user ? await user.getIdToken(forceRefresh) : "";
   } catch {
     return "";
   }
 }
 
 /**
- * Universal Node/Express API Client Wrapper
+ * Universal Node/Express API Client Wrapper with automatic token refresh
  */
-export async function apiFetch(endpoint, options = {}) {
-  const token = await getIdToken();
+export async function apiFetch(endpoint, options = {}, isRetry = false) {
+  let token = await getIdToken();
 
   const headers = {
     "Content-Type": "application/json",
@@ -78,10 +78,27 @@ export async function apiFetch(endpoint, options = {}) {
 
   const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
 
-  const response = await fetch(url, {
+  let response = await fetch(url, {
     ...options,
     headers,
   });
+
+  // Handle Token Expiry / 401 Unauthorized with token force-refresh retry
+  if (response.status === 401 && !isRetry) {
+    console.warn("Received 401 Unauthorized. Retrying request with refreshed Firebase ID Token...");
+    try {
+      token = await getIdToken(true);
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+        response = await fetch(url, {
+          ...options,
+          headers,
+        });
+      }
+    } catch (refreshErr) {
+      console.error("Token force-refresh failed:", refreshErr.message);
+    }
+  }
 
   if (!response.ok) {
     let errMsg = `Request failed with status ${response.status}`;
