@@ -1,5 +1,7 @@
 // src/utils/api.js
 import { onAuthStateChanged } from "firebase/auth";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 
 // Existing read-only sheets used by Dashboard and Leaderboard.
@@ -7,6 +9,43 @@ const SHEET_ID = "1vWjwJS8Tmfvhuh84tZyW3rNgW-iKO_tk6QEfZzQV9Jc";
 export const STUDENT_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
 export const COURSE_URL = `https://opensheet.elk.sh/${SHEET_ID}/Courses`;
 export const POINTS_URL = `https://opensheet.elk.sh/${SHEET_ID}/points`;
+
+async function fetchSheetDataFromGviz(sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
+  if (!jsonMatch) throw new Error("Failed to parse Google Sheets gviz response");
+  const data = JSON.parse(jsonMatch[1]);
+  const table = data?.table;
+  if (!table) return [];
+
+  const headers = table.cols.map((col) => col.label || col.id || "");
+  const rows = (table.rows || []).map((row) => {
+    const obj = {};
+    (row.c || []).forEach((cell, idx) => {
+      const key = headers[idx];
+      if (key) {
+        obj[key] = cell ? (cell.f !== undefined ? cell.f : (cell.v ?? "")) : "";
+      }
+    });
+    return obj;
+  });
+  return rows;
+}
+
+export async function fetchSheetData(sheetName) {
+  const opensheetUrl = `https://opensheet.elk.sh/${SHEET_ID}/${sheetName}`;
+  try {
+    const response = await fetch(opensheetUrl);
+    if (!response.ok) throw new Error(`opensheet status ${response.status}`);
+    const data = await response.json();
+    if (Array.isArray(data) && data.length > 0) return data;
+  } catch (err) {
+    console.warn(`opensheet fetch failed for ${sheetName}, using Google Sheets fallback...`, err);
+  }
+  return fetchSheetDataFromGviz(sheetName);
+}
 
 // Paste the Apps Script Web App URL ending with /exec.
 export const APPS_SCRIPT_URL =
@@ -49,6 +88,15 @@ async function waitForFirebaseUser(timeoutMs = 8000) {
 }
 
 async function getIdToken() {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const result = await FirebaseAuthentication.getIdToken();
+      if (result?.token) return result.token;
+    } catch {
+      // Fall back to the web Firebase SDK below for web-authenticated sessions.
+    }
+  }
+
   const user = await waitForFirebaseUser();
   return user.getIdToken();
 }

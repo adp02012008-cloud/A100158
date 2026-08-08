@@ -1,8 +1,7 @@
 // src/pages/Leaderboard.jsx
 //added
 import { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
-import { STUDENT_URL } from "../utils/api";
+import { fetchSheetData } from "../utils/api";
 
 function getInitials(name = "") {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
@@ -16,9 +15,9 @@ export default function Leaderboard({ search }) {
   const previousRanksRef            = useRef({});
 
   useEffect(() => {
-    axios.get(STUDENT_URL)
-      .then((res) => {
-        const cleaned = (res.data || []).map((s) => ({
+    fetchSheetData("Sheet1")
+      .then((data) => {
+        const cleaned = (data || []).map((s) => ({
           ...s,
           Name:     (s.Name || "").trim(),
           ACTIVITY: Number(s["ACTIVITY POINT"] || 0),

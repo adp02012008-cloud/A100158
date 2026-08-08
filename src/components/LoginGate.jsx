@@ -1,18 +1,62 @@
-import { useEffect, useState } from "react";
-import { 
-  signInWithPopup, 
-  signInWithRedirect, 
-  getRedirectResult, 
-  setPersistence, 
+import { useCallback, useEffect, useState } from "react";
+import {
   browserLocalPersistence,
-  signInWithEmailAndPassword
+  browserSessionPersistence,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  setPersistence,
+  signInWithEmailAndPassword,
+  signInWithRedirect,
+  signOut as firebaseSignOut,
 } from "firebase/auth";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth, googleProvider } from "../firebase";
-import { STUDENT_URL } from "../utils/api";
+import { fetchSheetData } from "../utils/api";
 import { getUserRole, normalizeEmail, findStudentByEmail } from "../utils/roles";
 import { useAuth } from "../context/AuthContext";
+
+function getAuthErrorMessage(error, fallback = "Authentication failed. Please try again.") {
+  const code = error?.code || "";
+
+  if (
+    code === "auth/invalid-credential" ||
+    code === "auth/user-not-found" ||
+    code === "auth/wrong-password"
+  ) {
+    return "Invalid email or password. Please check your credentials.";
+  }
+
+  if (code === "auth/invalid-email") {
+    return "Please enter a valid email address.";
+  }
+
+  if (code === "auth/operation-not-allowed") {
+    return "This sign-in method is disabled in your Firebase Console. Please enable Email/Password or Google sign-in under Authentication > Sign-in method.";
+  }
+
+  if (code === "auth/popup-closed-by-user") {
+    return "Sign-in popup was closed before completing. Please try again.";
+  }
+
+  if (code === "auth/popup-blocked") {
+    return "Sign-in popup was blocked by your browser. Please allow popups for this site.";
+  }
+
+  if (code === "auth/too-many-requests") {
+    return "Too many failed attempts. Please wait a few minutes and try again.";
+  }
+
+  if (code === "auth/network-request-failed") {
+    return "Network error. Check your connection and try again.";
+  }
+
+  if (code === "auth/unauthorized-domain") {
+    return "This domain is not authorized for Firebase sign-in. Open http://localhost:5173 or add this domain in Firebase Authentication settings.";
+  }
+
+  return error?.message || fallback;
+}
 
 export default function LoginGate({ children }) {
   const { auth, login } = useAuth();
@@ -22,50 +66,137 @@ export default function LoginGate({ children }) {
   const [keepLoggedIn, setKeepLoggedIn]   = useState(true);
   const [students, setStudents]           = useState([]);
   const [loading, setLoading]             = useState(true);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [authLoading, setAuthLoading]     = useState(false);
   const [error, setError]                 = useState("");
 
-  // Set persistence and check for redirect result on mount
-  useEffect(() => {
-    setPersistence(firebaseAuth, browserLocalPersistence).catch(() => {});
+  const clearFirebaseSession = useCallback(async () => {
+    const tasks = [firebaseSignOut(firebaseAuth).catch(() => {})];
 
-    getRedirectResult(firebaseAuth)
-      .then((result) => {
-        if (result && result.user) {
-          const googleEmail = normalizeEmail(result.user.email || "");
-          if (googleEmail) {
-            const role = getUserRole(googleEmail, students);
-            const ownedStudent = findStudentByEmail(googleEmail, students);
-            const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
-            if (role !== "public") {
-              login(googleEmail, role, ownedEnrolment);
-            }
-          }
-        }
-      })
-      .catch((err) => {
-        if (err.code !== "auth/credential-already-in-use") {
-          console.warn("Redirect sign-in error:", err.message);
-        }
-      });
-  }, [students]);
+    if (Capacitor.isNativePlatform()) {
+      tasks.push(FirebaseAuthentication.signOut().catch(() => {}));
+    }
 
-  useEffect(() => {
-    fetch(STUDENT_URL)
-      .then((r) => r.json())
-      .then((data) => setStudents(data || []))
-      .catch(() => setStudents([]))
-      .finally(() => setLoading(false));
+    await Promise.all(tasks);
   }, []);
 
-  // ── Public viewer sign-in ───────────────────────────────────
-  const handlePublicLogin = () => {
+  const applyWebPersistence = useCallback(async () => {
+    await setPersistence(
+      firebaseAuth,
+      keepLoggedIn ? browserLocalPersistence : browserSessionPersistence
+    );
+  }, [keepLoggedIn]);
+
+  const completeRegisteredLogin = useCallback(
+    async (email, { silentAccessDenied = false } = {}) => {
+      const cleaned = normalizeEmail(email);
+
+      if (!cleaned) {
+        if (!silentAccessDenied) setError("Could not read your account email.");
+        return false;
+      }
+
+      const role = getUserRole(cleaned, students);
+      const ownedStudent = findStudentByEmail(cleaned, students);
+      const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
+
+      if (role === "public") {
+        await clearFirebaseSession();
+        if (!silentAccessDenied) {
+          setError(
+            `Access Denied: "${cleaned}" is not registered as a team member or admin. Click "Continue as Public Viewer" below if you are a guest.`
+          );
+        }
+        return false;
+      }
+
+      login(cleaned, role, ownedEnrolment);
+      return true;
+    },
+    [clearFirebaseSession, login, students]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSheetData("Sheet1")
+      .then((data) => {
+        if (!cancelled) setStudents(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setStudents([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loading) return undefined;
+
+    if (auth.isLoggedIn && auth.role !== "public") {
+      setCheckingSession(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setCheckingSession(true);
+
+    const finishSessionCheck = async (email) => {
+      if (cancelled) return;
+
+      const cleaned = normalizeEmail(email);
+      if (cleaned) {
+        await completeRegisteredLogin(cleaned, { silentAccessDenied: true });
+      }
+
+      if (!cancelled) setCheckingSession(false);
+    };
+
+    const getWebFirebaseEmail = () =>
+      new Promise((resolve) => {
+        let unsubscribe = () => {};
+        unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+          unsubscribe();
+          resolve(user?.email || "");
+        });
+      });
+
+    const getCurrentSessionEmail = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const result = await FirebaseAuthentication.getCurrentUser();
+          const nativeEmail = normalizeEmail(result.user?.email || "");
+          if (nativeEmail) return nativeEmail;
+        } catch {
+          // Fall back to the Firebase JS SDK session below.
+        }
+      }
+
+      return getWebFirebaseEmail();
+    };
+
+    getCurrentSessionEmail()
+      .then(finishSessionCheck)
+      .catch(() => finishSessionCheck(""));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.isLoggedIn, auth.role, completeRegisteredLogin, loading]);
+
+  const handlePublicLogin = async () => {
+    setError("");
+    await clearFirebaseSession();
     login("public@viewer.com", "public", null);
   };
 
-  // ── Secure Sign-In via Email ────────────────────────────────
-  const handleEmailPasswordLogin = async (e) => {
-    if (e) e.preventDefault();
+  const handleEmailPasswordLogin = async (event) => {
+    if (event) event.preventDefault();
     setError("");
 
     const cleaned = normalizeEmail(typedEmail);
@@ -74,86 +205,83 @@ export default function LoginGate({ children }) {
       return;
     }
 
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
+
     try {
-      setGoogleLoading(true);
-      if (password) {
-        try {
-          await signInWithEmailAndPassword(firebaseAuth, cleaned, password);
-        } catch (pwErr) {
-          console.warn("Firebase email auth:", pwErr.message);
-        }
-      }
+      setAuthLoading(true);
+      await applyWebPersistence();
 
-      const role           = getUserRole(cleaned, students);
-      const ownedStudent   = findStudentByEmail(cleaned, students);
-      const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
+      let signedInEmail = cleaned;
 
-      if (role === "public") {
-        setError(
-          `Access Denied: "${cleaned}" is not registered as a team member or admin. Click "Continue as Public Viewer" below if you are a guest.`
-        );
-        return;
-      }
+      const credential = await signInWithEmailAndPassword(
+        firebaseAuth,
+        cleaned,
+        password
+      );
+      signedInEmail = normalizeEmail(credential.user?.email || cleaned);
 
-      login(cleaned, role, ownedEnrolment);
-    } catch (err) {
-      setError(`Sign-in failed: ${err.message}`);
+      await completeRegisteredLogin(signedInEmail);
+    } catch (authError) {
+      console.error("Firebase auth error:", authError?.code, authError);
+      await clearFirebaseSession();
+      setError(getAuthErrorMessage(authError, "Sign-in failed. Please try again."));
     } finally {
-      setGoogleLoading(false);
+      setAuthLoading(false);
     }
   };
 
-  // ── Secure Google Sign-In (Native Android + Web Popup) ─────
   const handleGoogleLogin = async () => {
     setError("");
-    if (googleLoading) return;
+    if (authLoading) return;
 
     try {
-      setGoogleLoading(true);
-      let googleEmail = "";
+      setAuthLoading(true);
+      await applyWebPersistence();
 
       if (Capacitor.isNativePlatform()) {
-        // Native Android Google Credential Manager
-        const res = await FirebaseAuthentication.signInWithGoogle();
-        googleEmail = normalizeEmail(res.user?.email || "");
+        const result = await FirebaseAuthentication.signInWithGoogle();
+        const googleEmail = normalizeEmail(result.user?.email || "");
+        if (!googleEmail) {
+          await clearFirebaseSession();
+          setError("Could not read your Google account email.");
+          return;
+        }
+        await completeRegisteredLogin(googleEmail);
       } else {
-        // Standard Web Browser Popup
-        const result = await signInWithPopup(firebaseAuth, googleProvider);
-        googleEmail = normalizeEmail(result.user?.email || "");
+        await signInWithRedirect(firebaseAuth, googleProvider);
       }
-
-      if (!googleEmail) {
-        setError("Could not read your Google account email.");
-        return;
-      }
-
-      const role           = getUserRole(googleEmail, students);
-      const ownedStudent   = findStudentByEmail(googleEmail, students);
-      const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
-
-      if (role === "public") {
-        setError(
-          `Access Denied: "${googleEmail}" is not registered as a team member or admin. Click "Continue as Public Viewer" below if you are a guest.`
-        );
-        return;
-      }
-
-      login(googleEmail, role, ownedEnrolment);
-    } catch (err) {
-      console.warn("Google authentication error:", err);
-      if (err.code === "auth/popup-closed-by-user") {
-        setError("Sign-in popup was closed. Please try again.");
-      } else {
-        setError(
-          "Google web sign-in was restricted by browser/device policies. Please enter your email address above and tap 'Sign in'."
-        );
-      }
-    } finally {
-      setGoogleLoading(false);
+    } catch (authError) {
+      await clearFirebaseSession();
+      setError(getAuthErrorMessage(authError, "Google sign-in failed. Please try again."));
+      setAuthLoading(false);
     }
   };
 
-  if (loading) {
+  const handlePasswordReset = async () => {
+    setError("");
+
+    const cleaned = normalizeEmail(typedEmail);
+    if (!cleaned) {
+      setError("Please enter your email address to reset password.");
+      return;
+    }
+
+    try {
+      setAuthLoading(true);
+      await sendPasswordResetEmail(firebaseAuth, cleaned);
+
+      setError(`Password reset email sent to ${cleaned}.`);
+    } catch (authError) {
+      setError(getAuthErrorMessage(authError, "Could not send password reset email."));
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  if (loading || checkingSession) {
     return (
       <div className="login-bg">
         <div className="login-loading">Loading portal…</div>
@@ -179,8 +307,8 @@ export default function LoginGate({ children }) {
               type="email"
               placeholder="Johndoe@gmail.com"
               value={typedEmail}
-              onChange={(e) => {
-                setTypedEmail(e.target.value);
+              onChange={(event) => {
+                setTypedEmail(event.target.value);
                 setError("");
               }}
             />
@@ -193,7 +321,7 @@ export default function LoginGate({ children }) {
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
             />
           </div>
 
@@ -202,7 +330,7 @@ export default function LoginGate({ children }) {
               <input
                 type="checkbox"
                 checked={keepLoggedIn}
-                onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                onChange={(event) => setKeepLoggedIn(event.target.checked)}
               />
               <span>Keep me logged in</span>
             </label>
@@ -210,13 +338,8 @@ export default function LoginGate({ children }) {
             <button
               type="button"
               className="login-forgot-link"
-              onClick={() => {
-                if (typedEmail) {
-                  setError("Password reset request sent to " + typedEmail);
-                } else {
-                  setError("Please enter your email address to reset password.");
-                }
-              }}
+              disabled={authLoading}
+              onClick={handlePasswordReset}
             >
               Forgot Password
             </button>
@@ -225,9 +348,9 @@ export default function LoginGate({ children }) {
           <button
             className="login-submit-btn"
             type="submit"
-            disabled={googleLoading}
+            disabled={authLoading}
           >
-            {googleLoading ? "Verifying…" : "Sign in"}
+            {authLoading ? "Verifying…" : "Sign in"}
           </button>
         </form>
 
@@ -236,7 +359,7 @@ export default function LoginGate({ children }) {
             type="button"
             className="google-circle-btn"
             onClick={handleGoogleLogin}
-            disabled={googleLoading}
+            disabled={authLoading}
             title="Sign in with Google"
           >
             <svg width="24" height="24" viewBox="0 0 24 24">
@@ -263,6 +386,7 @@ export default function LoginGate({ children }) {
             type="button"
             className="public-viewer-link"
             onClick={handlePublicLogin}
+            disabled={authLoading}
           >
             👀 Continue as Public Viewer
           </button>
@@ -270,4 +394,4 @@ export default function LoginGate({ children }) {
       </div>
     </div>
   );
-}
+}

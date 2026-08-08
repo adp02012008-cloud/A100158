@@ -1,7 +1,7 @@
+
 // src/pages/Dashboard.jsx
 import { useEffect, useMemo, useState, useCallback } from "react";
-import axios from "axios";
-import { STUDENT_URL, COURSE_URL, POINTS_URL } from "../utils/api";
+import { fetchSheetData } from "../utils/api";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import { useAuth } from "../context/AuthContext";
 import StudentCard from "../components/StudentCard";
@@ -164,11 +164,10 @@ function buildSuggestions(student, avgActivity, pointsRows) {
 
 // ── Component ─────────────────────────────────────────────────
 export default function Dashboard({ search }) {
-  const { auth, effectiveRole } = useAuth();
+  const { auth } = useAuth();
 
   const [students,       setStudents]       = useState([]);
   const [pointsRows,     setPointsRows]     = useState([]);
-  const [coursesRows,    setCoursesRows]    = useState([]);
   const [selected,       setSelected]       = useState(null);
   const [editing,        setEditing]        = useState(null);
   const [clusterFilter,  setClusterFilter]  = useState("All");
@@ -177,20 +176,15 @@ export default function Dashboard({ search }) {
 
   const loadData = useCallback(async () => {
     try {
-      const [studentRes, courseRes, pointsRes] = await Promise.all([
-        axios.get(STUDENT_URL),
-        axios.get(COURSE_URL),
-        axios.get(POINTS_URL),
+      const [studentsRaw, cRows, pRows] = await Promise.all([
+        fetchSheetData("Sheet1"),
+        fetchSheetData("Courses"),
+        fetchSheetData("points"),
       ]);
 
-      const studentsRaw = studentRes.data || [];
-      const cRows       = courseRes.data  || [];
-      const pRows       = pointsRes.data  || [];
-
-      setCoursesRows(cRows);
       setPointsRows(pRows);
 
-      const cleaned = studentsRaw.map((st) => {
+      const cleaned = (studentsRaw || []).map((st) => {
         const safeName      = String(st.Name || "").trim();
         const courseDetails = getStudentCourseDetails(safeName, cRows);
         return {
@@ -234,7 +228,6 @@ export default function Dashboard({ search }) {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // ── After a successful edit, patch local state instantly ─────
   const handleSaved = useCallback((updatedPayload) => {
     setStudents((prev) => {
       const updated = prev.map((s) => {

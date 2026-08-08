@@ -13,25 +13,11 @@ function getStatus(activity, avgActivity) {
 }
 
 export default function Modal({ student, onClose }) {
-  if (!student) return null;
-
   const [tab, setTab]               = useState("details");
   const [priorityMode, setPriorityMode] = useState("best");
 
-  const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
-
-  const skills = [
-    student.Primary1, student.Primary2,
-    student.Secondary1, student.Secondary2,
-    student.Spec1, student.Spec2,
-  ].filter(Boolean);
-
-  const status         = getStatus(student.ACTIVITY, student.AVG_ACTIVITY);
-  const isBelowAverage = student.ACTIVITY < student.AVG_ACTIVITY;
-  const isAboveAverage = student.ACTIVITY > student.AVG_ACTIVITY;
-
   const sortedCombos = useMemo(() => {
-    const combos = [...(student.SUGGESTION_COMBINATIONS || [])];
+    const combos = [...(student?.SUGGESTION_COMBINATIONS || [])];
 
     if (priorityMode === "fastest") {
       return combos.sort((a, b) =>
@@ -56,7 +42,21 @@ export default function Modal({ student, onClose }) {
       if (a.courses.length !== b.courses.length) return a.courses.length - b.courses.length;
       return b.total - a.total;
     });
-  }, [student.SUGGESTION_COMBINATIONS, priorityMode]);
+  }, [student?.SUGGESTION_COMBINATIONS, priorityMode]);
+
+  if (!student) return null;
+
+  const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
+
+  const skills = [
+    student.Primary1, student.Primary2,
+    student.Secondary1, student.Secondary2,
+    student.Spec1, student.Spec2,
+  ].filter(Boolean);
+
+  const status         = getStatus(student.ACTIVITY, student.AVG_ACTIVITY);
+  const isBelowAverage = student.ACTIVITY < student.AVG_ACTIVITY;
+  const isAboveAverage = student.ACTIVITY > student.AVG_ACTIVITY;
 
   const modeLabel =
     priorityMode === "best"    ? "⭐ BEST OPTION"    :
