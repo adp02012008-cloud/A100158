@@ -66,6 +66,12 @@ const CONFIG = {
         "demoUrl", "notes", "files", "submittedAt", "status",
       ],
     },
+    Notifications: {
+      idField: "id",
+      requiredHeaders: [
+        "id", "targetEmail", "title", "message", "taskId", "createdAt", "read",
+      ],
+    },
   },
 };
 
@@ -307,7 +313,14 @@ function listTeamRecords_(sheetName) {
 function assertCanManageRecord_(user, record) {
   if (user.role === "admin") return;
 
-  const owner = normalize_(record.CREATED_BY || record.createdBy || record.studentEmail || record.STUDENTEMAIL);
+  const owner = normalize_(
+    record.CREATED_BY ||
+      record.createdBy ||
+      record.targetEmail ||
+      record.TARGETEMAIL ||
+      record.studentEmail ||
+      record.STUDENTEMAIL
+  );
   if (!owner || owner !== normalize_(user.email)) {
     throw new Error("You can edit or delete only records that you added.");
   }
