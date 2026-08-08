@@ -3,7 +3,7 @@ import { User, Task, TaskAssignment, TaskSubmission, TaskReview, Notification, T
 /**
  * Validates Mongoose schema initialization and field rules offline.
  */
-export function testSchemas() {
+export async function testSchemas() {
   console.log("--------------------------------------------------");
   console.log("Testing MongoDB Mongoose Schemas Validation...");
   console.log("--------------------------------------------------");
@@ -16,7 +16,7 @@ export function testSchemas() {
     role: "admin",
     status: "active",
   });
-  testUser.validateSync();
+  await testUser.validate();
   if (testUser.email !== "test.admin@domain.com") throw new Error("User email normalization failed!");
   console.log("✅ User Schema Validated: Role = ADMIN, Email Normalized =", testUser.email);
 
@@ -30,7 +30,7 @@ export function testSchemas() {
     submissionMode: "COLLABORATIVE",
     createdBy: "  Admin1@Domain.COM ",
   });
-  testTask.validateSync();
+  await testTask.validate();
   if (testTask.createdBy !== "admin1@domain.com") throw new Error("Task createdBy email normalization failed!");
   console.log("✅ Task Schema Validated: Status =", testTask.status, "Mode =", testTask.submissionMode);
 
@@ -42,7 +42,7 @@ export function testSchemas() {
     assignedBy: " ADMIN1@DOMAIN.COM ",
     status: "ACTIVE",
   });
-  testAssign.validateSync();
+  await testAssign.validate();
   if (testAssign.assigneeEmail !== "member.one@domain.com") throw new Error("Assignee email normalization failed!");
   console.log("✅ TaskAssignment Schema Validated: Assignee =", testAssign.assigneeEmail);
 
@@ -58,7 +58,7 @@ export function testSchemas() {
     githubUrl: "https://github.com/test/repo",
     status: "SUBMITTED",
   });
-  testSub.validateSync();
+  await testSub.validate();
   if (testSub.submittedFor[1] !== "member.two@domain.com") throw new Error("SubmittedFor normalization failed!");
   console.log("✅ TaskSubmission Schema Validated: Group =", testSub.submissionGroupId, "Version =", testSub.version);
 
@@ -72,7 +72,7 @@ export function testSchemas() {
     decision: "APPROVED",
     feedback: "Great work!",
   });
-  testReview.validateSync();
+  await testReview.validate();
   console.log("✅ TaskReview Schema Validated: Decision =", testReview.decision, "Reviewer =", testReview.reviewerEmail);
 
   // 6. Notification Model Test
@@ -83,7 +83,7 @@ export function testSchemas() {
     message: "Your submission was approved",
     eventKey: "EVT-APPROVE-501",
   });
-  testNotif.validateSync();
+  await testNotif.validate();
   console.log("✅ Notification Schema Validated: Target =", testNotif.targetEmail, "eventKey =", testNotif.eventKey);
 
   // 7. TaskEvent Model Test
@@ -95,7 +95,7 @@ export function testSchemas() {
     eventType: "SUBMISSION_APPROVED",
     details: { coverage: "2/2", mode: "COLLABORATIVE" },
   });
-  testEvent.validateSync();
+  await testEvent.validate();
   console.log("✅ TaskEvent Schema Validated: EventType =", testEvent.eventType);
 
   console.log("--------------------------------------------------");
