@@ -36,13 +36,16 @@ app.use("/api/events", eventRoutes);
 export { app };
 
 if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`⚡ Express Task Engine Server running on port ${PORT}`);
+  });
+
   connectDB()
     .then(() => {
-      app.listen(PORT, () => {
-        console.log(`⚡ Express Task Engine Server running on port ${PORT}`);
-      });
+      console.log("✅ Database initialized successfully.");
     })
     .catch((err) => {
-      console.error("Failed to start server due to DB connection error:", err.message);
+      console.warn("⚠️ Database connection pending or failed:", err.message);
+      console.warn("💡 Tip: Add a valid MONGODB_URI (e.g. MongoDB Atlas link) to your .env file.");
     });
 }
