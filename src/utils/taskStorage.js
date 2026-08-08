@@ -96,12 +96,22 @@ export async function getTasks() {
   try {
     const remote = await scriptGet("listTeamRecords", { sheetName: "Tasks" });
     if (Array.isArray(remote?.records) && remote.records.length > 0) {
-      const parsed = remote.records.map((r) => ({
-        ...r,
-        assignedEmails: typeof r.assignedEmails === "string"
-          ? JSON.parse(r.assignedEmails)
-          : r.assignedEmails || [],
-      }));
+      const parsed = remote.records.map((r) => {
+        let assigned = r.assignedEmails;
+        if (typeof assigned === "string") {
+          try {
+            assigned = JSON.parse(assigned);
+          } catch {
+            assigned = assigned ? [assigned] : [];
+          }
+        }
+        return {
+          ...r,
+          assignedEmails: Array.isArray(assigned)
+            ? assigned.map(normalizeEmail)
+            : [],
+        };
+      });
       saveLocalTasks(parsed);
       return parsed;
     }
@@ -171,16 +181,41 @@ export async function deleteTask(taskId) {
 
 // ── Deliverables & Submissions API ────────────────────────────
 export async function getSubmissions(taskId = null) {
-  const submissions = getLocalSubmissions();
-  if (taskId) {
-    return submissions.filter((s) => s.taskId === taskId);
+  let local = getLocalSubmissions();
+  try {
+    const remote = await scriptGet("listTeamRecords", { sheetName: "TaskSubmissions" });
+    if (Array.isArray(remote?.records) && remote.records.length > 0) {
+      const parsed = remote.records.map((r) => {
+        let files = r.files;
+        if (typeof files === "string") {
+          try {
+            files = JSON.parse(files);
+          } catch {
+            files = [];
+          }
+        }
+        return {
+          ...r,
+          files: Array.isArray(files) ? files : [],
+        };
+      });
+      saveLocalSubmissions(parsed);
+      local = parsed;
+    }
+  } catch (err) {
+    console.warn("Using local submissions cache:", err?.message);
   }
-  return submissions;
+
+  if (taskId) {
+    return local.filter((s) => s.taskId === taskId);
+  }
+  return local;
 }
 
 export async function saveSubmission(submissionData) {
   const submissions = getLocalSubmissions();
   const subId = submissionData.id || `SUB-${Date.now().toString().slice(-5)}`;
+  const isEdit = Boolean(submissions.some((s) => s.id === subId));
 
   const newSub = {
     ...submissionData,
@@ -215,8 +250,10 @@ export async function saveSubmission(submissionData) {
 
   // Sync to backend sheet
   scriptPost({
-    action: "addTeamRecord",
+    action: isEdit ? "updateTeamRecord" : "addTeamRecord",
     sheetName: "TaskSubmissions",
+    idField: "id",
+    idValue: subId,
     record: {
       ...newSub,
       files: JSON.stringify(newSub.files || []),

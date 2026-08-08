@@ -52,6 +52,20 @@ const CONFIG = {
         "OPPORTUNITY_ID", "CREATED_BY", "CREATED_AT",
       ],
     },
+    Tasks: {
+      idField: "id",
+      requiredHeaders: [
+        "id", "title", "domain", "description", "priority", "dueDate",
+        "assignedEmails", "createdBy", "createdAt", "status",
+      ],
+    },
+    TaskSubmissions: {
+      idField: "id",
+      requiredHeaders: [
+        "id", "taskId", "studentEmail", "studentName", "githubUrl",
+        "demoUrl", "notes", "files", "submittedAt", "status",
+      ],
+    },
   },
 };
 
@@ -293,7 +307,7 @@ function listTeamRecords_(sheetName) {
 function assertCanManageRecord_(user, record) {
   if (user.role === "admin") return;
 
-  const owner = normalize_(record.CREATED_BY);
+  const owner = normalize_(record.CREATED_BY || record.createdBy || record.studentEmail || record.STUDENTEMAIL);
   if (!owner || owner !== normalize_(user.email)) {
     throw new Error("You can edit or delete only records that you added.");
   }
