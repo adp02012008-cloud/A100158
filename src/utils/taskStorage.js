@@ -1,6 +1,6 @@
 // src/utils/taskStorage.js
 import { scriptGet, scriptPost } from "./api";
-import { isUserAssignedToTask, normalizeEmail } from "./roles";
+import { isUserAssignedToTask, normalizeEmail, parseAssignedEmails } from "./roles";
 
 // ── Notifications API ─────────────────────────────────────────
 export async function syncNotificationsRemote() {
@@ -118,7 +118,10 @@ export function getLocalTasks() {
       localStorage.setItem(TASKS_KEY, JSON.stringify(DEFAULT_TASKS));
       return DEFAULT_TASKS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.map((t) => ({ ...t, assignedEmails: parseAssignedEmails(t.assignedEmails) }))
+      : DEFAULT_TASKS;
   } catch {
     return DEFAULT_TASKS;
   }
@@ -172,22 +175,10 @@ export async function getTasks() {
   try {
     const remote = await scriptGet("listTeamRecords", { sheetName: "Tasks" });
     if (Array.isArray(remote?.records) && remote.records.length > 0) {
-      const parsed = remote.records.map((r) => {
-        let assigned = r.assignedEmails;
-        if (typeof assigned === "string") {
-          try {
-            assigned = JSON.parse(assigned);
-          } catch {
-            assigned = assigned ? [assigned] : [];
-          }
-        }
-        return {
-          ...r,
-          assignedEmails: Array.isArray(assigned)
-            ? assigned.map(normalizeEmail)
-            : [],
-        };
-      });
+      const parsed = remote.records.map((r) => ({
+        ...r,
+        assignedEmails: parseAssignedEmails(r.assignedEmails),
+      }));
       saveLocalTasks(parsed);
       return parsed;
     }
@@ -206,7 +197,7 @@ export async function saveTask(taskData) {
   const updatedTask = {
     ...taskData,
     id: taskId,
-    assignedEmails: (taskData.assignedEmails || []).map(normalizeEmail),
+    assignedEmails: parseAssignedEmails(taskData.assignedEmails),
     createdAt: taskData.createdAt || now,
     updatedAt: now,
     status: taskData.status || "Pending",
@@ -236,7 +227,7 @@ export async function saveTask(taskData) {
     idValue: taskId,
     record: {
       ...updatedTask,
-      assignedEmails: JSON.stringify(updatedTask.assignedEmails),
+      assignedEmails: updatedTask.assignedEmails.join(", "),
     },
   }).catch((err) => console.warn("Backend task sync warning:", err?.message));
 

@@ -43,11 +43,39 @@ export function findStudentByEmail(email, students = []) {
 }
 
 // Check if a user's email (or any associated email for that student) is in the assignedEmails array
+export function parseAssignedEmails(raw) {
+  if (Array.isArray(raw)) {
+    return raw.map(normalizeEmail).filter(Boolean);
+  }
+  if (!raw || typeof raw !== "string") return [];
+  const trimmed = raw.trim();
+  if (trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map(normalizeEmail).filter(Boolean);
+      }
+    } catch {
+      // Fall through to regex email matching
+    }
+  }
+
+  const matches = trimmed.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+  if (matches && matches.length > 0) {
+    return Array.from(new Set(matches.map(normalizeEmail)));
+  }
+
+  return trimmed
+    .split(/[\s,;]+/)
+    .map(normalizeEmail)
+    .filter(Boolean);
+}
+
 export function isUserAssignedToTask(userEmail, taskAssignedEmails, students = []) {
   const cleanUser = normalizeEmail(userEmail);
   if (!cleanUser) return false;
 
-  const taskEmails = (taskAssignedEmails || []).map(normalizeEmail);
+  const taskEmails = parseAssignedEmails(taskAssignedEmails);
   if (taskEmails.includes(cleanUser)) return true;
 
   const student = findStudentByEmail(cleanUser, students);
