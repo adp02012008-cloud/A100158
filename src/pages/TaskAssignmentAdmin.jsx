@@ -315,11 +315,11 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             {formError && <div className="login-error-banner">{formError}</div>}
 
             <form onSubmit={handleSaveTask} className="task-form">
-              <div className="form-group">
+              <div className="form-group full-width">
                 <label>Task / Project Title *</label>
                 <input
                   type="text"
-                  className="login-form-input"
+                  className="form-input"
                   placeholder="Example: Full-Stack Authentication & RBAC"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
@@ -327,59 +327,64 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Project Domain *</label>
-                <select
-                  className="select-input"
-                  value={formDomain}
-                  onChange={(e) => setFormDomain(e.target.value)}
-                >
-                  {DOMAINS.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Description & Requirements</label>
-                <textarea
-                  className="textarea-input"
-                  rows="3"
-                  placeholder="Detail the deliverable specifications, expected repository submission, and guidelines..."
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                />
-              </div>
-
-              <div className="form-row-2">
+              <div className="form-grid-2">
                 <div className="form-group">
-                  <label>Priority</label>
+                  <label>Project Domain *</label>
                   <select
-                    className="select-input"
-                    value={formPriority}
-                    onChange={(e) => setFormPriority(e.target.value)}
+                    className="form-select"
+                    value={formDomain}
+                    onChange={(e) => setFormDomain(e.target.value)}
                   >
-                    <option value="High">🔴 High</option>
-                    <option value="Medium">🟡 Medium</option>
-                    <option value="Low">🟢 Low</option>
+                    {DOMAINS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="form-group">
+                  <label>Priority</label>
+                  <select
+                    className="form-select"
+                    value={formPriority}
+                    onChange={(e) => setFormPriority(e.target.value)}
+                  >
+                    <option value="High">🔴 High Priority</option>
+                    <option value="Medium">🟡 Medium Priority</option>
+                    <option value="Low">🟢 Low Priority</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-grid-2">
+                <div className="form-group">
                   <label>Due Date</label>
                   <input
                     type="date"
-                    className="login-form-input"
+                    className="form-input"
                     value={formDueDate}
                     onChange={(e) => setFormDueDate(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>Assign to Members / Group Squad * ({formAssigned.length} selected)</label>
+              <div className="form-group full-width">
+                <label>Description & Requirements</label>
+                <textarea
+                  className="form-textarea"
+                  rows="4"
+                  placeholder="Detail the deliverable specifications, expected repository submission, and guidelines..."
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group full-width">
+                <div className="form-label-row">
+                  <label>Assign to Members / Group Squad *</label>
+                  <span className="count-pill">{formAssigned.length} selected</span>
+                </div>
                 <div className="member-select-grid">
                   {students.map((st) => {
                     const emails = extractStudentEmails(st);
@@ -394,9 +399,9 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                           checked={isChecked}
                           onChange={() => handleMemberToggle(primaryEmail)}
                         />
-                        <div>
+                        <div className="member-select-info">
                           <strong>{st.Name}</strong>
-                          <small>{st.POSITION || "Member"}</small>
+                          <small>{st.POSITION || "Team Member"}</small>
                         </div>
                       </label>
                     );

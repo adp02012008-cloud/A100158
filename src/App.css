@@ -1275,51 +1275,171 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .task-modal {
-  max-width: 680px;
-  width: 92%;
-  max-height: 88vh;
+  max-width: 720px;
+  width: 94%;
+  max-height: 90vh;
   overflow-y: auto;
   border-radius: 20px;
-  padding: 24px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  padding: 28px;
+  background: #0b1120;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
 }
+
+/* ── Form Layout & Spacing ────────────────────────────────── */
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.form-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.form-label-row label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.count-pill {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* ── Form Inputs, Selects, & Textarea ─────────────────────── */
+.form-input, .form-select, .form-textarea, .textarea-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input::placeholder, .form-textarea::placeholder, .textarea-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus, .textarea-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+}
+
+.form-textarea, .textarea-input {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.55;
+}
+
+/* ── Member Select Grid Styling ───────────────────────────── */
 .member-select-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 10px;
   max-height: 220px;
   overflow-y: auto;
-  background: rgba(2, 6, 23, 0.5);
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(2, 6, 23, 0.6);
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
+
 .member-select-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  gap: 12px;
+  padding: 10px 14px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 0.85rem;
-  color: #e2e8f0;
+  user-select: none;
   transition: all 0.15s ease;
 }
+
 .member-select-card:hover {
   background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
 }
+
 .member-select-card.selected {
-  background: rgba(2, 132, 199, 0.25);
+  background: rgba(2, 132, 199, 0.22);
   border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
 }
-.member-select-card small {
+
+.member-select-card input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #0284c7;
+  cursor: pointer;
+}
+
+.member-select-info strong {
   display: block;
-  color: #94a3b8;
+  font-size: 0.86rem;
+  color: #f8fafc;
+}
+
+.member-select-info small {
+  display: block;
   font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* ── Modal Actions Row ────────────────────────────────────── */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .file-input {
