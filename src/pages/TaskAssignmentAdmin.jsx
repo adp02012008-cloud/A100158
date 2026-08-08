@@ -43,12 +43,21 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   // Form State
   const [formTitle, setFormTitle] = useState("");
   const [formDomain, setFormDomain] = useState(DOMAINS[0]);
+  const [formCustomDomain, setFormCustomDomain] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formPriority, setFormPriority] = useState("Medium");
   const [formDueDate, setFormDueDate] = useState("");
   const [formAssigned, setFormAssigned] = useState([]);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const availableDomains = useMemo(() => {
+    const set = new Set(DOMAINS.filter((d) => d !== "Other"));
+    tasks.forEach((t) => {
+      if (t.domain) set.add(t.domain);
+    });
+    return Array.from(set);
+  }, [tasks]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -85,6 +94,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     setEditingTask(null);
     setFormTitle("");
     setFormDomain(DOMAINS[0]);
+    setFormCustomDomain("");
     setFormDescription("");
     setFormPriority("Medium");
     setFormDueDate("");
@@ -96,7 +106,13 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   const openEditModal = (task) => {
     setEditingTask(task);
     setFormTitle(task.title || "");
-    setFormDomain(task.domain || DOMAINS[0]);
+    if (DOMAINS.includes(task.domain) && task.domain !== "Other") {
+      setFormDomain(task.domain);
+      setFormCustomDomain("");
+    } else {
+      setFormDomain("Other");
+      setFormCustomDomain(task.domain || "");
+    }
     setFormDescription(task.description || "");
     setFormPriority(task.priority || "Medium");
     setFormDueDate(task.dueDate || "");
@@ -118,6 +134,17 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       setFormError("Please enter a task title.");
       return;
     }
+
+    const finalDomain =
+      formDomain === "Other"
+        ? formCustomDomain.trim() || "Other Domain"
+        : formDomain;
+
+    if (!finalDomain) {
+      setFormError("Please select or enter a valid project domain.");
+      return;
+    }
+
     if (formAssigned.length === 0) {
       setFormError("Please assign at least one team member.");
       return;
@@ -129,7 +156,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       await saveTask({
         id: editingTask?.id || null,
         title: formTitle.trim(),
-        domain: formDomain,
+        domain: finalDomain,
         description: formDescription.trim(),
         priority: formPriority,
         dueDate: formDueDate,
@@ -207,7 +234,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             onChange={(e) => setDomainFilter(e.target.value)}
           >
             <option value="All">All Domains</option>
-            {DOMAINS.map((d) => (
+            {availableDomains.map((d) => (
               <option key={d} value={d}>
                 {d}
               </option>
@@ -341,6 +368,17 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                       </option>
                     ))}
                   </select>
+                  {formDomain === "Other" && (
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ marginTop: "8px" }}
+                      placeholder="Type custom domain (e.g. Blockchain & Smart Contracts)..."
+                      value={formCustomDomain}
+                      onChange={(e) => setFormCustomDomain(e.target.value)}
+                      required
+                    />
+                  )}
                 </div>
 
                 <div className="form-group">
