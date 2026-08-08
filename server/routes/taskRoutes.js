@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAuthToken } from "../middleware/authMiddleware.js";
+import { verifyAuthToken, requireAdmin } from "../middleware/authMiddleware.js";
 import {
   getTasks,
   getTaskById,
@@ -17,8 +17,8 @@ router.use(verifyAuthToken);
 router.get("/", getTasks);
 router.get("/:taskId", getTaskById);
 router.get("/:taskId/coverage", getTaskCoverage);
-router.post("/", createTask);
-router.put("/:taskId", updateTask);
-router.delete("/:taskId", deleteTask);
+router.post("/", requireAdmin, createTask);
+router.put("/:taskId", requireAdmin, updateTask);
+router.delete("/:taskId", requireAdmin, deleteTask);
 
 export default router;
