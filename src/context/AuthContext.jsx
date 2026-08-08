@@ -5,6 +5,7 @@ import { signOut } from "firebase/auth";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
+import { clearUserCache } from "../utils/taskStorage";
 
 const AuthContext = createContext();
 
@@ -58,6 +59,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
+      clearUserCache();
       const signOutTasks = [signOut(firebaseAuth)];
       if (Capacitor.isNativePlatform()) {
         signOutTasks.push(FirebaseAuthentication.signOut());
@@ -72,6 +74,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.warn("Firebase logout warning:", error.message);
     } finally {
+      clearUserCache();
       setAuth(DEFAULT_AUTH);
       localStorage.removeItem("bugSlayersAuth");
     }

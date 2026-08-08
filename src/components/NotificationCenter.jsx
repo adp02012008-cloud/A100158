@@ -11,7 +11,7 @@ export default function NotificationCenter({ onSelectTask }) {
   const [students, setStudents] = useState([]);
   const popoverRef = useRef(null);
 
-  const userEmail = auth.userEmail || "";
+  const userEmail = auth.email || "";
 
   useEffect(() => {
     fetchSheetData("Sheet1")

@@ -116,3 +116,39 @@ export function isUserAssignedToTask(userEmail, taskAssignedEmails, students = [
 
   return false;
 }
+
+// Combine students from Sheet1 and configured ADMIN_EMAILS into a single assignable user list
+export function getAllAssignableUsers(students = []) {
+  const map = new Map();
+
+  // 1. Add students from Sheet1
+  students.forEach((st) => {
+    const emails = extractStudentEmails(st);
+    const primaryEmail = emails[0] || "";
+    if (!primaryEmail) return;
+
+    map.set(primaryEmail, {
+      email: primaryEmail,
+      name: st.Name || primaryEmail.split("@")[0],
+      role: isAdminEmail(primaryEmail) ? "Admin" : (st.POSITION || "Team Member"),
+      studentObj: st,
+    });
+  });
+
+  // 2. Ensure configured ADMIN_EMAILS are selectable even if not in Sheet1
+  ADMIN_EMAILS.forEach((adminEmail) => {
+    const clean = normalizeEmail(adminEmail);
+    if (!clean) return;
+    if (!map.has(clean)) {
+      const name = clean.split("@")[0];
+      map.set(clean, {
+        email: clean,
+        name: `Admin (${name})`,
+        role: "System Admin",
+        studentObj: null,
+      });
+    }
+  });
+
+  return Array.from(map.values());
+}

@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchSheetData } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
-import { extractStudentEmails, normalizeEmail } from "../utils/roles";
+import { extractStudentEmails, getAllAssignableUsers, normalizeEmail } from "../utils/roles";
 import {
   deleteTask,
   getSubmissions,
@@ -48,28 +48,20 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   const [formPriority, setFormPriority] = useState("Medium");
   const [formDueDate, setFormDueDate] = useState("");
   const [formAssigned, setFormAssigned] = useState([]);
-  const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
-
-  const availableDomains = useMemo(() => {
-    const set = new Set(DOMAINS.filter((d) => d !== "Other"));
-    tasks.forEach((t) => {
-      if (t.domain) set.add(t.domain);
-    });
-    return Array.from(set);
-  }, [tasks]);
+  const [formError, setFormError] = useState("");
 
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [tList, sList] = await Promise.all([
+      const [tList, sheetStudents] = await Promise.all([
         getTasks(),
-        fetchSheetData("Sheet1"),
+        fetchSheetData("Sheet1").catch(() => []),
       ]);
       setTasks(tList || []);
-      setStudents(Array.isArray(sList) ? sList : []);
+      setStudents(Array.isArray(sheetStudents) ? sheetStudents : []);
     } catch (err) {
-      console.error("Error loading task assignment admin:", err);
+      console.error("Error loading admin tasks:", err);
     } finally {
       setLoading(false);
     }
@@ -79,16 +71,17 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     loadAll();
   }, []);
 
-  const studentMap = useMemo(() => {
+  const assignableUsers = useMemo(() => {
+    return getAllAssignableUsers(students);
+  }, [students]);
+
+  const userMap = useMemo(() => {
     const map = {};
-    students.forEach((s) => {
-      const emails = extractStudentEmails(s);
-      emails.forEach((email) => {
-        map[normalizeEmail(email)] = s.Name || email;
-      });
+    assignableUsers.forEach((u) => {
+      map[normalizeEmail(u.email)] = u.name;
     });
     return map;
-  }, [students]);
+  }, [assignableUsers]);
 
   const openCreateModal = () => {
     setEditingTask(null);
@@ -166,7 +159,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         priority: formPriority,
         dueDate: formDueDate,
         assignedEmails: formAssigned,
-        createdBy: auth.userEmail || "admin",
+        createdBy: auth.email || "admin",
         status: editingTask?.status || "Pending",
       });
       setModalOpen(false);
@@ -295,7 +288,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 <div className="task-members-chips">
                   {(t.assignedEmails || []).map((email) => (
                     <span key={email} className="member-chip">
-                      👤 {studentMap[email] || email}
+                      👤 {userMap[normalizeEmail(email)] || email}
                     </span>
                   ))}
                 </div>
@@ -439,22 +432,19 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   <span className="count-pill">{formAssigned.length} selected</span>
                 </div>
                 <div className="member-select-grid">
-                  {students.map((st) => {
-                    const emails = extractStudentEmails(st);
-                    const primaryEmail = emails[0] || "";
-                    if (!primaryEmail) return null;
-                    const isChecked = formAssigned.includes(primaryEmail);
+                  {assignableUsers.map((user) => {
+                    const isChecked = formAssigned.includes(user.email);
 
                     return (
-                      <label key={primaryEmail} className={`member-select-card ${isChecked ? "selected" : ""}`}>
+                      <label key={user.email} className={`member-select-card ${isChecked ? "selected" : ""}`}>
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={() => handleMemberToggle(primaryEmail)}
+                          onChange={() => handleMemberToggle(user.email)}
                         />
                         <div className="member-select-info">
-                          <strong>{st.Name}</strong>
-                          <small>{st.POSITION || "Team Member"}</small>
+                          <strong>{user.name}</strong>
+                          <small>{user.role}</small>
                         </div>
                       </label>
                     );

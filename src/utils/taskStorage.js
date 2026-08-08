@@ -380,3 +380,15 @@ export function markNotificationsRead(userEmail) {
   });
   saveLocalNotifications(updated);
 }
+
+export function clearUserCache() {
+  try {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("bugslayers_")) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (err) {
+    console.warn("Failed to clear local user cache:", err);
+  }
+}

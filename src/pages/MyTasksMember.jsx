@@ -11,7 +11,7 @@ import {
 
 export default function MyTasksMember({ search = "" }) {
   const { auth } = useAuth();
-  const userEmail = normalizeEmail(auth.userEmail || "");
+  const userEmail = normalizeEmail(auth.email || "");
 
   const [tasks, setTasks] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -128,7 +128,7 @@ export default function MyTasksMember({ search = "" }) {
       await saveSubmission({
         taskId: activeTask.id,
         studentEmail: userEmail,
-        studentName: auth.userEmail ? auth.userEmail.split("@")[0] : "Member",
+        studentName: auth.email ? auth.email.split("@")[0] : "Member",
         githubUrl: githubUrl.trim(),
         demoUrl: demoUrl.trim(),
         notes: notes.trim(),

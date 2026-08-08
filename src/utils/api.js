@@ -130,20 +130,33 @@ export async function scriptGet(action, params = {}) {
   return data;
 }
 
-// text/plain avoids a CORS preflight. Apps Script POST responses can be opaque,
-// therefore every page refreshes its records after a write.
 export async function scriptPost(body) {
   assertConfigured();
   const token = await getIdToken();
 
-  await fetch(APPS_SCRIPT_URL, {
+  const response = await fetch(APPS_SCRIPT_URL, {
     method: "POST",
-    mode: "no-cors",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({ ...body, token }),
   });
 
-  return { success: true };
+  if (!response.ok) {
+    throw new Error(`Server write request failed with status ${response.status}.`);
+  }
+
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { success: true };
+  }
+
+  if (!data.success) {
+    throw new Error(data.message || "Backend operation failed.");
+  }
+
+  return data;
 }
 
 export async function listTeamRecords(sheetName) {

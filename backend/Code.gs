@@ -82,7 +82,7 @@ function doGet(e) {
     if (action === "listTeamRecords") {
       const user = requireMember_(e.parameter.token);
       const sheetName = cleanText_(e.parameter.sheetName);
-      const records = listTeamRecords_(sheetName);
+      const records = listTeamRecords_(sheetName, user);
       return json_({
         success: true,
         records,
@@ -286,7 +286,7 @@ function deleteTeamRecord_(body) {
   }
 }
 
-function listTeamRecords_(sheetName) {
+function listTeamRecords_(sheetName, user) {
   const definition = getTeamSheetDefinition_(sheetName);
   const sheet = getOrCreateSheet_(sheetName, definition.requiredHeaders);
   const headers = ensureHeaders_(sheet, definition.requiredHeaders);
@@ -298,7 +298,7 @@ function listTeamRecords_(sheetName) {
     .getRange(2, 1, lastRow - 1, headers.length)
     .getDisplayValues();
 
-  return values
+  const allRecords = values
     .filter((row) => row.some((value) => String(value).trim() !== ""))
     .map((row) => {
       const record = {};
@@ -308,6 +308,151 @@ function listTeamRecords_(sheetName) {
       return record;
     })
     .reverse();
+
+  if (!user || user.role === "admin") {
+    return allRecords;
+  }
+
+  if (sheetName === "Tasks") {
+    return allRecords.filter(function (t) {
+      return canViewTask_(user, t);
+    });
+  }
+
+  if (sheetName === "TaskSubmissions") {
+    var taskMap = {};
+    var rawTasks = listTeamRecords_("Tasks", { role: "admin" });
+    rawTasks.forEach(function (t) {
+      if (t.id) taskMap[cleanText_(t.id)] = t;
+    });
+    return allRecords.filter(function (s) {
+      return canViewSubmission_(user, s, taskMap);
+    });
+  }
+
+  if (sheetName === "Notifications") {
+    return allRecords.filter(function (n) {
+      return canViewNotification_(user, n);
+    });
+  }
+
+  return allRecords;
+}
+
+function parseAssignedEmails_(raw) {
+  if (!raw) return [];
+  var text = String(raw).trim();
+  if (text.indexOf("[") === 0) {
+    try {
+      var parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        return parsed.map(normalize_).filter(Boolean);
+      }
+    } catch (e) {
+      // Fall through to regex extraction
+    }
+  }
+
+  var matches = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+  if (matches && matches.length > 0) {
+    var set = {};
+    matches.forEach(function (m) {
+      set[normalize_(m)] = true;
+    });
+    return Object.keys(set);
+  }
+
+  return text
+    .split(/[\s,;]+/)
+    .map(normalize_)
+    .filter(Boolean);
+}
+
+function canViewTask_(user, task) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+
+  var status = normalize_(task.status);
+  if (status === "completed") return true;
+
+  var userEmail = normalize_(user.email);
+  var assigned = parseAssignedEmails_(task.assignedEmails);
+  if (assigned.indexOf(userEmail) !== -1) return true;
+
+  var aliases = getStudentEmailAliases_(user.email);
+  for (var i = 0; i < aliases.length; i++) {
+    if (assigned.indexOf(normalize_(aliases[i])) !== -1) return true;
+  }
+
+  return false;
+}
+
+function canViewSubmission_(user, submission, taskMap) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+
+  var userEmail = normalize_(user.email);
+  var studentEmail = normalize_(submission.studentEmail || submission.studentemail);
+  if (studentEmail && studentEmail === userEmail) return true;
+
+  var taskId = cleanText_(submission.taskId || submission.taskid);
+  if (taskId && taskMap && taskMap[taskId]) {
+    var parentTask = taskMap[taskId];
+    return canViewTask_(user, parentTask);
+  }
+
+  return false;
+}
+
+function canViewNotification_(user, notification) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  var target = normalize_(notification.targetEmail || notification.targetemail);
+  return target === normalize_(user.email);
+}
+
+function getStudentEmailAliases_(userEmail) {
+  var clean = normalize_(userEmail);
+  if (!clean) return [];
+  var ss = getSpreadsheet_();
+  var sheet = ss.getSheetByName("Sheet1");
+  if (!sheet) return [clean];
+
+  var headers = getHeaders_(sheet);
+  var mailIndexes = [];
+  headers.forEach(function (h, idx) {
+    var norm = normalize_(h);
+    if (norm.indexOf("mail") !== -1 || norm.indexOf("email") !== -1) {
+      mailIndexes.push(idx);
+    }
+  });
+
+  if (mailIndexes.length === 0 || sheet.getLastRow() < 2) return [clean];
+
+  var values = sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getDisplayValues();
+  var foundRow = null;
+  for (var r = 0; r < values.length; r++) {
+    var row = values[r];
+    for (var m = 0; m < mailIndexes.length; m++) {
+      if (normalize_(row[mailIndexes[m]]) === clean) {
+        foundRow = row;
+        break;
+      }
+    }
+    if (foundRow) break;
+  }
+
+  if (!foundRow) return [clean];
+
+  var aliases = [];
+  mailIndexes.forEach(function (idx) {
+    var val = normalize_(foundRow[idx]);
+    if (val && val.indexOf("@") !== -1 && aliases.indexOf(val) === -1) {
+      aliases.push(val);
+    }
+  });
+
+  return aliases.length > 0 ? aliases : [clean];
 }
 
 function assertCanManageRecord_(user, record) {
