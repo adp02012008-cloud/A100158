@@ -75,46 +75,56 @@ export async function calculateTaskCoverage(taskId) {
   const coveragePercentage =
     assigneeCount > 0 ? Math.round((coveredCount / assigneeCount) * 10000) / 100 : 0;
 
-  // 5. Evaluate Task Completion State
+  // 5. Evaluate Task Status Transitions
+  // Statuses:
+  // - COMPLETED: 100% coverage (coveredCount === assigneeCount AND assigneeCount > 0)
+  // - UNDER_REVIEW: at least one highest-version submission is awaiting review (effectiveState === "SUBMITTED")
+  // - IN_PROGRESS: work submitted/changes requested but not fully covered or under review
+  // - PENDING: no submissions exist for task
   const isFullyCovered = assigneeCount > 0 && coveredCount === assigneeCount;
-  let updatedTaskStatus = task.status;
+
+  let hasPendingReview = false;
+  groupMap.forEach((latestSub) => {
+    const versionReviews = allReviews.filter((r) => r.submissionId === latestSub.submissionId);
+    const effectiveState = getEffectiveSubmissionVersionState(versionReviews);
+    if (effectiveState === "SUBMITTED") {
+      hasPendingReview = true;
+    }
+  });
+
+  let newStatus = task.status;
   let completedAt = task.completedAt;
 
   if (isFullyCovered) {
-    if (task.status !== "COMPLETED") {
-      updatedTaskStatus = "COMPLETED";
-      completedAt = new Date();
-      task.status = "COMPLETED";
-      task.completedAt = completedAt;
-      await task.save();
-
-      // Log TaskEvent
-      await TaskEvent.create({
-        eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        taskId: cleanTaskId,
-        actorEmail: "system@coverage-engine",
-        eventType: "TASK_COMPLETED",
-        details: { coveredCount, assigneeCount, coveragePercentage: 100 },
-      });
-    }
+    newStatus = "COMPLETED";
+    completedAt = task.completedAt || new Date();
+  } else if (hasPendingReview) {
+    newStatus = "UNDER_REVIEW";
+    completedAt = null;
+  } else if (allSubmissions.length > 0) {
+    newStatus = "IN_PROGRESS";
+    completedAt = null;
   } else {
-    // If task was previously COMPLETED but is no longer fully covered (e.g. assignee added or changes requested)
-    if (task.status === "COMPLETED") {
-      updatedTaskStatus = "IN_PROGRESS";
-      completedAt = null;
-      task.status = "IN_PROGRESS";
-      task.completedAt = null;
-      await task.save();
+    newStatus = "PENDING";
+    completedAt = null;
+  }
 
-      // Log TaskEvent
-      await TaskEvent.create({
-        eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        taskId: cleanTaskId,
-        actorEmail: "system@coverage-engine",
-        eventType: "TASK_REOPENED",
-        details: { coveredCount, assigneeCount, coveragePercentage },
-      });
-    }
+  // Persist status change if different
+  if (task.status !== newStatus) {
+    const previousStatus = task.status;
+    task.status = newStatus;
+    task.completedAt = completedAt;
+    await task.save();
+
+    // Log TaskEvent
+    const eventType = newStatus === "COMPLETED" ? "TASK_COMPLETED" : previousStatus === "COMPLETED" ? "TASK_REOPENED" : "TASK_UPDATED";
+    await TaskEvent.create({
+      eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      taskId: cleanTaskId,
+      actorEmail: "system@coverage-engine",
+      eventType,
+      details: { previousStatus, newStatus, coveredCount, assigneeCount, coveragePercentage },
+    });
   }
 
   return {
