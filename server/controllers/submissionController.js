@@ -71,11 +71,15 @@ export async function createSubmission(req, res) {
     let finalSubmittedFor = [cleanUserEmail];
 
     if (mode === "INDIVIDUAL") {
-      // Individual mode: Must represent only the submitting worker
+      if (Boolean(submitForAll)) {
+        return res.status(400).json({
+          success: false,
+          message: "Task is set to INDIVIDUAL mode and does not permit submitForAll collaboration.",
+        });
+      }
       finalSubmissionType = "INDIVIDUAL";
       finalSubmittedFor = [cleanUserEmail];
     } else if (mode === "COLLABORATIVE") {
-      // Collaborative mode: Always represents collaborative group
       finalSubmissionType = "COLLABORATIVE";
       finalSubmittedFor = Boolean(submitForAll) ? activeAssigneeEmails : [cleanUserEmail];
     } else {
