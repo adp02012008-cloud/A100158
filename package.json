@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/index.js",
     "build": "vite build",
     "build:apk": "vite build && npx cap sync android",
     "cap:add": "npx cap add android",
