@@ -160,6 +160,29 @@ function addTeamRecord_(body) {
       safeRecord.UPLOADED_BY = user.email;
     }
 
+    if (sheetName === "Tasks") {
+      if (!canCreateTask_(user)) {
+        throw new Error("Only admins can create tasks.");
+      }
+      safeRecord.createdBy = user.email;
+      safeRecord.CREATED_BY = user.email;
+    }
+
+    if (sheetName === "TaskSubmissions") {
+      var taskId = cleanText_(submittedRecord.taskId || submittedRecord.taskid);
+      var taskMap = {};
+      var rawTasks = listTeamRecords_("Tasks", { role: "admin" });
+      rawTasks.forEach(function (t) {
+        if (t.id) taskMap[cleanText_(t.id)] = t;
+      });
+      var parentTask = taskMap[taskId];
+      if (!canCreateSubmission_(user, parentTask)) {
+        throw new Error("You are not authorized to submit deliverables for this task.");
+      }
+      safeRecord.studentEmail = user.email;
+      safeRecord.STUDENTEMAIL = user.email;
+    }
+
     if (sheetName === "Certificates" && user.role !== "admin") {
       const enrolment = findMemberEnrolment_(user.email);
       if (!enrolment) throw new Error("Your enrolment number was not found in Sheet1.");
@@ -206,7 +229,37 @@ function updateTeamRecord_(body) {
     if (rowNumber === -1) throw new Error("Record not found.");
 
     const currentRecord = getRecordFromRow_(sheet, headers, rowNumber);
-    assertCanManageRecord_(user, currentRecord);
+
+    if (sheetName === "Tasks") {
+      var statusChanged = Object.prototype.hasOwnProperty.call(submittedRecord, "status") &&
+        normalize_(submittedRecord.status) !== normalize_(currentRecord.status);
+
+      if (statusChanged) {
+        if (!canChangeTaskStatus_(user, currentRecord, submittedRecord.status)) {
+          throw new Error("You are not authorized to update the status of this task.");
+        }
+      }
+
+      var adminFields = ["title", "domain", "priority", "dueDate", "assignedEmails"];
+      var adminModified = adminFields.some(function(f) {
+        return Object.prototype.hasOwnProperty.call(submittedRecord, f) &&
+          String(submittedRecord[f]) !== String(currentRecord[f]);
+      });
+
+      if (adminModified && !canEditTask_(user, currentRecord)) {
+        throw new Error("Only admins can modify task properties.");
+      }
+    } else if (sheetName === "TaskSubmissions") {
+      if (!canEditSubmission_(user, currentRecord)) {
+        throw new Error("You can edit only your own task submissions.");
+      }
+    } else if (sheetName === "Notifications") {
+      if (!canMarkNotificationRead_(user, currentRecord)) {
+        throw new Error("You can modify only your own notifications.");
+      }
+    } else {
+      assertCanManageRecord_(user, currentRecord);
+    }
 
     const currentValues = sheet
       .getRange(rowNumber, 1, 1, headers.length)
@@ -223,6 +276,12 @@ function updateTeamRecord_(body) {
 
       if (isSystemField) return;
       if (!Object.prototype.hasOwnProperty.call(submittedRecord, header)) return;
+
+      // Force studentEmail in TaskSubmissions to remain authenticated user identity
+      if (sheetName === "TaskSubmissions" && (normalizedHeader === "studentemail" || normalizedHeader === "student_email")) {
+        currentValues[index] = user.email;
+        return;
+      }
 
       // A normal member cannot move a certificate to another student.
       if (
@@ -271,7 +330,13 @@ function deleteTeamRecord_(body) {
     if (rowNumber === -1) throw new Error("Record not found.");
 
     const currentRecord = getRecordFromRow_(sheet, headers, rowNumber);
-    assertCanManageRecord_(user, currentRecord);
+    if (sheetName === "Tasks") {
+      if (!canDeleteTask_(user, currentRecord)) {
+        throw new Error("Only admins can delete tasks.");
+      }
+    } else {
+      assertCanManageRecord_(user, currentRecord);
+    }
 
     sheet.deleteRow(rowNumber);
     SpreadsheetApp.flush();
@@ -375,16 +440,25 @@ function canViewTask_(user, task) {
   var status = normalize_(task.status);
   if (status === "completed") return true;
 
-  var userEmail = normalize_(user.email);
-  var assigned = parseAssignedEmails_(task.assignedEmails);
-  if (assigned.indexOf(userEmail) !== -1) return true;
+  return isUserAssignedToTaskBackend_(user, task);
+}
 
-  var aliases = getStudentEmailAliases_(user.email);
-  for (var i = 0; i < aliases.length; i++) {
-    if (assigned.indexOf(normalize_(aliases[i])) !== -1) return true;
-  }
+function canCreateTask_(user) {
+  return Boolean(user && user.role === "admin");
+}
 
-  return false;
+function canEditTask_(user, task) {
+  return Boolean(user && user.role === "admin");
+}
+
+function canDeleteTask_(user, task) {
+  return Boolean(user && user.role === "admin");
+}
+
+function canChangeTaskStatus_(user, task, newStatus) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  return isUserAssignedToTaskBackend_(user, task);
 }
 
 function canViewSubmission_(user, submission, taskMap) {
@@ -398,10 +472,24 @@ function canViewSubmission_(user, submission, taskMap) {
   var taskId = cleanText_(submission.taskId || submission.taskid);
   if (taskId && taskMap && taskMap[taskId]) {
     var parentTask = taskMap[taskId];
-    return canViewTask_(user, parentTask);
+    var status = normalize_(parentTask.status);
+    if (status === "completed") return true;
   }
 
   return false;
+}
+
+function canCreateSubmission_(user, parentTask) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  return parentTask ? isUserAssignedToTaskBackend_(user, parentTask) : false;
+}
+
+function canEditSubmission_(user, submission) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  var studentEmail = normalize_(submission.studentEmail || submission.studentemail);
+  return studentEmail === normalize_(user.email);
 }
 
 function canViewNotification_(user, notification) {
@@ -409,6 +497,26 @@ function canViewNotification_(user, notification) {
   if (user.role === "admin") return true;
   var target = normalize_(notification.targetEmail || notification.targetemail);
   return target === normalize_(user.email);
+}
+
+function canMarkNotificationRead_(user, notification) {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  var target = normalize_(notification.targetEmail || notification.targetemail);
+  return target === normalize_(user.email);
+}
+
+function isUserAssignedToTaskBackend_(user, task) {
+  if (!user || !task) return false;
+  var userEmail = normalize_(user.email);
+  var assigned = parseAssignedEmails_(task.assignedEmails);
+  if (assigned.indexOf(userEmail) !== -1) return true;
+
+  var aliases = getStudentEmailAliases_(user.email);
+  for (var i = 0; i < aliases.length; i++) {
+    if (assigned.indexOf(normalize_(aliases[i])) !== -1) return true;
+  }
+  return false;
 }
 
 function getStudentEmailAliases_(userEmail) {
