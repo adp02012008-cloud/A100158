@@ -1,7 +1,9 @@
 import { Task } from "../models/Task.js";
 import { TaskAssignment } from "../models/TaskAssignment.js";
 import { TaskSubmission } from "../models/TaskSubmission.js";
+import { TaskReview } from "../models/TaskReview.js";
 import { TaskEvent } from "../models/TaskEvent.js";
+import { getEffectiveSubmissionVersionState } from "./authHelpers.js";
 
 /**
  * Centralized Task Coverage & Completion Calculation Engine
@@ -9,7 +11,7 @@ import { TaskEvent } from "../models/TaskEvent.js";
  * Rules:
  * 1. Active Assignees: Only ACTIVE assignments count. REMOVED assignments do not count.
  * 2. Highest Version: For every submissionGroupId, select ONLY the highest integer version.
- * 3. Approved Coverage: Only highest versions whose current status is APPROVED contribute.
+ * 3. Approved Coverage: Only highest versions whose current effective status is APPROVED contribute.
  * 4. Coverage Union: Takes the union of submittedFor across approved highest-version submission groups.
  * 5. Completion: Task = COMPLETED if activeAssignees > 0 AND unique approved covered users == active assignees.
  * 6. Zero Assignees: 0 active assignees defaults to NOT COMPLETED.
@@ -34,8 +36,9 @@ export async function calculateTaskCoverage(taskId) {
   );
   const assigneeCount = activeAssigneeEmails.length;
 
-  // 3. Fetch All Submissions for Task
+  // 3. Fetch All Submissions & Reviews for Task
   const allSubmissions = await TaskSubmission.find({ taskId: cleanTaskId }).exec();
+  const allReviews = await TaskReview.find({ taskId: cleanTaskId }).exec();
 
   // Group submissions by submissionGroupId to find highest version per group
   const groupMap = new Map();
@@ -50,7 +53,10 @@ export async function calculateTaskCoverage(taskId) {
   const coveredUsersSet = new Set();
 
   groupMap.forEach((latestSub) => {
-    if (latestSub.status === "APPROVED") {
+    const versionReviews = allReviews.filter((r) => r.submissionId === latestSub.submissionId);
+    const effectiveState = getEffectiveSubmissionVersionState(versionReviews);
+
+    if (effectiveState === "APPROVED") {
       const submittedForList = Array.isArray(latestSub.submittedFor) ? latestSub.submittedFor : [];
       submittedForList.forEach((email) => {
         const cleanE = String(email).trim().toLowerCase();

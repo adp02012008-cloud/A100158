@@ -110,3 +110,48 @@ export function canAssignTask(user, task) {
   if (!user || !task) return false;
   return isAdmin(user);
 }
+
+/**
+ * Authoritative Submission Version State Workflow Engine
+ *
+ * Derives the effective workflow state of a specific submission version from its review history.
+ *
+ * Rules:
+ * - Initial state: "SUBMITTED"
+ * - "CHANGES_REQUESTED" is a CLOSED/TERMINAL state for that specific version.
+ *   Once a version receives CHANGES_REQUESTED, a subsequent APPROVED review CANNOT restore it to APPROVED.
+ * - "APPROVED" sets state to APPROVED unless version was previously closed by CHANGES_REQUESTED.
+ * - "COMMENTED" adds feedback and does NOT change approval/changes state.
+ */
+export function getEffectiveSubmissionVersionState(reviewsList = []) {
+  if (!Array.isArray(reviewsList) || reviewsList.length === 0) {
+    return "SUBMITTED";
+  }
+
+  // Sort reviews chronologically by createdAt (or ascending index)
+  const sortedReviews = [...reviewsList].sort(
+    (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+  );
+
+  let currentState = "SUBMITTED";
+
+  for (const rev of sortedReviews) {
+    // Terminal rule: Once CHANGES_REQUESTED is recorded for a version, it is CLOSED
+    if (currentState === "CHANGES_REQUESTED") {
+      continue;
+    }
+
+    const decision = String(rev.decision || "").trim().toUpperCase();
+
+    if (decision === "CHANGES_REQUESTED") {
+      currentState = "CHANGES_REQUESTED";
+    } else if (decision === "APPROVED") {
+      currentState = "APPROVED";
+    } else if (decision === "COMMENTED") {
+      // COMMENTED does not alter approval or changes_requested state
+      continue;
+    }
+  }
+
+  return currentState;
+}

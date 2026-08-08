@@ -3,7 +3,7 @@ import { TaskSubmission } from "../models/TaskSubmission.js";
 import { TaskReview } from "../models/TaskReview.js";
 import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
-import { canReviewSubmission, isAdmin } from "../utils/authHelpers.js";
+import { canReviewSubmission, getEffectiveSubmissionVersionState, isAdmin } from "../utils/authHelpers.js";
 import { calculateTaskCoverage } from "../utils/coverageEngine.js";
 
 /**
@@ -15,7 +15,7 @@ import { calculateTaskCoverage } from "../utils/coverageEngine.js";
  * - Admin can review any task/submission, including their own (Self-Review Authorized).
  * - Decisions: APPROVED, CHANGES_REQUESTED, COMMENTED.
  * - Bound to specific submissionId and version.
- * - Updates target submission status accordingly.
+ * - Updates target submission status based on authoritative getEffectiveSubmissionVersionState.
  */
 export async function createReview(req, res) {
   try {
@@ -67,14 +67,14 @@ export async function createReview(req, res) {
       createdAt: new Date(),
     });
 
-    // 3. Update Submission Status based on decision
-    if (cleanDecision === "APPROVED") {
-      submission.status = "APPROVED";
-      await submission.save();
-    } else if (cleanDecision === "CHANGES_REQUESTED") {
-      submission.status = "CHANGES_REQUESTED";
-      await submission.save();
+    // 3. Update Submission Status based on authoritative getEffectiveSubmissionVersionState
+    const allVersionReviews = await TaskReview.find({ submissionId: cleanSubId }).exec();
+    const effectiveState = getEffectiveSubmissionVersionState(allVersionReviews);
 
+    submission.status = effectiveState;
+    await submission.save();
+
+    if (effectiveState === "CHANGES_REQUESTED") {
       // Update Task status back to IN_PROGRESS so workers know to resubmit
       const task = await Task.findOne({ taskId: submission.taskId }).exec();
       if (task && task.status === "UNDER_REVIEW") {
