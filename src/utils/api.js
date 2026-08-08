@@ -93,12 +93,24 @@ async function getIdToken() {
       const result = await FirebaseAuthentication.getIdToken();
       if (result?.token) return result.token;
     } catch {
-      // Fall back to the web Firebase SDK below for web-authenticated sessions.
+      // Fall back to web SDK
     }
   }
 
-  const user = await waitForFirebaseUser();
-  return user.getIdToken();
+  if (firebaseAuth.currentUser) {
+    try {
+      return await firebaseAuth.currentUser.getIdToken();
+    } catch {
+      return "";
+    }
+  }
+
+  try {
+    const user = await waitForFirebaseUser(2000);
+    return user ? await user.getIdToken() : "";
+  } catch {
+    return "";
+  }
 }
 
 export async function scriptGet(action, params = {}) {
@@ -133,30 +145,34 @@ export async function scriptGet(action, params = {}) {
 export async function scriptPost(body) {
   assertConfigured();
   const token = await getIdToken();
+  const fullBody = { ...body, token };
 
-  const response = await fetch(APPS_SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ ...body, token }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Server write request failed with status ${response.status}.`);
-  }
-
-  const text = await response.text();
-  let data;
   try {
-    data = JSON.parse(text);
-  } catch {
-    throw new Error("Invalid non-JSON backend response from server.");
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(fullBody),
+    });
+
+    if (response.ok) {
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null;
+      }
+
+      if (data && data.success) {
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn("POST write attempt failed, attempting GET write fallback:", err?.message);
   }
 
-  if (!data || !data.success) {
-    throw new Error(data?.message || "Backend operation failed.");
-  }
-
-  return data;
+  // Fallback to GET write via doGet(e) if Apps Script POST redirect returned 404 or non-JSON
+  return scriptGet("writeRecord", { data: JSON.stringify(fullBody) });
 }
 
 export async function listTeamRecords(sheetName) {
