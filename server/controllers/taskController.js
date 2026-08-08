@@ -321,6 +321,20 @@ export async function updateTask(req, res) {
               );
             }
 
+            // Log ASSIGNMENT_ADDED TaskEvent inside transaction
+            await TaskEvent.create(
+              [
+                {
+                  eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                  taskId: task.taskId,
+                  actorEmail: actorEmail,
+                  eventType: "ASSIGNMENT_ADDED",
+                  details: { assigneeEmail: email },
+                },
+              ],
+              queryOpts
+            );
+
             // Notify new assignee
             const eventKey = `NTF-ASSIGN-${task.taskId}-${email}-${Date.now()}`;
             await Notification.create(
@@ -347,6 +361,20 @@ export async function updateTask(req, res) {
             asn.status = "REMOVED";
             asn.removedAt = new Date();
             await asn.save(queryOpts);
+
+            // Log ASSIGNMENT_REMOVED TaskEvent inside transaction
+            await TaskEvent.create(
+              [
+                {
+                  eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                  taskId: task.taskId,
+                  actorEmail: actorEmail,
+                  eventType: "ASSIGNMENT_REMOVED",
+                  details: { assigneeEmail: email },
+                },
+              ],
+              queryOpts
+            );
           }
         }
 

@@ -5,11 +5,9 @@ import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
-const SHEET_ID = "1vWjwJS8Tmfvhuh84tZyW3rNgW-iKO_tk6QEfZzQV9Jc";
-export const STUDENT_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
-export const COURSE_URL = `https://opensheet.elk.sh/${SHEET_ID}/Courses`;
-export const POINTS_URL = `https://opensheet.elk.sh/${SHEET_ID}/points`;
+export const STUDENT_URL = "";
+export const COURSE_URL = "";
+export const POINTS_URL = "";
 
 async function waitForFirebaseUser(timeoutMs = 8000) {
   if (firebaseAuth.currentUser) return firebaseAuth.currentUser;
@@ -62,7 +60,9 @@ export async function getIdToken(forceRefresh = false) {
 }
 
 /**
- * Universal Node/Express API Client Wrapper with automatic token refresh
+ * Universal Express API Client Wrapper
+ * Handles 401 token refresh retry, status code attribution (401, 403, 404, 409, 422, 500),
+ * and MongoDB backend API routing.
  */
 export async function apiFetch(endpoint, options = {}, isRetry = false) {
   let token = await getIdToken();
@@ -101,50 +101,38 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
   }
 
   if (!response.ok) {
-    let errMsg = `Request failed with status ${response.status}`;
+    let errMsg = `API error ${response.status}`;
     try {
       const errJson = await response.json();
       if (errJson.message) errMsg = errJson.message;
     } catch {
-      // Ignore JSON parse error on non-JSON response
+      // Ignore JSON parse error
     }
-    throw new Error(errMsg);
+    const error = new Error(errMsg);
+    error.status = response.status;
+    throw error;
   }
 
   return response.json();
 }
 
 /**
- * Backward-compatible helper for user roster lookup mapping to MongoDB backend
+ * Roster Helper: fetches active user roster from MongoDB backend
  */
 export async function fetchSheetData(sheetName = "Sheet1") {
-  if (sheetName === "Sheet1" || sheetName === "Users") {
-    try {
-      const data = await apiFetch("/users/assignable");
-      if (Array.isArray(data?.users)) {
-        return data.users.map((u) => ({
-          "EMAIL ID": u.email,
-          "NAME": u.name,
-          "ROLE": u.role,
-          "GITHUB URL": u.githubUrl || "",
-        }));
-      }
-    } catch (err) {
-      console.warn("Failed to fetch assignable roster from MongoDB:", err?.message);
-    }
-  }
-
   try {
-    const opensheetUrl = `https://opensheet.elk.sh/${SHEET_ID}/${sheetName}`;
-    const response = await fetch(opensheetUrl);
-    if (response.ok) {
-      const data = await response.json();
-      if (Array.isArray(data)) return data;
+    const data = await apiFetch("/users/assignable");
+    if (Array.isArray(data?.users)) {
+      return data.users.map((u) => ({
+        "EMAIL ID": u.email,
+        "NAME": u.name,
+        "ROLE": u.role,
+        "GITHUB URL": u.githubUrl || "",
+      }));
     }
-  } catch {
-    // Ignore fallback failure
+  } catch (err) {
+    console.warn("Failed to fetch assignable user roster from MongoDB:", err?.message);
   }
-
   return [];
 }
 
@@ -214,13 +202,6 @@ export async function scriptPost(body = {}) {
   }
   if (action === "markNotificationsRead") {
     return apiFetch("/notifications/read-all", { method: "PATCH" });
-  }
-  return { success: true };
-}
-
-export async function scriptGet(action, params = {}) {
-  if (action === "listTeamRecords") {
-    return { success: true, records: await listTeamRecords(params.sheetName) };
   }
   return { success: true };
 }

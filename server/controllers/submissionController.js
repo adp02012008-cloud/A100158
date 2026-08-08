@@ -177,7 +177,7 @@ export async function createSubmission(req, res) {
             taskId: cleanTaskId,
             submissionId: subId,
             actorEmail: cleanUserEmail,
-            eventType: nextVersion > 1 ? "SUBMISSION_RESUBMITTED" : "SUBMISSION_CREATED",
+            eventType: nextVersion > 1 ? "RESUBMISSION_CREATED" : "SUBMISSION_CREATED",
             details: {
               version: nextVersion,
               submissionType: finalSubmissionType,
