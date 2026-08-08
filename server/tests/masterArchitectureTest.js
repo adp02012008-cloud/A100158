@@ -12,6 +12,7 @@ const testFiles = [
   "server/tests/transactionTest.js",
   "server/tests/securityAuditTest.js",
   "server/tests/e2eTest.js",
+  "server/tests/matrixAndSimulationTest.js",
 ];
 
 console.log("==================================================");
