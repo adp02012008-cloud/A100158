@@ -1,6 +1,82 @@
 // src/utils/taskStorage.js
 import { scriptGet, scriptPost } from "./api";
-import { normalizeEmail } from "./roles";
+import { isUserAssignedToTask, normalizeEmail } from "./roles";
+
+// ── Notifications API ─────────────────────────────────────────
+export async function syncNotificationsRemote() {
+  try {
+    const remote = await scriptGet("listTeamRecords", { sheetName: "Notifications" });
+    if (Array.isArray(remote?.records) && remote.records.length > 0) {
+      const parsed = remote.records.map((r) => ({
+        ...r,
+        read: r.read === "true" || r.read === true,
+      }));
+      const existing = getLocalNotifications();
+      const map = new Map();
+      existing.forEach((item) => map.set(item.id, item));
+      parsed.forEach((item) => map.set(item.id, { ...map.get(item.id), ...item }));
+      const merged = Array.from(map.values());
+      saveLocalNotifications(merged);
+      return merged;
+    }
+  } catch (err) {
+    console.warn("Using local notifications cache:", err?.message);
+  }
+  return getLocalNotifications();
+}
+
+export function getNotificationsForUser(userEmail, students = []) {
+  const clean = normalizeEmail(userEmail);
+  if (!clean) return [];
+
+  // Trigger remote background sync
+  syncNotificationsRemote().catch(() => {});
+
+  const tasks = getLocalTasks();
+  const allNotifs = getLocalNotifications();
+  const notifIds = new Set(allNotifs.map((n) => n.id));
+  const notifTaskKeys = new Set(
+    allNotifs.map((n) => `${normalizeEmail(n.targetEmail)}_${n.taskId}_${n.title}`)
+  );
+
+  let addedNew = false;
+  tasks.forEach((t) => {
+    const isAssigned = isUserAssignedToTask(clean, t.assignedEmails, students);
+    if (isAssigned) {
+      const key = `${clean}_${t.id}_New Task Assigned! 🎯`;
+      if (!notifTaskKeys.has(key)) {
+        const derivedId = `NTF-${t.id}-${clean.replace(/[^a-zA-Z0-9]/g, "")}`;
+        if (!notifIds.has(derivedId)) {
+          const derived = {
+            id: derivedId,
+            targetEmail: clean,
+            title: "New Task Assigned! 🎯",
+            message: `You were assigned to "${t.title}" (${t.domain || "General"}).`,
+            taskId: t.id,
+            createdAt: t.createdAt || new Date().toISOString(),
+            read: false,
+          };
+          allNotifs.unshift(derived);
+          notifTaskKeys.add(key);
+          notifIds.add(derivedId);
+          addedNew = true;
+        }
+      }
+    }
+  });
+
+  if (addedNew) {
+    saveLocalNotifications(allNotifs);
+  }
+
+  return allNotifs
+    .filter((n) => {
+      const target = normalizeEmail(n.targetEmail);
+      if (target === clean) return true;
+      return isUserAssignedToTask(clean, [n.targetEmail], students);
+    })
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+}
 
 const TASKS_KEY = "bugslayers_tasks_v1";
 const SUBMISSIONS_KEY = "bugslayers_submissions_v1";
@@ -263,77 +339,7 @@ export async function saveSubmission(submissionData) {
   return newSub;
 }
 
-// ── Notifications API ─────────────────────────────────────────
-export async function syncNotificationsRemote() {
-  try {
-    const remote = await scriptGet("listTeamRecords", { sheetName: "Notifications" });
-    if (Array.isArray(remote?.records) && remote.records.length > 0) {
-      const parsed = remote.records.map((r) => ({
-        ...r,
-        read: r.read === "true" || r.read === true,
-      }));
-      const existing = getLocalNotifications();
-      const map = new Map();
-      existing.forEach((item) => map.set(item.id, item));
-      parsed.forEach((item) => map.set(item.id, { ...map.get(item.id), ...item }));
-      const merged = Array.from(map.values());
-      saveLocalNotifications(merged);
-      return merged;
-    }
-  } catch (err) {
-    console.warn("Using local notifications cache:", err?.message);
-  }
-  return getLocalNotifications();
-}
 
-export function getNotificationsForUser(userEmail) {
-  const clean = normalizeEmail(userEmail);
-  if (!clean) return [];
-
-  // Trigger remote background sync
-  syncNotificationsRemote().catch(() => {});
-
-  const tasks = getLocalTasks();
-  const allNotifs = getLocalNotifications();
-  const notifIds = new Set(allNotifs.map((n) => n.id));
-  const notifTaskKeys = new Set(
-    allNotifs.map((n) => `${normalizeEmail(n.targetEmail)}_${n.taskId}_${n.title}`)
-  );
-
-  let addedNew = false;
-  tasks.forEach((t) => {
-    const assigned = (t.assignedEmails || []).map(normalizeEmail);
-    if (assigned.includes(clean)) {
-      const key = `${clean}_${t.id}_New Task Assigned! 🎯`;
-      if (!notifTaskKeys.has(key)) {
-        const derivedId = `NTF-${t.id}-${clean.replace(/[^a-zA-Z0-9]/g, "")}`;
-        if (!notifIds.has(derivedId)) {
-          const derived = {
-            id: derivedId,
-            targetEmail: clean,
-            title: "New Task Assigned! 🎯",
-            message: `You were assigned to "${t.title}" (${t.domain || "General"}).`,
-            taskId: t.id,
-            createdAt: t.createdAt || new Date().toISOString(),
-            read: false,
-          };
-          allNotifs.unshift(derived);
-          notifTaskKeys.add(key);
-          notifIds.add(derivedId);
-          addedNew = true;
-        }
-      }
-    }
-  });
-
-  if (addedNew) {
-    saveLocalNotifications(allNotifs);
-  }
-
-  return allNotifs
-    .filter((n) => normalizeEmail(n.targetEmail) === clean)
-    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-}
 
 export function addNotification({ targetEmail, title, message, taskId }) {
   const cleanTarget = normalizeEmail(targetEmail);

@@ -1,7 +1,8 @@
 // src/pages/MyTasksMember.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { normalizeEmail } from "../utils/roles";
+import { fetchSheetData } from "../utils/api";
+import { isUserAssignedToTask, normalizeEmail } from "../utils/roles";
 import {
   getSubmissions,
   getTasks,
@@ -14,6 +15,7 @@ export default function MyTasksMember({ search = "" }) {
 
   const [tasks, setTasks] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterTab, setFilterTab] = useState("all");
 
@@ -30,9 +32,14 @@ export default function MyTasksMember({ search = "" }) {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [tList, sList] = await Promise.all([getTasks(), getSubmissions()]);
+      const [tList, sList, sheetStudents] = await Promise.all([
+        getTasks(),
+        getSubmissions(),
+        fetchSheetData("Sheet1").catch(() => []),
+      ]);
       setTasks(tList || []);
       setSubmissions(sList || []);
+      setStudents(Array.isArray(sheetStudents) ? sheetStudents : []);
     } catch (err) {
       console.error("Error loading member tasks:", err);
     } finally {
@@ -47,8 +54,7 @@ export default function MyTasksMember({ search = "" }) {
   // Filter tasks assigned to current logged-in member
   const myTasks = useMemo(() => {
     return tasks.filter((t) => {
-      const assigned = (t.assignedEmails || []).map(normalizeEmail);
-      const isAssigned = assigned.includes(userEmail);
+      const isAssigned = isUserAssignedToTask(userEmail, t.assignedEmails, students);
       if (!isAssigned) return false;
 
       const matchSearch =
@@ -60,7 +66,7 @@ export default function MyTasksMember({ search = "" }) {
       if (filterTab === "completed") return matchSearch && t.status === "Completed";
       return matchSearch;
     });
-  }, [tasks, userEmail, search, filterTab]);
+  }, [tasks, userEmail, students, search, filterTab]);
 
   const openSubmitModal = (task) => {
     setActiveTask(task);

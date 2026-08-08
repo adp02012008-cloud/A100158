@@ -1,21 +1,29 @@
 // src/components/NotificationCenter.jsx
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { fetchSheetData } from "../utils/api";
 import { getNotificationsForUser, markNotificationsRead } from "../utils/taskStorage";
 
 export default function NotificationCenter({ onSelectTask }) {
   const { auth } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [students, setStudents] = useState([]);
   const popoverRef = useRef(null);
 
   const userEmail = auth.userEmail || "";
 
   useEffect(() => {
+    fetchSheetData("Sheet1")
+      .then((data) => setStudents(Array.isArray(data) ? data : []))
+      .catch(() => setStudents([]));
+  }, []);
+
+  useEffect(() => {
     if (!userEmail) return;
 
     const loadNotifs = () => {
-      const list = getNotificationsForUser(userEmail);
+      const list = getNotificationsForUser(userEmail, students);
       setNotifications(list);
     };
 
@@ -24,7 +32,7 @@ export default function NotificationCenter({ onSelectTask }) {
     // Check periodically for new notifications
     const interval = setInterval(loadNotifs, 4000);
     return () => clearInterval(interval);
-  }, [userEmail]);
+  }, [userEmail, students]);
 
   useEffect(() => {
     function handleClickOutside(event) {

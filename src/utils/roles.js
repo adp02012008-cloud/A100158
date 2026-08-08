@@ -41,3 +41,22 @@ export function findStudentByEmail(email, students = []) {
   const clean = normalizeEmail(email);
   return students.find((s) => extractStudentEmails(s).includes(clean)) || null;
 }
+
+// Check if a user's email (or any associated email for that student) is in the assignedEmails array
+export function isUserAssignedToTask(userEmail, taskAssignedEmails, students = []) {
+  const cleanUser = normalizeEmail(userEmail);
+  if (!cleanUser) return false;
+
+  const taskEmails = (taskAssignedEmails || []).map(normalizeEmail);
+  if (taskEmails.includes(cleanUser)) return true;
+
+  const student = findStudentByEmail(cleanUser, students);
+  if (student) {
+    const studentEmails = extractStudentEmails(student);
+    if (studentEmails.some((e) => taskEmails.includes(e))) {
+      return true;
+    }
+  }
+
+  return false;
+}
