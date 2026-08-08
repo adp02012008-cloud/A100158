@@ -4,60 +4,12 @@ import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 
-// Existing read-only sheets used by Dashboard and Leaderboard.
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 const SHEET_ID = "1vWjwJS8Tmfvhuh84tZyW3rNgW-iKO_tk6QEfZzQV9Jc";
 export const STUDENT_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
 export const COURSE_URL = `https://opensheet.elk.sh/${SHEET_ID}/Courses`;
 export const POINTS_URL = `https://opensheet.elk.sh/${SHEET_ID}/points`;
-
-async function fetchSheetDataFromGviz(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-  const res = await fetch(url);
-  const text = await res.text();
-  const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
-  if (!jsonMatch) throw new Error("Failed to parse Google Sheets gviz response");
-  const data = JSON.parse(jsonMatch[1]);
-  const table = data?.table;
-  if (!table) return [];
-
-  const headers = table.cols.map((col) => col.label || col.id || "");
-  const rows = (table.rows || []).map((row) => {
-    const obj = {};
-    (row.c || []).forEach((cell, idx) => {
-      const key = headers[idx];
-      if (key) {
-        obj[key] = cell ? (cell.f !== undefined ? cell.f : (cell.v ?? "")) : "";
-      }
-    });
-    return obj;
-  });
-  return rows;
-}
-
-export async function fetchSheetData(sheetName) {
-  const opensheetUrl = `https://opensheet.elk.sh/${SHEET_ID}/${sheetName}`;
-  try {
-    const response = await fetch(opensheetUrl);
-    if (!response.ok) throw new Error(`opensheet status ${response.status}`);
-    const data = await response.json();
-    if (Array.isArray(data) && data.length > 0) return data;
-  } catch (err) {
-    console.warn(`opensheet fetch failed for ${sheetName}, using Google Sheets fallback...`, err);
-  }
-  return fetchSheetDataFromGviz(sheetName);
-}
-
-// Paste the Apps Script Web App URL ending with /exec.
-export const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxcDTbCVcWQpxDiOWgMf5JmpiE0NEGIQFOxrrd8Ud_SVV4930-ZIlebh1HY37vQHYg/exec";
-
-function assertConfigured() {
-  if (!APPS_SCRIPT_URL.startsWith("https://script.google.com/macros/s/")) {
-    throw new Error(
-      "Google Apps Script is not configured. Paste the Web App /exec URL in src/utils/api.js."
-    );
-  }
-}
 
 async function waitForFirebaseUser(timeoutMs = 8000) {
   if (firebaseAuth.currentUser) return firebaseAuth.currentUser;
@@ -78,16 +30,12 @@ async function waitForFirebaseUser(timeoutMs = 8000) {
       if (settled) return;
       settled = true;
       unsubscribe();
-      reject(
-        new Error(
-          "Your Google sign-in session is not ready. Log out and sign in again."
-        )
-      );
+      reject(new Error("Your Google sign-in session is not ready. Log out and sign in again."));
     }, timeoutMs);
   });
 }
 
-async function getIdToken() {
+export async function getIdToken() {
   if (Capacitor.isNativePlatform()) {
     try {
       const result = await FirebaseAuthentication.getIdToken();
@@ -113,105 +61,149 @@ async function getIdToken() {
   }
 }
 
-export async function scriptGet(action, params = {}) {
-  assertConfigured();
+/**
+ * Universal Node/Express API Client Wrapper
+ */
+export async function apiFetch(endpoint, options = {}) {
   const token = await getIdToken();
 
-  const query = new URLSearchParams({
-    action,
-    token,
-    ...Object.fromEntries(
-      Object.entries(params).filter(
-        ([, value]) => value !== undefined && value !== null
-      )
-    ),
-  });
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
 
-  const response = await fetch(`${APPS_SCRIPT_URL}?${query.toString()}`, {
-    method: "GET",
-    redirect: "follow",
-    cache: "no-store",
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}.`);
+    let errMsg = `Request failed with status ${response.status}`;
+    try {
+      const errJson = await response.json();
+      if (errJson.message) errMsg = errJson.message;
+    } catch {
+      // Ignore JSON parse error on non-JSON response
+    }
+    throw new Error(errMsg);
   }
 
-  const data = await response.json();
-  if (!data.success) throw new Error(data.message || "Request failed.");
-  return data;
+  return response.json();
 }
 
-export async function scriptPost(body) {
-  assertConfigured();
-  const token = await getIdToken();
-  const fullBody = { ...body, token };
-
-  try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(fullBody),
-    });
-
-    if (response.ok) {
-      const text = await response.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        data = null;
+/**
+ * Backward-compatible helper for user roster lookup mapping to MongoDB backend
+ */
+export async function fetchSheetData(sheetName = "Sheet1") {
+  if (sheetName === "Sheet1" || sheetName === "Users") {
+    try {
+      const data = await apiFetch("/users/assignable");
+      if (Array.isArray(data?.users)) {
+        return data.users.map((u) => ({
+          "EMAIL ID": u.email,
+          "NAME": u.name,
+          "ROLE": u.role,
+          "GITHUB URL": u.githubUrl || "",
+        }));
       }
-
-      if (data && data.success) {
-        return data;
-      }
+    } catch (err) {
+      console.warn("Failed to fetch assignable roster from MongoDB:", err?.message);
     }
-  } catch (err) {
-    console.warn("POST write attempt failed, attempting GET write fallback:", err?.message);
   }
 
-  // Fallback to GET write via doGet(e) if Apps Script POST redirect returned 404 or non-JSON
-  return scriptGet("writeRecord", { data: JSON.stringify(fullBody) });
+  try {
+    const opensheetUrl = `https://opensheet.elk.sh/${SHEET_ID}/${sheetName}`;
+    const response = await fetch(opensheetUrl);
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data)) return data;
+    }
+  } catch {
+    // Ignore fallback failure
+  }
+
+  return [];
 }
 
 export async function listTeamRecords(sheetName) {
-  const result = await scriptGet("listTeamRecords", { sheetName });
-  return Array.isArray(result.records) ? result.records : [];
+  if (sheetName === "Tasks") {
+    const res = await apiFetch("/tasks");
+    return res.tasks || [];
+  }
+  if (sheetName === "TaskSubmissions") {
+    const res = await apiFetch("/submissions");
+    return res.submissions || [];
+  }
+  if (sheetName === "Notifications") {
+    const res = await apiFetch("/notifications");
+    return res.notifications || [];
+  }
+  if (sheetName === "TaskReviews") {
+    const res = await apiFetch("/reviews");
+    return res.reviews || [];
+  }
+  return fetchSheetData(sheetName);
 }
 
 export async function addTeamRecord(sheetName, record) {
-  return scriptPost({ action: "addTeamRecord", sheetName, record });
+  if (sheetName === "Tasks") {
+    return apiFetch("/tasks", { method: "POST", body: JSON.stringify(record) });
+  }
+  if (sheetName === "TaskSubmissions") {
+    return apiFetch("/submissions", { method: "POST", body: JSON.stringify(record) });
+  }
+  if (sheetName === "TaskReviews") {
+    return apiFetch("/reviews", { method: "POST", body: JSON.stringify(record) });
+  }
+  return { success: true };
 }
 
-export async function updateTeamRecord(
-  sheetName,
-  idField,
-  idValue,
-  record
-) {
-  return scriptPost({
-    action: "updateTeamRecord",
-    sheetName,
-    idField,
-    idValue,
-    record,
-  });
+export async function updateTeamRecord(sheetName, idField, idValue, record) {
+  if (sheetName === "Tasks") {
+    return apiFetch(`/tasks/${idValue}`, { method: "PUT", body: JSON.stringify(record) });
+  }
+  return { success: true };
 }
 
 export async function deleteTeamRecord(sheetName, idField, idValue) {
-  return scriptPost({
-    action: "deleteTeamRecord",
-    sheetName,
-    idField,
-    idValue,
-  });
+  if (sheetName === "Tasks") {
+    return apiFetch(`/tasks/${idValue}`, { method: "DELETE" });
+  }
+  return { success: true };
 }
 
-export async function setupDatabase() {
-  return scriptGet("setupDatabase");
+export async function scriptPost(body = {}) {
+  const { action, record, taskId, submissionId, decision, feedback } = body;
+  if (action === "createTask") {
+    return addTeamRecord("Tasks", record);
+  }
+  if (action === "updateTask") {
+    return updateTeamRecord("Tasks", "id", body.idValue || taskId, record);
+  }
+  if (action === "deleteTask") {
+    return deleteTeamRecord("Tasks", "id", body.idValue || taskId);
+  }
+  if (action === "submitDeliverable") {
+    return apiFetch("/submissions", { method: "POST", body: JSON.stringify(record || body) });
+  }
+  if (action === "createReview") {
+    return apiFetch("/reviews", { method: "POST", body: JSON.stringify({ submissionId, decision, feedback }) });
+  }
+  if (action === "markNotificationsRead") {
+    return apiFetch("/notifications/read-all", { method: "PATCH" });
+  }
+  return { success: true };
 }
 
-export async function validateDatabaseSchema() {
-  return scriptGet("validateDatabaseSchema");
+export async function scriptGet(action, params = {}) {
+  if (action === "listTeamRecords") {
+    return { success: true, records: await listTeamRecords(params.sheetName) };
+  }
+  return { success: true };
 }

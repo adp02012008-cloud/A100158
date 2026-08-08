@@ -1,8 +1,8 @@
 // src/utils/taskStorage.js
-import { scriptGet, scriptPost } from "./api";
+import { apiFetch } from "./api";
 import { normalizeEmail, parseAssignedEmails } from "./roles";
 
-// ── User-Scoped LocalStorage Helpers ──────────────────────────
+// ── User-Scoped LocalStorage Fallback Helpers ─────────────────
 function getScopedKey(prefix, userEmail) {
   const clean = normalizeEmail(userEmail);
   return clean ? `bugslayers_${prefix}_${clean}` : `bugslayers_${prefix}_anon`;
@@ -69,23 +69,28 @@ export function saveLocalNotifications(notifications, userEmail = "") {
   }
 }
 
-// ── Notifications API ─────────────────────────────────────────
+// ── Notifications API (Node/Express Backend) ──────────────────
 export async function getNotificationsForUser(userEmail = "") {
   const clean = normalizeEmail(userEmail);
   if (!clean) return [];
 
   try {
-    const remote = await scriptGet("listTeamRecords", { sheetName: "Notifications" });
-    if (Array.isArray(remote?.records)) {
-      const parsed = remote.records.map((r) => ({
-        ...r,
-        read: Boolean(r.readAt),
+    const data = await apiFetch("/notifications");
+    if (Array.isArray(data?.notifications)) {
+      const parsed = data.notifications.map((n) => ({
+        ...n,
+        id: n.notificationId,
+        read: Boolean(n.readAt),
       }));
+      // On successful backend response, update local user cache
       saveLocalNotifications(parsed, clean);
-      return parsed.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      return parsed;
     }
+    // If backend returns empty list, empty list replaces cache
+    saveLocalNotifications([], clean);
+    return [];
   } catch (err) {
-    console.warn("Using local notifications cache fallback:", err?.message);
+    console.warn("Using local notifications cache fallback due to network error:", err?.message);
   }
 
   const local = getLocalNotifications(clean);
@@ -94,166 +99,146 @@ export async function getNotificationsForUser(userEmail = "") {
 
 export async function markNotificationsRead(userEmail = "") {
   const clean = normalizeEmail(userEmail);
-  const now = new Date().toISOString();
-
-  await scriptPost({
-    action: "markNotificationsRead",
-  });
+  try {
+    await apiFetch("/notifications/read-all", { method: "PATCH" });
+  } catch (err) {
+    console.warn("Failed to sync mark-all-read to backend:", err?.message);
+  }
 
   const all = getLocalNotifications(clean);
+  const now = new Date().toISOString();
   const updated = all.map((n) => ({ ...n, readAt: n.readAt || now, read: true }));
   saveLocalNotifications(updated, clean);
   return updated;
 }
 
-// ── Task Management API ───────────────────────────────────────
+// ── Task Management API (Node/Express Backend) ────────────────
 export async function getTasks(userEmail = "") {
+  const clean = normalizeEmail(userEmail);
   try {
-    const [tasksRes, assignmentsRes] = await Promise.all([
-      scriptGet("listTeamRecords", { sheetName: "Tasks" }),
-      scriptGet("listTeamRecords", { sheetName: "TaskAssignments" }).catch(() => ({ records: [] })),
-    ]);
-
-    if (Array.isArray(tasksRes?.records)) {
-      const assignments = Array.isArray(assignmentsRes?.records) ? assignmentsRes.records : [];
-      const assignmentMap = {};
-      assignments.forEach((a) => {
-        if (a.status !== "REMOVED") {
-          if (!assignmentMap[a.taskId]) assignmentMap[a.taskId] = [];
-          assignmentMap[a.taskId].push(a.assigneeEmail);
-        }
-      });
-
-      const parsed = tasksRes.records.map((r) => {
-        const assigned = assignmentMap[r.id] || parseAssignedEmails(r.assignedEmails);
-        return {
-          ...r,
-          assignedEmails: assigned,
-        };
-      });
-
-      saveLocalTasks(parsed, userEmail);
+    const data = await apiFetch("/tasks");
+    if (Array.isArray(data?.tasks)) {
+      const parsed = data.tasks.map((t) => ({
+        ...t,
+        id: t.taskId,
+        assignedEmails: parseAssignedEmails(t.assignedEmails),
+      }));
+      // Successful backend response replaces local cache
+      saveLocalTasks(parsed, clean);
       return parsed;
     }
+    saveLocalTasks([], clean);
+    return [];
   } catch (err) {
     console.warn("Using local tasks cache fallback due to error:", err?.message);
   }
-  return getLocalTasks(userEmail);
+  return getLocalTasks(clean);
 }
 
 export async function saveTask(taskData, userEmail = "") {
-  const isEdit = Boolean(taskData.id);
-  const taskId = taskData.id || `TSK-${Date.now().toString().slice(-4)}`;
-  
-  const now = new Date().toISOString();
-  const updatedTask = {
-    ...taskData,
-    id: taskId,
-    assignedEmails: parseAssignedEmails(taskData.assignedEmails),
+  const isEdit = Boolean(taskData.id || taskData.taskId);
+  const taskId = taskData.id || taskData.taskId;
+
+  const payload = {
+    title: taskData.title,
+    domain: taskData.domain,
+    description: taskData.description || "",
+    priority: taskData.priority || "Medium",
+    dueDate: taskData.dueDate || "",
     submissionMode: taskData.submissionMode || "FLEXIBLE",
-    createdAt: taskData.createdAt || now,
-    updatedAt: now,
     status: taskData.status || "PENDING",
+    assignedEmails: parseAssignedEmails(taskData.assignedEmails),
   };
 
-  const response = await scriptPost({
-    action: isEdit ? "updateTask" : "createTask",
-    sheetName: "Tasks",
-    idField: "id",
-    idValue: taskId,
-    record: {
-      ...updatedTask,
-      assignedEmails: updatedTask.assignedEmails.join(", "),
-    },
+  const endpoint = isEdit ? `/tasks/${taskId}` : "/tasks";
+  const method = isEdit ? "PUT" : "POST";
+
+  const res = await apiFetch(endpoint, {
+    method,
+    body: JSON.stringify(payload),
   });
 
-  return response?.task || getTasks(userEmail);
+  return res?.task ? { ...res.task, id: res.task.taskId } : getTasks(userEmail);
 }
 
 export async function deleteTask(taskId, userEmail = "") {
-  await scriptPost({
-    action: "deleteTask",
-    sheetName: "Tasks",
-    idField: "id",
-    idValue: taskId,
-  });
+  await apiFetch(`/tasks/${taskId}`, { method: "DELETE" });
   return getTasks(userEmail);
 }
 
-// ── Deliverables & Submissions API ────────────────────────────
+// ── Deliverables & Submissions API (Node/Express Backend) ─────
 export async function getSubmissions(userEmail = "") {
+  const clean = normalizeEmail(userEmail);
   try {
-    const remote = await scriptGet("listTeamRecords", { sheetName: "TaskSubmissions" });
-    if (Array.isArray(remote?.records)) {
-      const parsed = remote.records.map((r) => {
-        let files = r.files;
-        if (typeof files === "string") {
-          try {
-            files = JSON.parse(files);
-          } catch {
-            files = [];
-          }
-        }
-        let submittedFor = r.submittedFor;
-        if (typeof submittedFor === "string") {
-          try {
-            submittedFor = JSON.parse(submittedFor);
-          } catch {
-            submittedFor = [r.submittedBy];
-          }
-        }
-        return {
-          ...r,
-          files: Array.isArray(files) ? files : [],
-          submittedFor: Array.isArray(submittedFor) ? submittedFor : [r.submittedBy],
-        };
-      });
-      saveLocalSubmissions(parsed, userEmail);
+    const data = await apiFetch("/submissions");
+    if (Array.isArray(data?.submissions)) {
+      const parsed = data.submissions.map((s) => ({
+        ...s,
+        id: s.submissionId,
+      }));
+      saveLocalSubmissions(parsed, clean);
       return parsed;
     }
+    saveLocalSubmissions([], clean);
+    return [];
   } catch (err) {
     console.warn("Using local submissions cache fallback due to error:", err?.message);
   }
-  return getLocalSubmissions(userEmail);
+  return getLocalSubmissions(clean);
 }
 
-export async function submitDeliverable(subData, userEmail = "") {
-  const response = await scriptPost({
-    action: "submitDeliverable",
-    taskId: subData.taskId,
+export async function submitDeliverable(subData) {
+  const payload = {
+    taskId: subData.taskId || subData.id,
+    githubUrl: subData.githubUrl || "",
+    demoUrl: subData.demoUrl || "",
+    notes: subData.notes || "",
+    files: subData.files || [],
     submitForAll: Boolean(subData.submitForAll),
-    record: subData,
-  });
+    submissionGroupId: subData.submissionGroupId,
+  };
 
-  return response;
+  return apiFetch("/submissions", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function saveSubmission(subData, userEmail = "") {
   return submitDeliverable(subData, userEmail);
 }
 
-// ── Reviews API ───────────────────────────────────────────────
-export async function getReviews(userEmail = "") {
+// ── Reviews API (Node/Express Backend) ────────────────────────
+export async function getReviews() {
   try {
-    const remote = await scriptGet("listTeamRecords", { sheetName: "TaskReviews" });
-    if (Array.isArray(remote?.records)) {
-      return remote.records;
-    }
+    const data = await apiFetch("/reviews");
+    return Array.isArray(data?.reviews) ? data.reviews : [];
   } catch (err) {
     console.warn("Failed to fetch task reviews:", err?.message);
   }
   return [];
 }
 
-export async function createReview(reviewData, userEmail = "") {
-  const response = await scriptPost({
-    action: "createReview",
-    submissionId: reviewData.submissionId,
-    decision: reviewData.decision,
-    feedback: reviewData.feedback || "",
+export async function createReview(reviewData) {
+  return apiFetch("/reviews", {
+    method: "POST",
+    body: JSON.stringify({
+      submissionId: reviewData.submissionId,
+      decision: reviewData.decision,
+      feedback: reviewData.feedback || "",
+    }),
   });
+}
 
-  return response;
+// ── Assignable User Roster API (Node/Express Backend) ─────────
+export async function getAssignableUsers() {
+  try {
+    const data = await apiFetch("/users/assignable");
+    return Array.isArray(data?.users) ? data.users : [];
+  } catch (err) {
+    console.warn("Failed to fetch assignable user roster:", err?.message);
+    return [];
+  }
 }
 
 export function clearUserCache() {
