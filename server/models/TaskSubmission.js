@@ -53,9 +53,10 @@ const taskSubmissionSchema = new mongoose.Schema(
       required: [true, "SubmittedBy email is required"],
       lowercase: true,
       trim: true,
+      index: true,
     },
     submittedFor: {
-      type: [{ type: String, lowercase: true, trim: true }],
+      type: [{ type: String, lowercase: true, trim: true, index: true }],
       default: [],
     },
     githubUrl: {
@@ -85,6 +86,7 @@ const taskSubmissionSchema = new mongoose.Schema(
       },
       default: "SUBMITTED",
       uppercase: true,
+      index: true,
     },
     submittedAt: {
       type: Date,

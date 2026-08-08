@@ -24,12 +24,14 @@ const taskReviewSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Submission version is required"],
       min: 1,
+      index: true,
     },
     reviewerEmail: {
       type: String,
       required: [true, "Reviewer email is required"],
       lowercase: true,
       trim: true,
+      index: true,
     },
     decision: {
       type: String,

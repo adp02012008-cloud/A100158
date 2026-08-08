@@ -18,6 +18,7 @@ const taskSchema = new mongoose.Schema(
       type: String,
       required: [true, "Domain is required"],
       trim: true,
+      index: true,
     },
     description: {
       type: String,
