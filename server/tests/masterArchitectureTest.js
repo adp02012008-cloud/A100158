@@ -9,6 +9,7 @@ const testFiles = [
   "server/tests/coverageTest.js",
   "server/tests/notificationTest.js",
   "server/tests/eventTest.js",
+  "server/tests/transactionTest.js",
   "server/tests/securityAuditTest.js",
   "server/tests/e2eTest.js",
 ];

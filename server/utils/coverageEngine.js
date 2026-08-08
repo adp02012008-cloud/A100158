@@ -16,11 +16,12 @@ import { getEffectiveSubmissionVersionState } from "./authHelpers.js";
  * 5. Completion: Task = COMPLETED if activeAssignees > 0 AND unique approved covered users == active assignees.
  * 6. Zero Assignees: 0 active assignees defaults to NOT COMPLETED.
  */
-export async function calculateTaskCoverage(taskId) {
+export async function calculateTaskCoverage(taskId, session = null) {
   const cleanTaskId = String(taskId).trim();
 
   // 1. Fetch Task
-  const task = await Task.findOne({ taskId: cleanTaskId }).exec();
+  const queryOpts = session ? { session } : {};
+  const task = await Task.findOne({ taskId: cleanTaskId }, null, queryOpts).exec();
   if (!task) {
     throw new Error(`Task with ID ${cleanTaskId} not found.`);
   }
@@ -29,7 +30,7 @@ export async function calculateTaskCoverage(taskId) {
   const activeAssignments = await TaskAssignment.find({
     taskId: cleanTaskId,
     status: "ACTIVE",
-  }).exec();
+  }, null, queryOpts).exec();
 
   const activeAssigneeEmails = Array.from(
     new Set(activeAssignments.map((a) => a.assigneeEmail.toLowerCase()))
@@ -37,8 +38,8 @@ export async function calculateTaskCoverage(taskId) {
   const assigneeCount = activeAssigneeEmails.length;
 
   // 3. Fetch All Submissions & Reviews for Task
-  const allSubmissions = await TaskSubmission.find({ taskId: cleanTaskId }).exec();
-  const allReviews = await TaskReview.find({ taskId: cleanTaskId }).exec();
+  const allSubmissions = await TaskSubmission.find({ taskId: cleanTaskId }, null, queryOpts).exec();
+  const allReviews = await TaskReview.find({ taskId: cleanTaskId }, null, queryOpts).exec();
 
   // Group submissions by submissionGroupId to find highest version per group
   const groupMap = new Map();
@@ -76,11 +77,6 @@ export async function calculateTaskCoverage(taskId) {
     assigneeCount > 0 ? Math.round((coveredCount / assigneeCount) * 10000) / 100 : 0;
 
   // 5. Evaluate Task Status Transitions
-  // Statuses:
-  // - COMPLETED: 100% coverage (coveredCount === assigneeCount AND assigneeCount > 0)
-  // - UNDER_REVIEW: at least one highest-version submission is awaiting review (effectiveState === "SUBMITTED")
-  // - IN_PROGRESS: work submitted/changes requested but not fully covered or under review
-  // - PENDING: no submissions exist for task
   const isFullyCovered = assigneeCount > 0 && coveredCount === assigneeCount;
 
   let hasPendingReview = false;
@@ -114,17 +110,17 @@ export async function calculateTaskCoverage(taskId) {
     const previousStatus = task.status;
     task.status = newStatus;
     task.completedAt = completedAt;
-    await task.save();
+    await task.save(queryOpts);
 
     // Log TaskEvent
     const eventType = newStatus === "COMPLETED" ? "TASK_COMPLETED" : previousStatus === "COMPLETED" ? "TASK_REOPENED" : "TASK_UPDATED";
-    await TaskEvent.create({
+    await TaskEvent.create([{
       eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       taskId: cleanTaskId,
       actorEmail: "system@coverage-engine",
       eventType,
       details: { previousStatus, newStatus, coveredCount, assigneeCount, coveragePercentage },
-    });
+    }], queryOpts);
   }
 
   return {
