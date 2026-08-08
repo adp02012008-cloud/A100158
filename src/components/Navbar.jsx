@@ -1,8 +1,10 @@
 // src/components/Navbar.jsx
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
+import NotificationCenter from "./NotificationCenter";
 
 const TEAM_LINKS = [
+  { key: "my-tasks", icon: "📥", label: "My Tasks & Deliverables" },
   { key: "hackathons", icon: "🏆", label: "Hackathons" },
   { key: "gallery", icon: "🖼️", label: "Gallery" },
   { key: "projects", icon: "💻", label: "Projects" },
@@ -25,6 +27,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
   const pageSearchLabels = {
     dashboard: "Search students…",
     leaderboard: "Search leaderboard…",
+    "assign-tasks": "Search task assignments…",
+    "my-tasks": "Search my tasks…",
     hackathons: "Search hackathons…",
     gallery: "Search gallery…",
     projects: "Search projects…",
@@ -74,10 +78,23 @@ export default function Navbar({ page, setPage, search, setSearch }) {
               🥇 <span>Leaderboard</span>
             </button>
 
+            {auth.role === "admin" && auth.viewMode === "admin" && (
+              <button
+                className={page === "assign-tasks" ? "active" : ""}
+                onClick={() => setPage("assign-tasks")}
+              >
+                📋 <span>Assign Tasks</span>
+              </button>
+            )}
+
             {auth.role === "admin" && (
               <button className="view-toggle-btn" onClick={toggleViewMode} title="Toggle admin/member view">
                 {auth.viewMode === "admin" ? "🔀 Member View" : "🔀 Admin View"}
               </button>
+            )}
+
+            {auth.isLoggedIn && (
+              <NotificationCenter onSelectTask={() => setPage("my-tasks")} />
             )}
 
             <button className="role-btn" type="button" disabled>{roleLabel}</button>

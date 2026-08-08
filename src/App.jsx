@@ -3,6 +3,8 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Leaderboard from "./pages/Leaderboard";
+import TaskAssignmentAdmin from "./pages/TaskAssignmentAdmin";
+import MyTasksMember from "./pages/MyTasksMember";
 import Hackathons from "./pages/Hackathons";
 import Gallery from "./pages/Gallery";
 import Projects from "./pages/Projects";
@@ -15,7 +17,7 @@ import { TEAM_PAGE_KEYS } from "./config/teamSections";
 import "./App.css";
 
 export default function App() {
-  const { isTeamMember } = useAuth();
+  const { auth, isTeamMember } = useAuth();
   const [page, setPage] = useState("dashboard");
   const [search, setSearch] = useState("");
 
@@ -42,7 +44,11 @@ export default function App() {
         <main className="page-content">
           {visiblePage === "dashboard" && <Dashboard search={search} />}
           {visiblePage === "leaderboard" && <Leaderboard search={search} />}
+          {auth.role === "admin" && visiblePage === "assign-tasks" && (
+            <TaskAssignmentAdmin search={search} />
+          )}
 
+          {isTeamMember && visiblePage === "my-tasks" && <MyTasksMember search={search} />}
           {isTeamMember && visiblePage === "hackathons" && <Hackathons search={search} />}
           {isTeamMember && visiblePage === "gallery" && <Gallery search={search} />}
           {isTeamMember && visiblePage === "projects" && <Projects search={search} />}
