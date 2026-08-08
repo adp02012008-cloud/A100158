@@ -1,10 +1,14 @@
 /**
- * Bug Slayers Google Apps Script backend
+ * Bug Slayers Google Apps Script Backend (4-Tier Architecture)
  *
- * Google Sheets is the only database.
- * Registered members can view, add, edit, and delete records they created.
- * Admins can view, add, edit, and delete every record.
- * There is no approval workflow.
+ * Implements:
+ * 1. Explicit Firebase ID Token Authentication
+ * 2. Decoupled Role vs. Assignment Access Control
+ * 3. Submission Grouping & Immutable Versioning (V1, V2...)
+ * 4. Multi-Admin Immutable Reviews with Self-Review Support
+ * 5. Highest-Version Coverage Calculation & Task Completion Engine
+ * 6. Deduplicated Server-Side Event Notifications with Timestamped readAt
+ * 7. LockService Concurrency & Atomic Synchronous Responses
  */
 
 const CONFIG = {
@@ -16,65 +20,61 @@ const CONFIG = {
     "adp02012008@gmail.com",
   ],
   TEAM_SHEETS: {
-    Hackathons: {
-      idField: "EVENT_ID",
+    Users: {
+      idField: "id",
       requiredHeaders: [
-        "EVENT_ID", "TITLE", "ORGANIZER", "DATE", "LOCATION", "PROJECT", "THEME",
-        "MEMBERS", "TECH_STACK", "STATUS", "POSITION", "DESCRIPTION", "GITHUB",
-        "DEMO", "PPT", "DRIVE_FOLDER", "COVER_IMAGE", "CREATED_BY", "CREATED_AT",
-      ],
-    },
-    Gallery: {
-      idField: "PHOTO_ID",
-      requiredHeaders: [
-        "PHOTO_ID", "EVENT_ID", "IMAGE_URL", "CAPTION", "DATE", "UPLOADED_BY",
-        "CREATED_BY", "CREATED_AT",
-      ],
-    },
-    Projects: {
-      idField: "PROJECT_ID",
-      requiredHeaders: [
-        "PROJECT_ID", "TITLE", "CATEGORY", "MEMBERS", "TECH_STACK", "DESCRIPTION",
-        "STATUS", "GITHUB", "DEMO", "IMAGE", "CREATED_BY", "CREATED_AT",
-      ],
-    },
-    Certificates: {
-      idField: "CERTIFICATE_ID",
-      requiredHeaders: [
-        "CERTIFICATE_ID", "ENROLMENT_NUMBER", "TITLE", "ISSUER", "DATE", "CATEGORY",
-        "FILE_URL", "STATUS", "CREATED_BY", "CREATED_AT",
-      ],
-    },
-    Opportunities: {
-      idField: "OPPORTUNITY_ID",
-      requiredHeaders: [
-        "TITLE", "TYPE", "COMPANY", "ELIGIBILITY", "DEADLINE", "LINK", "STATUS",
-        "OPPORTUNITY_ID", "CREATED_BY", "CREATED_AT",
+        "id", "email", "name", "role", "status", "githubUrl", "createdAt", "updatedAt"
       ],
     },
     Tasks: {
       idField: "id",
       requiredHeaders: [
         "id", "title", "domain", "description", "priority", "dueDate",
-        "assignedEmails", "createdBy", "createdAt", "status",
+        "status", "submissionMode", "createdBy", "createdAt", "updatedAt", "completedAt"
+      ],
+    },
+    TaskAssignments: {
+      idField: "id",
+      requiredHeaders: [
+        "id", "taskId", "assigneeEmail", "assignedBy", "assignedAt", "removedAt", "status"
       ],
     },
     TaskSubmissions: {
       idField: "id",
       requiredHeaders: [
-        "id", "taskId", "studentEmail", "studentName", "githubUrl",
-        "demoUrl", "notes", "files", "submittedAt", "status",
+        "id", "taskId", "submissionGroupId", "parentSubmissionId", "version",
+        "submissionType", "submittedBy", "submittedFor", "githubUrl", "demoUrl",
+        "notes", "files", "status", "submittedAt"
+      ],
+    },
+    TaskReviews: {
+      idField: "id",
+      requiredHeaders: [
+        "id", "taskId", "submissionId", "version", "reviewerEmail", "decision", "feedback", "createdAt"
       ],
     },
     Notifications: {
       idField: "id",
       requiredHeaders: [
-        "id", "targetEmail", "title", "message", "taskId", "createdAt", "read",
+        "id", "targetEmail", "type", "taskId", "submissionId", "title", "message", "eventKey", "createdAt", "readAt"
       ],
     },
+    TaskEvents: {
+      idField: "id",
+      requiredHeaders: [
+        "id", "taskId", "submissionId", "actorEmail", "eventType", "details", "createdAt"
+      ],
+    },
+    // Legacy sheets preservation
+    Hackathons: { idField: "EVENT_ID", requiredHeaders: ["EVENT_ID", "TITLE", "ORGANIZER", "DATE", "LOCATION", "PROJECT", "THEME", "MEMBERS", "TECH_STACK", "STATUS", "POSITION", "DESCRIPTION", "GITHUB", "DEMO", "PPT", "DRIVE_FOLDER", "COVER_IMAGE", "CREATED_BY", "CREATED_AT"] },
+    Gallery: { idField: "PHOTO_ID", requiredHeaders: ["PHOTO_ID", "EVENT_ID", "IMAGE_URL", "CAPTION", "DATE", "UPLOADED_BY", "CREATED_BY", "CREATED_AT"] },
+    Projects: { idField: "PROJECT_ID", requiredHeaders: ["PROJECT_ID", "TITLE", "CATEGORY", "MEMBERS", "TECH_STACK", "DESCRIPTION", "STATUS", "GITHUB", "DEMO", "IMAGE", "CREATED_BY", "CREATED_AT"] },
+    Certificates: { idField: "CERTIFICATE_ID", requiredHeaders: ["CERTIFICATE_ID", "ENROLMENT_NUMBER", "TITLE", "ISSUER", "DATE", "CATEGORY", "FILE_URL", "STATUS", "CREATED_BY", "CREATED_AT"] },
+    Opportunities: { idField: "OPPORTUNITY_ID", requiredHeaders: ["TITLE", "TYPE", "COMPANY", "ELIGIBILITY", "DEADLINE", "LINK", "STATUS", "OPPORTUNITY_ID", "CREATED_BY", "CREATED_AT"] },
   },
 };
 
+// ── GET Endpoint Entry Point ──────────────────────────────────
 function doGet(e) {
   try {
     const action = cleanText_(e && e.parameter ? e.parameter.action : "");
@@ -90,9 +90,9 @@ function doGet(e) {
       });
     }
 
-    // Backward compatibility with the old frontend.
-    if (e && e.parameter && e.parameter.data) {
-      const body = JSON.parse(e.parameter.data);
+    if (action === "writeRecord" || (e && e.parameter && e.parameter.data)) {
+      const rawData = e.parameter.data || "{}";
+      const body = JSON.parse(rawData);
       const result = routeWrite_(body);
       return json_({ success: true, ...result });
     }
@@ -103,6 +103,7 @@ function doGet(e) {
   }
 }
 
+// ── POST Endpoint Entry Point ─────────────────────────────────
 function doPost(e) {
   try {
     const raw = e && e.postData ? e.postData.contents : "{}";
@@ -114,19 +115,30 @@ function doPost(e) {
   }
 }
 
+// ── Router for Atomic Writes with LockService ──────────────────
 function routeWrite_(body) {
-  const action = cleanText_(body.action);
-
-  if (action === "addTeamRecord") return addTeamRecord_(body);
-  if (action === "updateTeamRecord") return updateTeamRecord_(body);
-  if (action === "deleteTeamRecord") return deleteTeamRecord_(body);
-
-  // Existing dashboard editing actions are preserved.
-  if (action === "adminUpdateStudent") return updateStudent_(body, true);
-  if (action === "studentUpdateOwn") return updateStudent_(body, false);
-  if (action === "updateCourses") return updateCourses_(body);
-
-  throw new Error("Unknown write action.");
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const action = cleanText_(body.action);
+    if (action === "addTeamRecord" || action === "createTask") {
+      return addTeamRecord_(body);
+    } else if (action === "updateTeamRecord" || action === "updateTask") {
+      return updateTeamRecord_(body);
+    } else if (action === "deleteTeamRecord" || action === "deleteTask") {
+      return deleteTeamRecord_(body);
+    } else if (action === "submitDeliverable") {
+      return submitDeliverable_(body);
+    } else if (action === "createReview") {
+      return createReview_(body);
+    } else if (action === "markNotificationsRead") {
+      return markNotificationsRead_(body);
+    } else {
+      throw new Error("Invalid write action: " + action);
+    }
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function addTeamRecord_(body) {

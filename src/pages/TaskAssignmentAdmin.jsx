@@ -4,7 +4,9 @@ import { fetchSheetData } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { extractStudentEmails, getAllAssignableUsers, normalizeEmail } from "../utils/roles";
 import {
+  createReview,
   deleteTask,
+  getReviews,
   getSubmissions,
   getTasks,
   saveTask,
@@ -39,6 +41,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   const [editingTask, setEditingTask] = useState(null);
   const [submissionsModalTask, setSubmissionsModalTask] = useState(null);
   const [taskSubmissions, setTaskSubmissions] = useState([]);
+  const [taskReviews, setTaskReviews] = useState([]);
 
   // Form State
   const [formTitle, setFormTitle] = useState("");
@@ -48,8 +51,15 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   const [formPriority, setFormPriority] = useState("Medium");
   const [formDueDate, setFormDueDate] = useState("");
   const [formAssigned, setFormAssigned] = useState([]);
+  const [formSubmissionMode, setFormSubmissionMode] = useState("FLEXIBLE");
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+
+  // Review State
+  const [reviewingSubId, setReviewingSubId] = useState(null);
+  const [reviewDecision, setReviewDecision] = useState("APPROVED");
+  const [reviewFeedback, setReviewFeedback] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const loadAll = async () => {
     setLoading(true);
@@ -100,6 +110,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     setFormPriority("Medium");
     setFormDueDate("");
     setFormAssigned([]);
+    setFormSubmissionMode("FLEXIBLE");
     setFormError("");
     setModalOpen(true);
   };
@@ -118,6 +129,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     setFormPriority(task.priority || "Medium");
     setFormDueDate(task.dueDate || "");
     setFormAssigned(task.assignedEmails || []);
+    setFormSubmissionMode(task.submissionMode || "FLEXIBLE");
     setFormError("");
     setModalOpen(true);
   };
@@ -168,15 +180,16 @@ export default function TaskAssignmentAdmin({ search = "" }) {
           priority: formPriority,
           dueDate: formDueDate,
           assignedEmails: formAssigned,
+          submissionMode: formSubmissionMode,
           createdBy: auth.email || "admin",
-          status: editingTask?.status || "Pending",
+          status: editingTask?.status || "PENDING",
         },
         auth.email
       );
       setModalOpen(false);
       await loadAll();
     } catch (err) {
-      setFormError("Failed to save task. Please try again.");
+      setFormError(err?.message || "Failed to save task. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -191,11 +204,42 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
   const openSubmissionsModal = async (task) => {
     setSubmissionsModalTask(task);
+    setReviewingSubId(null);
+    setReviewFeedback("");
     try {
-      const subs = await getSubmissions(auth.email);
+      const [subs, revs] = await Promise.all([
+        getSubmissions(auth.email),
+        getReviews(auth.email).catch(() => []),
+      ]);
       setTaskSubmissions(subs.filter((s) => s.taskId === task.id));
+      setTaskReviews(revs.filter((r) => r.taskId === task.id));
     } catch (err) {
       console.error("Error loading submissions:", err);
+    }
+  };
+
+  const handleReviewSubmit = async (subId) => {
+    if (!subId) return;
+    setSubmittingReview(true);
+    try {
+      await createReview({
+        submissionId: subId,
+        decision: reviewDecision,
+        feedback: reviewFeedback.trim(),
+      }, auth.email);
+
+      setReviewingSubId(null);
+      setReviewFeedback("");
+      
+      // Reload submissions and reviews
+      if (submissionsModalTask) {
+        await openSubmissionsModal(submissionsModalTask);
+      }
+      await loadAll();
+    } catch (err) {
+      alert("Failed to submit review: " + (err?.message || "Unknown error"));
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -428,6 +472,19 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                     onChange={(e) => setFormDueDate(e.target.value)}
                   />
                 </div>
+
+                <div className="form-group">
+                  <label>Submission Mode</label>
+                  <select
+                    className="form-select"
+                    value={formSubmissionMode}
+                    onChange={(e) => setFormSubmissionMode(e.target.value)}
+                  >
+                    <option value="FLEXIBLE">⚡ Flexible (Individual or Group)</option>
+                    <option value="INDIVIDUAL">👤 Individual Only</option>
+                    <option value="COLLABORATIVE">👥 Collaborative Group Only</option>
+                  </select>
+                </div>
               </div>
 
               <div className="form-group full-width">
@@ -484,12 +541,17 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         </div>
       )}
 
-      {/* Submissions Review Modal */}
+      {/* Submissions & Multi-Admin Review Modal */}
       {submissionsModalTask && (
         <div className="modal-overlay" onClick={() => setSubmissionsModalTask(null)}>
-          <div className="modal-content task-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content task-modal" style={{ maxWidth: "850px" }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📥 Submissions for: {submissionsModalTask.title}</h3>
+              <div>
+                <h3>📥 Submissions & Reviews for: {submissionsModalTask.title}</h3>
+                <small style={{ color: "#94a3b8" }}>
+                  Submission Mode: <strong>{submissionsModalTask.submissionMode || "FLEXIBLE"}</strong>
+                </small>
+              </div>
               <button
                 type="button"
                 className="close-btn"
@@ -505,69 +567,152 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   No deliverables submitted yet by assigned members for this task.
                 </div>
               ) : (
-                taskSubmissions.map((sub) => (
-                  <div key={sub.id} className="submission-card">
-                    <div className="submission-card-header">
-                      <div>
-                        <strong>{sub.studentName || sub.studentEmail}</strong>
-                        <small>Submitted on {new Date(sub.submittedAt).toLocaleDateString()}</small>
+                taskSubmissions.map((sub) => {
+                  const isSelfSubmission = normalizeEmail(sub.submittedBy) === normalizeEmail(auth.email);
+                  const subReviews = taskReviews.filter((r) => r.submissionId === sub.id);
+
+                  return (
+                    <div key={sub.id} className="submission-card" style={{ marginBottom: "20px", border: "1px solid #334155", padding: "16px", borderRadius: "10px" }}>
+                      <div className="submission-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <strong style={{ fontSize: "1.1rem", color: "#f8fafc" }}>
+                            {sub.submittedBy}
+                          </strong>
+                          {sub.version && (
+                            <span style={{ marginLeft: "10px", padding: "2px 8px", borderRadius: "12px", background: "#0284c7", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
+                              Version V{sub.version}
+                            </span>
+                          )}
+                          {sub.submissionType === "COLLABORATIVE" && (
+                            <span style={{ marginLeft: "6px", padding: "2px 8px", borderRadius: "12px", background: "#7c3aed", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
+                              👥 Collaborative Team
+                            </span>
+                          )}
+                          <div style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "4px" }}>
+                            Submitted: {new Date(sub.submittedAt).toLocaleString()}
+                          </div>
+                        </div>
+                        <span className={`task-status-pill status-${(sub.status || "Submitted").toLowerCase().replace(/ /g, "-")}`}>
+                          {sub.status || "SUBMITTED"}
+                        </span>
                       </div>
-                      <span className="task-status-pill status-completed">{sub.status || "Submitted"}</span>
-                    </div>
 
-                    {sub.notes && <p className="submission-notes">💬 {sub.notes}</p>}
-
-                    <div className="submission-links">
-                      {sub.githubUrl && (
-                        <a
-                          href={sub.githubUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="sub-link-btn github"
-                        >
-                          📦 View GitHub Repository
-                        </a>
+                      {Array.isArray(sub.submittedFor) && sub.submittedFor.length > 0 && (
+                        <div style={{ marginTop: "10px", background: "#1e293b", padding: "8px 12px", borderRadius: "6px" }}>
+                          <small style={{ color: "#94a3b8", display: "block" }}>Represented Members Covered:</small>
+                          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
+                            {sub.submittedFor.map((mEmail) => (
+                              <span key={mEmail} style={{ background: "#334155", color: "#e2e8f0", padding: "2px 8px", borderRadius: "4px", fontSize: "0.8rem" }}>
+                                ✓ {userMap[normalizeEmail(mEmail)] || mEmail}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
 
-                      {sub.demoUrl && (
-                        <a
-                          href={sub.demoUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="sub-link-btn demo"
-                        >
-                          🌐 View Live Demo
-                        </a>
-                      )}
-                    </div>
+                      {sub.notes && <p className="submission-notes" style={{ marginTop: "10px" }}>💬 <strong>Notes:</strong> {sub.notes}</p>}
 
-                    {sub.files && sub.files.length > 0 && (
-                      <div className="submission-files">
-                        <h5>Attached Deliverable Files & Screenshots:</h5>
-                        <div className="file-previews-grid">
-                          {sub.files.map((file, idx) => (
-                            <div key={idx} className="file-preview-item">
-                              {file.dataUrl && file.dataUrl.startsWith("data:image/") ? (
-                                <img src={file.dataUrl} alt={file.name} className="img-preview" />
-                              ) : (
-                                <div className="file-icon-box">📄 {file.name}</div>
-                              )}
-                              <a
-                                href={file.dataUrl || file.url}
-                                download={file.name || "deliverable"}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="file-download-link"
-                              >
-                                ⬇ Download {file.name}
-                              </a>
+                      <div className="submission-links" style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                        {sub.githubUrl && (
+                          <a href={sub.githubUrl} target="_blank" rel="noreferrer" className="sub-link-btn github">
+                            📦 GitHub Repository
+                          </a>
+                        )}
+                        {sub.demoUrl && (
+                          <a href={sub.demoUrl} target="_blank" rel="noreferrer" className="sub-link-btn demo">
+                            🌐 Live Demo
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Existing Reviews Log */}
+                      {subReviews.length > 0 && (
+                        <div style={{ marginTop: "14px", borderTop: "1px dashed #334155", paddingTop: "10px" }}>
+                          <h5 style={{ margin: "0 0 8px 0", color: "#38bdf8" }}>📜 Admin Review Log:</h5>
+                          {subReviews.map((rev) => (
+                            <div key={rev.id} style={{ background: "#0f172a", padding: "8px 12px", borderRadius: "6px", marginBottom: "6px", fontSize: "0.85rem" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                <strong>{rev.reviewerEmail}</strong>
+                                <span style={{ fontWeight: 700, color: rev.decision === "APPROVED" ? "#4ade80" : rev.decision === "CHANGES_REQUESTED" ? "#f87171" : "#38bdf8" }}>
+                                  {rev.decision}
+                                </span>
+                              </div>
+                              {rev.feedback && <div style={{ color: "#cbd5e1", marginTop: "4px" }}>"{rev.feedback}"</div>}
                             </div>
                           ))}
                         </div>
+                      )}
+
+                      {/* Admin Review Action Box */}
+                      <div style={{ marginTop: "14px", background: "#0f172a", padding: "12px", borderRadius: "8px", border: "1px solid #1e293b" }}>
+                        {isSelfSubmission && (
+                          <div style={{ fontSize: "0.8rem", color: "#fbbf24", marginBottom: "8px", fontWeight: 600 }}>
+                            ⭐ Self-Review Authorized: As an Admin, you are reviewing your own submission.
+                          </div>
+                        )}
+
+                        {reviewingSubId === sub.id ? (
+                          <div>
+                            <div style={{ display: "flex", gap: "12px", marginBottom: "10px" }}>
+                              <label style={{ cursor: "pointer", color: "#4ade80", fontWeight: 600 }}>
+                                <input type="radio" name={`dec-${sub.id}`} value="APPROVED" checked={reviewDecision === "APPROVED"} onChange={() => setReviewDecision("APPROVED")} />
+                                {" "}✅ Approve
+                              </label>
+                              <label style={{ cursor: "pointer", color: "#f87171", fontWeight: 600 }}>
+                                <input type="radio" name={`dec-${sub.id}`} value="CHANGES_REQUESTED" checked={reviewDecision === "CHANGES_REQUESTED"} onChange={() => setReviewDecision("CHANGES_REQUESTED")} />
+                                {" "}⚠️ Request Changes
+                              </label>
+                              <label style={{ cursor: "pointer", color: "#38bdf8", fontWeight: 600 }}>
+                                <input type="radio" name={`dec-${sub.id}`} value="COMMENTED" checked={reviewDecision === "COMMENTED"} onChange={() => setReviewDecision("COMMENTED")} />
+                                {" "}💬 Comment Only
+                              </label>
+                            </div>
+
+                            <textarea
+                              rows="2"
+                              className="form-textarea"
+                              placeholder="Type review feedback for team members..."
+                              value={reviewFeedback}
+                              onChange={(e) => setReviewFeedback(e.target.value)}
+                              style={{ width: "100%", marginBottom: "10px" }}
+                            />
+
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <button
+                                type="button"
+                                className="btn-primary"
+                                disabled={submittingReview}
+                                onClick={() => handleReviewSubmit(sub.id)}
+                              >
+                                {submittingReview ? "Submitting..." : "Submit Official Review"}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={() => setReviewingSubId(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            style={{ fontSize: "0.85rem" }}
+                            onClick={() => {
+                              setReviewingSubId(sub.id);
+                              setReviewDecision("APPROVED");
+                              setReviewFeedback("");
+                            }}
+                          >
+                            ✍️ Add Admin Review / Feedback
+                          </button>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>

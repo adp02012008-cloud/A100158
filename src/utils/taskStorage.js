@@ -79,7 +79,7 @@ export async function getNotificationsForUser(userEmail = "") {
     if (Array.isArray(remote?.records)) {
       const parsed = remote.records.map((r) => ({
         ...r,
-        read: r.read === "true" || r.read === true,
+        read: Boolean(r.readAt),
       }));
       saveLocalNotifications(parsed, clean);
       return parsed.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -92,48 +92,16 @@ export async function getNotificationsForUser(userEmail = "") {
   return local.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 }
 
-export async function addNotification({ targetEmail, title, message, taskId }) {
-  const cleanTarget = normalizeEmail(targetEmail);
-  if (!cleanTarget) return null;
-
-  const notif = {
-    id: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-    targetEmail: cleanTarget,
-    title,
-    message,
-    taskId: taskId || "",
-    createdAt: new Date().toISOString(),
-    read: false,
-  };
-
-  await scriptPost({
-    action: "addTeamRecord",
-    sheetName: "Notifications",
-    idField: "id",
-    idValue: notif.id,
-    record: notif,
-  });
-
-  return notif;
-}
-
 export async function markNotificationsRead(userEmail = "") {
   const clean = normalizeEmail(userEmail);
+  const now = new Date().toISOString();
+
+  await scriptPost({
+    action: "markNotificationsRead",
+  });
+
   const all = getLocalNotifications(clean);
-  const unread = all.filter((n) => !n.read);
-
-  for (const n of unread) {
-    const readNotif = { ...n, read: true };
-    await scriptPost({
-      action: "updateTeamRecord",
-      sheetName: "Notifications",
-      idField: "id",
-      idValue: n.id,
-      record: readNotif,
-    });
-  }
-
-  const updated = all.map((n) => ({ ...n, read: true }));
+  const updated = all.map((n) => ({ ...n, readAt: n.readAt || now, read: true }));
   saveLocalNotifications(updated, clean);
   return updated;
 }
@@ -141,12 +109,29 @@ export async function markNotificationsRead(userEmail = "") {
 // ── Task Management API ───────────────────────────────────────
 export async function getTasks(userEmail = "") {
   try {
-    const remote = await scriptGet("listTeamRecords", { sheetName: "Tasks" });
-    if (Array.isArray(remote?.records)) {
-      const parsed = remote.records.map((r) => ({
-        ...r,
-        assignedEmails: parseAssignedEmails(r.assignedEmails),
-      }));
+    const [tasksRes, assignmentsRes] = await Promise.all([
+      scriptGet("listTeamRecords", { sheetName: "Tasks" }),
+      scriptGet("listTeamRecords", { sheetName: "TaskAssignments" }).catch(() => ({ records: [] })),
+    ]);
+
+    if (Array.isArray(tasksRes?.records)) {
+      const assignments = Array.isArray(assignmentsRes?.records) ? assignmentsRes.records : [];
+      const assignmentMap = {};
+      assignments.forEach((a) => {
+        if (a.status !== "REMOVED") {
+          if (!assignmentMap[a.taskId]) assignmentMap[a.taskId] = [];
+          assignmentMap[a.taskId].push(a.assigneeEmail);
+        }
+      });
+
+      const parsed = tasksRes.records.map((r) => {
+        const assigned = assignmentMap[r.id] || parseAssignedEmails(r.assignedEmails);
+        return {
+          ...r,
+          assignedEmails: assigned,
+        };
+      });
+
       saveLocalTasks(parsed, userEmail);
       return parsed;
     }
@@ -165,14 +150,14 @@ export async function saveTask(taskData, userEmail = "") {
     ...taskData,
     id: taskId,
     assignedEmails: parseAssignedEmails(taskData.assignedEmails),
+    submissionMode: taskData.submissionMode || "FLEXIBLE",
     createdAt: taskData.createdAt || now,
     updatedAt: now,
-    status: taskData.status || "Pending",
+    status: taskData.status || "PENDING",
   };
 
-  // 1. Await backend confirmation first
-  await scriptPost({
-    action: isEdit ? "updateTeamRecord" : "addTeamRecord",
+  const response = await scriptPost({
+    action: isEdit ? "updateTask" : "createTask",
     sheetName: "Tasks",
     idField: "id",
     idValue: taskId,
@@ -182,26 +167,12 @@ export async function saveTask(taskData, userEmail = "") {
     },
   });
 
-  // 2. Notify assigned members
-  for (const email of updatedTask.assignedEmails) {
-    try {
-      await addNotification({
-        targetEmail: email,
-        title: isEdit ? "Task Updated 📌" : "New Task Assigned! 🎯",
-        message: `You were ${isEdit ? "updated on" : "assigned to"} "${updatedTask.title}" (${updatedTask.domain || "General"}).`,
-        taskId: taskId,
-      });
-    } catch (e) {
-      console.warn("Notification delivery warning:", e?.message);
-    }
-  }
-
-  return getTasks(userEmail);
+  return response?.task || getTasks(userEmail);
 }
 
 export async function deleteTask(taskId, userEmail = "") {
   await scriptPost({
-    action: "deleteTeamRecord",
+    action: "deleteTask",
     sheetName: "Tasks",
     idField: "id",
     idValue: taskId,
@@ -223,9 +194,18 @@ export async function getSubmissions(userEmail = "") {
             files = [];
           }
         }
+        let submittedFor = r.submittedFor;
+        if (typeof submittedFor === "string") {
+          try {
+            submittedFor = JSON.parse(submittedFor);
+          } catch {
+            submittedFor = [r.submittedBy];
+          }
+        }
         return {
           ...r,
           files: Array.isArray(files) ? files : [],
+          submittedFor: Array.isArray(submittedFor) ? submittedFor : [r.submittedBy],
         };
       });
       saveLocalSubmissions(parsed, userEmail);
@@ -237,32 +217,43 @@ export async function getSubmissions(userEmail = "") {
   return getLocalSubmissions(userEmail);
 }
 
-export async function saveSubmission(subData, userEmail = "") {
-  const isEdit = Boolean(subData.id);
-  const subId = subData.id || `SUB-${Date.now().toString().slice(-5)}`;
-  const now = new Date().toISOString();
-
-  const newSub = {
-    ...subData,
-    id: subId,
-    studentEmail: normalizeEmail(subData.studentEmail),
-    submittedAt: subData.submittedAt || now,
-    status: subData.status || "Submitted",
-  };
-
-  // Await backend write confirmation first
-  await scriptPost({
-    action: isEdit ? "updateTeamRecord" : "addTeamRecord",
-    sheetName: "TaskSubmissions",
-    idField: "id",
-    idValue: subId,
-    record: {
-      ...newSub,
-      files: JSON.stringify(newSub.files || []),
-    },
+export async function submitDeliverable(subData, userEmail = "") {
+  const response = await scriptPost({
+    action: "submitDeliverable",
+    taskId: subData.taskId,
+    submitForAll: Boolean(subData.submitForAll),
+    record: subData,
   });
 
-  return getSubmissions(userEmail);
+  return response;
+}
+
+export async function saveSubmission(subData, userEmail = "") {
+  return submitDeliverable(subData, userEmail);
+}
+
+// ── Reviews API ───────────────────────────────────────────────
+export async function getReviews(userEmail = "") {
+  try {
+    const remote = await scriptGet("listTeamRecords", { sheetName: "TaskReviews" });
+    if (Array.isArray(remote?.records)) {
+      return remote.records;
+    }
+  } catch (err) {
+    console.warn("Failed to fetch task reviews:", err?.message);
+  }
+  return [];
+}
+
+export async function createReview(reviewData, userEmail = "") {
+  const response = await scriptPost({
+    action: "createReview",
+    submissionId: reviewData.submissionId,
+    decision: reviewData.decision,
+    feedback: reviewData.feedback || "",
+  });
+
+  return response;
 }
 
 export function clearUserCache() {

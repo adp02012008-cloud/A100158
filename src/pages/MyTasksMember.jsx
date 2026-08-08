@@ -26,6 +26,7 @@ export default function MyTasksMember({ search = "" }) {
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Submitted");
   const [files, setFiles] = useState([]);
+  const [submitForAll, setSubmitForAll] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -49,7 +50,7 @@ export default function MyTasksMember({ search = "" }) {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [userEmail]);
 
   // Filter tasks assigned to current logged-in member
   const myTasks = useMemo(() => {
@@ -80,12 +81,14 @@ export default function MyTasksMember({ search = "" }) {
       setNotes(existing.notes || "");
       setStatus(existing.status || "Submitted");
       setFiles(existing.files || []);
+      setSubmitForAll(existing.submissionType === "COLLABORATIVE");
     } else {
       setGithubUrl("");
       setDemoUrl("");
       setNotes("");
       setStatus("Submitted");
       setFiles([]);
+      setSubmitForAll(task.submissionMode === "COLLABORATIVE");
     }
     setSubmitError("");
   };
@@ -134,12 +137,13 @@ export default function MyTasksMember({ search = "" }) {
         notes: notes.trim(),
         status,
         files,
+        submitForAll,
       }, userEmail);
 
       setActiveTask(null);
       await loadData();
     } catch (err) {
-      setSubmitError("Failed to submit deliverable. Please try again.");
+      setSubmitError("Failed to submit deliverable: " + (err?.message || "Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -268,6 +272,47 @@ export default function MyTasksMember({ search = "" }) {
             {submitError && <div className="login-error-banner">{submitError}</div>}
 
             <form onSubmit={handleSubmitDeliverable} className="task-form">
+              {activeTask.submissionMode !== "INDIVIDUAL" && (
+                <div className="form-group" style={{ background: "#0f172a", padding: "12px", borderRadius: "8px", border: "1px solid #334155" }}>
+                  <label style={{ color: "#38bdf8", fontWeight: 700 }}>Submission Representation Method</label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "6px" }}>
+                    <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="radio"
+                        name="submitMode"
+                        checked={!submitForAll}
+                        onChange={() => setSubmitForAll(false)}
+                      />
+                      <span>👤 Submit for myself only</span>
+                    </label>
+                    <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input
+                        type="radio"
+                        name="submitMode"
+                        checked={submitForAll}
+                        onChange={() => setSubmitForAll(true)}
+                      />
+                      <span>👥 Submit on behalf of all assigned members (Collaborative Repo)</span>
+                    </label>
+                  </div>
+
+                  {submitForAll && (
+                    <div style={{ marginTop: "10px", background: "#1e293b", padding: "10px", borderRadius: "6px" }}>
+                      <small style={{ color: "#4ade80", fontWeight: 600, display: "block" }}>
+                        ✓ This submission will cover all active assignees for this task:
+                      </small>
+                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "6px" }}>
+                        {(activeTask.assignedEmails || []).map((email) => (
+                          <span key={email} style={{ background: "#334155", color: "#f8fafc", padding: "2px 8px", borderRadius: "4px", fontSize: "0.8rem" }}>
+                            ✓ {email}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="form-group">
                 <label>GitHub Repository / Commit URL</label>
                 <input
