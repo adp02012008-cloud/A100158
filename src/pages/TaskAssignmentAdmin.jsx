@@ -71,6 +71,14 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     loadAll();
   }, []);
 
+  const availableDomains = useMemo(() => {
+    const set = new Set(DOMAINS.filter((d) => d !== "Other"));
+    tasks.forEach((t) => {
+      if (t.domain) set.add(t.domain);
+    });
+    return Array.from(set);
+  }, [tasks]);
+
   const assignableUsers = useMemo(() => {
     return getAllAssignableUsers(students);
   }, [students]);
