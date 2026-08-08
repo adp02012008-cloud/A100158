@@ -54,7 +54,9 @@ export default function MyTasksMember({ search = "" }) {
   // Filter tasks assigned to current logged-in member
   const myTasks = useMemo(() => {
     return tasks.filter((t) => {
-      const isAssigned = isUserAssignedToTask(userEmail, t.assignedEmails, students);
+      // Admins see all tasks in Member View so they can test/review deliverables for any assigned member
+      const isAdmin = auth.role === "admin";
+      const isAssigned = isAdmin || isUserAssignedToTask(userEmail, t.assignedEmails, students);
       if (!isAssigned) return false;
 
       const matchSearch =
@@ -66,7 +68,7 @@ export default function MyTasksMember({ search = "" }) {
       if (filterTab === "completed") return matchSearch && t.status === "Completed";
       return matchSearch;
     });
-  }, [tasks, userEmail, students, search, filterTab]);
+  }, [tasks, userEmail, students, auth.role, search, filterTab]);
 
   const openSubmitModal = (task) => {
     setActiveTask(task);
