@@ -1,8 +1,8 @@
 // src/components/NotificationCenter.jsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { fetchSheetData } from "../utils/api";
-import { getNotificationsForUser, markNotificationsRead } from "../utils/taskStorage";
+import { getNotificationsForUser, markNotificationsRead, markSingleNotificationRead } from "../utils/taskStorage";
 
 export default function NotificationCenter({ onSelectTask }) {
   const { auth } = useAuth();
@@ -42,13 +42,13 @@ export default function NotificationCenter({ onSelectTask }) {
   }, [open]);
 
   const unreadNotifications = useMemo(
-    () => notifications.filter((n) => !n.read),
+    () => notifications.filter((n) => !n.read && !n.readAt),
     [notifications]
   );
   const unreadCount = unreadNotifications.length;
 
   const handleMarkAllRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true, readAt: new Date().toISOString() })));
     try {
       await markNotificationsRead(userEmail);
     } catch (err) {
@@ -57,15 +57,16 @@ export default function NotificationCenter({ onSelectTask }) {
   };
 
   const handleItemClick = async (notif) => {
-    if (!notif.read) {
+    const notifId = notif.id || notif.notificationId;
+    if (!notif.read && !notif.readAt) {
       // Immediately remove from unread state UI
       setNotifications((prev) =>
-        prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+        prev.map((n) => ((n.id === notifId || n.notificationId === notifId) ? { ...n, read: true, readAt: new Date().toISOString() } : n))
       );
       try {
-        await markNotificationsRead(userEmail);
+        await markSingleNotificationRead(notifId, userEmail);
       } catch (err) {
-        console.warn("Mark read error:", err?.message);
+        console.warn("Mark single read error:", err?.message);
       }
     }
     setOpen(false);

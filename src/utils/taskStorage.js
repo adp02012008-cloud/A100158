@@ -97,6 +97,25 @@ export async function getNotificationsForUser(userEmail = "") {
   return local.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 }
 
+export async function markSingleNotificationRead(notificationId, userEmail = "") {
+  const clean = normalizeEmail(userEmail);
+  try {
+    await apiFetch(`/notifications/${notificationId}/read`, { method: "PATCH" });
+  } catch (err) {
+    console.warn("Failed to sync single mark-read to backend:", err?.message);
+  }
+
+  const all = getLocalNotifications(clean);
+  const now = new Date().toISOString();
+  const updated = all.map((n) =>
+    (n.id === notificationId || n.notificationId === notificationId)
+      ? { ...n, readAt: n.readAt || now, read: true }
+      : n
+  );
+  saveLocalNotifications(updated, clean);
+  return updated;
+}
+
 export async function markNotificationsRead(userEmail = "") {
   const clean = normalizeEmail(userEmail);
   try {
