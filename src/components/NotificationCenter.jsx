@@ -1,8 +1,11 @@
 // src/components/NotificationCenter.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { fetchSheetData } from "../utils/api";
-import { getNotificationsForUser, markNotificationsRead, markSingleNotificationRead } from "../utils/taskStorage";
+import {
+  getNotificationsForUser,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "../utils/taskStorage";
 
 export default function NotificationCenter({ onSelectTask }) {
   const { auth } = useAuth();
@@ -48,25 +51,34 @@ export default function NotificationCenter({ onSelectTask }) {
   const unreadCount = unreadNotifications.length;
 
   const handleMarkAllRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true, readAt: new Date().toISOString() })));
+    const previousState = [...notifications];
+    const nowStr = new Date().toISOString();
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true, readAt: n.readAt || nowStr })));
+
     try {
-      await markNotificationsRead(userEmail);
+      await markAllNotificationsRead(userEmail);
     } catch (err) {
-      console.warn("Mark read error:", err?.message);
+      console.warn("Mark all read error, rolling back state:", err?.message);
+      setNotifications(previousState);
     }
   };
 
   const handleItemClick = async (notif) => {
     const notifId = notif.id || notif.notificationId;
     if (!notif.read && !notif.readAt) {
-      // Immediately remove from unread state UI
+      const previousState = [...notifications];
+      const nowStr = new Date().toISOString();
+
+      // Immediately update local state optimistically
       setNotifications((prev) =>
-        prev.map((n) => ((n.id === notifId || n.notificationId === notifId) ? { ...n, read: true, readAt: new Date().toISOString() } : n))
+        prev.map((n) => ((n.id === notifId || n.notificationId === notifId) ? { ...n, read: true, readAt: n.readAt || nowStr } : n))
       );
+
       try {
-        await markSingleNotificationRead(notifId, userEmail);
+        await markNotificationRead(notifId, userEmail);
       } catch (err) {
-        console.warn("Mark single read error:", err?.message);
+        console.warn("Mark single read error, rolling back state:", err?.message);
+        setNotifications(previousState);
       }
     }
     setOpen(false);

@@ -116,6 +116,10 @@ export async function markSingleNotificationRead(notificationId, userEmail = "")
   return updated;
 }
 
+export async function markNotificationRead(notificationId, userEmail = "") {
+  return markSingleNotificationRead(notificationId, userEmail);
+}
+
 export async function markNotificationsRead(userEmail = "") {
   const clean = normalizeEmail(userEmail);
   try {
@@ -129,6 +133,10 @@ export async function markNotificationsRead(userEmail = "") {
   const updated = all.map((n) => ({ ...n, readAt: n.readAt || now, read: true }));
   saveLocalNotifications(updated, clean);
   return updated;
+}
+
+export async function markAllNotificationsRead(userEmail = "") {
+  return markNotificationsRead(userEmail);
 }
 
 // ── Task Management API (Node/Express Backend) ────────────────
