@@ -135,9 +135,14 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       return;
     }
 
+    if (formDomain === "Other" && !formCustomDomain.trim()) {
+      setFormError("Please enter the custom domain name to assign.");
+      return;
+    }
+
     const finalDomain =
       formDomain === "Other"
-        ? formCustomDomain.trim() || "Other Domain"
+        ? formCustomDomain.trim()
         : formDomain;
 
     if (!finalDomain) {
@@ -360,7 +365,12 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   <select
                     className="form-select"
                     value={formDomain}
-                    onChange={(e) => setFormDomain(e.target.value)}
+                    onChange={(e) => {
+                      setFormDomain(e.target.value);
+                      if (e.target.value !== "Other") {
+                        setFormCustomDomain("");
+                      }
+                    }}
                   >
                     {DOMAINS.map((d) => (
                       <option key={d} value={d}>
@@ -369,15 +379,20 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                     ))}
                   </select>
                   {formDomain === "Other" && (
-                    <input
-                      type="text"
-                      className="form-input"
-                      style={{ marginTop: "8px" }}
-                      placeholder="Type custom domain (e.g. Blockchain & Smart Contracts)..."
-                      value={formCustomDomain}
-                      onChange={(e) => setFormCustomDomain(e.target.value)}
-                      required
-                    />
+                    <div style={{ marginTop: "10px" }}>
+                      <label style={{ fontSize: "0.85rem", color: "#38bdf8", marginBottom: "4px", display: "block", fontWeight: 600 }}>
+                        Custom Domain Name *
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Type custom domain (e.g. Blockchain & Smart Contracts)..."
+                        value={formCustomDomain}
+                        onChange={(e) => setFormCustomDomain(e.target.value)}
+                        autoFocus
+                        required
+                      />
+                    </div>
                   )}
                 </div>
 
