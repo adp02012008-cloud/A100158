@@ -240,8 +240,8 @@ export default function MyTasksMember({ search = "" }) {
 
       {/* Submit Work Modal */}
       {activeTask && (
-        <div className="modal-overlay">
-          <div className="modal-content task-modal">
+        <div className="modal-overlay" onClick={() => setActiveTask(null)}>
+          <div className="modal-content task-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>📤 Submit Work for: {activeTask.title}</h3>
               <button

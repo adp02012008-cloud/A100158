@@ -299,8 +299,8 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
       {/* Create / Edit Task Modal */}
       {modalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content task-modal">
+        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+          <div className="modal-content task-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingTask ? "✏️ Edit Task Assignment" : "➕ Assign New Task / Domain"}</h3>
               <button
@@ -423,8 +423,8 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
       {/* Submissions Review Modal */}
       {submissionsModalTask && (
-        <div className="modal-overlay">
-          <div className="modal-content task-modal">
+        <div className="modal-overlay" onClick={() => setSubmissionsModalTask(null)}>
+          <div className="modal-content task-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>📥 Submissions for: {submissionsModalTask.title}</h3>
               <button
