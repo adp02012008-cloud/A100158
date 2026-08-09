@@ -242,9 +242,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       setSubmittingReview(false);
     }
   };
-
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
+      const effStatus = getTaskEffectiveStatus(t);
+
       const matchSearch =
         !search ||
         (t.title || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -252,11 +253,12 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         (t.description || "").toLowerCase().includes(search.toLowerCase());
 
       const matchDomain = domainFilter === "All" || t.domain === domainFilter;
-      const matchStatus = statusFilter === "All" || t.status === statusFilter;
+      const matchStatus = statusFilter === "All" || effStatus.toLowerCase() === statusFilter.toLowerCase();
+      const matchPriority = priorityFilter === "All" || (t.priority || "Medium").toLowerCase() === priorityFilter.toLowerCase();
 
-      return matchSearch && matchDomain && matchStatus;
+      return matchSearch && matchDomain && matchStatus && matchPriority;
     });
-  }, [tasks, search, domainFilter, statusFilter]);
+  }, [tasks, search, domainFilter, statusFilter, priorityFilter, taskSubmissions]);
 
   if (loading) {
     return (
@@ -282,15 +284,16 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       </div>
 
       {/* Filter Bar */}
-      <div className="filter-bar-row">
+      <div className="filter-bar-row" style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginBottom: "20px", alignItems: "center" }}>
         <div className="filter-group">
-          <label>Filter by Domain:</label>
+          <label style={{ fontSize: "12px", fontWeight: "700", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Filter by Domain:</label>
           <select
             className="select-input"
+            style={{ padding: "8px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#f8fafc" }}
             value={domainFilter}
             onChange={(e) => setDomainFilter(e.target.value)}
           >
-            <option value="All">All Domains</option>
+            <option value="All">🌐 All Domains</option>
             {availableDomains.map((d) => (
               <option key={d} value={d}>
                 {d}
@@ -300,16 +303,34 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         </div>
 
         <div className="filter-group">
-          <label>Filter by Status:</label>
+          <label style={{ fontSize: "12px", fontWeight: "700", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Filter by Status:</label>
           <select
             className="select-input"
+            style={{ padding: "8px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#f8fafc" }}
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="All">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
+            <option value="All">📁 All Statuses</option>
+            <option value="Pending">📌 Pending</option>
+            <option value="In Progress">⚡ In Progress</option>
+            <option value="Under Review">⏳ Under Review</option>
+            <option value="Changes Requested">⚠️ Changes Requested</option>
+            <option value="Completed">✅ Completed & Approved</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label style={{ fontSize: "12px", fontWeight: "700", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Filter by Priority:</label>
+          <select
+            className="select-input"
+            style={{ padding: "8px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#f8fafc" }}
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+          >
+            <option value="All">🔥 All Priorities</option>
+            <option value="High">🔴 High Priority</option>
+            <option value="Medium">🟡 Medium Priority</option>
+            <option value="Low">🟢 Low Priority</option>
           </select>
         </div>
       </div>
@@ -321,34 +342,37 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             No tasks found. Click <strong>"➕ Assign New Task"</strong> to assign work to members!
           </div>
         ) : (
-          filteredTasks.map((t) => (
-            <div key={t.id} className="task-card">
-              <div className="task-card-header">
-                <span className="task-domain-badge">{t.domain}</span>
-                <span
-                  className={`task-priority-badge priority-${(t.priority || "Medium").toLowerCase()}`}
-                >
-                  {t.priority} Priority
-                </span>
-              </div>
+          filteredTasks.map((t) => {
+            const effStatus = getTaskEffectiveStatus(t);
 
-              <h3 className="task-title">{t.title}</h3>
-              <p className="task-desc">{t.description}</p>
+            return (
+              <div key={t.id} className="task-card">
+                <div className="task-card-header">
+                  <span className="task-domain-badge">{t.domain}</span>
+                  <span
+                    className={`task-priority-badge priority-${(t.priority || "Medium").toLowerCase()}`}
+                  >
+                    {t.priority} Priority
+                  </span>
+                </div>
 
-              <div className="task-meta-row">
-                <span>📅 Due: {t.dueDate || "No deadline"}</span>
-                <span className={`task-status-pill status-${(t.status || "Pending").toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-")}`}>
-                  {t.status === "UNDER_REVIEW"
-                    ? "⏳ Under Admin Review"
-                    : t.status === "CHANGES_REQUESTED"
-                    ? "⚠️ Changes Requested"
-                    : t.status === "COMPLETED" || t.status === "APPROVED"
-                    ? "✅ Completed"
-                    : t.status === "IN_PROGRESS"
-                    ? "⚡ In Progress"
-                    : t.status || "Pending"}
-                </span>
-              </div>
+                <h3 className="task-title">{t.title}</h3>
+                <p className="task-desc">{t.description}</p>
+
+                <div className="task-meta-row">
+                  <span>📅 Due: {t.dueDate || "No deadline"}</span>
+                  <span className={`task-status-pill status-${effStatus.toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-")}`}>
+                    {effStatus === "Completed"
+                      ? "✅ Completed & Approved"
+                      : effStatus === "Under Review"
+                      ? "⏳ Under Admin Review"
+                      : effStatus === "Changes Requested"
+                      ? "⚠️ Changes Requested"
+                      : effStatus === "In Progress"
+                      ? "⚡ In Progress"
+                      : "📌 Pending"}
+                  </span>
+                </div>
 
               <div className="task-assigned-section">
                 <div className="task-assigned-title">Assigned Squad / Members:</div>
@@ -383,9 +407,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 </button>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          );
+        })
+      )}
+    </div>
 
       {/* Create / Edit Task Modal */}
       {modalOpen && (

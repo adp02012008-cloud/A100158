@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Task } from "../models/Task.js";
 import { TaskAssignment } from "../models/TaskAssignment.js";
 import { TaskSubmission } from "../models/TaskSubmission.js";
@@ -147,10 +148,33 @@ export async function getSubmissions(req, res) {
     if (taskId) filter.taskId = taskId;
     if (status) filter.status = String(status).toUpperCase();
 
-    const submissions = await TaskSubmission.find(filter)
+    const rawSubmissions = await TaskSubmission.find(filter)
       .sort({ submittedAt: -1 })
-      .populate("taskId submittedBy submittedFor")
+      .populate("submittedBy submittedFor")
       .exec();
+
+    // Populate taskId Task model documents manually by business string key
+    const taskIds = [...new Set(rawSubmissions.map((s) => s.taskId).filter(Boolean))];
+    const objectIds = taskIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    const tasks = await Task.find({
+      $or: [
+        { taskId: { $in: taskIds } },
+        ...(objectIds.length > 0 ? [{ _id: { $in: objectIds } }] : []),
+      ],
+    }).exec();
+
+    const taskMap = new Map();
+    tasks.forEach((t) => {
+      taskMap.set(t.taskId, t);
+      taskMap.set(String(t._id), t);
+    });
+
+    const submissions = rawSubmissions.map((s) => {
+      const doc = s.toObject();
+      doc.taskId = taskMap.get(s.taskId) || { taskId: s.taskId, title: `Task ${s.taskId}`, domain: "Core" };
+      return doc;
+    });
 
     const authorized = submissions.filter((sub) => {
       if (isAdmin(user) || publicView === "true" || sub.status === "APPROVED") return true;
@@ -168,8 +192,12 @@ export async function getSubmissions(req, res) {
 export async function getSubmissionById(req, res) {
   try {
     const { id } = req.params;
-    const submission = await TaskSubmission.findById(id).populate("taskId submittedBy submittedFor").exec();
-    if (!submission) return res.status(404).json({ success: false, message: "Submission not found." });
+    const rawSub = await TaskSubmission.findById(id).populate("submittedBy submittedFor").exec();
+    if (!rawSub) return res.status(404).json({ success: false, message: "Submission not found." });
+
+    const submission = rawSub.toObject();
+    const task = await findTaskByIdOrKey(submission.taskId);
+    submission.taskId = task || { taskId: submission.taskId, title: `Task ${submission.taskId}`, domain: "Core" };
 
     return res.json({ success: true, submission });
   } catch (err) {
@@ -225,7 +253,10 @@ export async function updateSubmission(req, res) {
       await recalculateTaskState(submission.taskId);
     }
 
-    const updated = await TaskSubmission.findById(id).populate("taskId submittedBy submittedFor").exec();
+    const updatedRaw = await TaskSubmission.findById(id).populate("submittedBy submittedFor").exec();
+    const updated = updatedRaw.toObject();
+    const task = await findTaskByIdOrKey(updated.taskId);
+    updated.taskId = task || { taskId: updated.taskId, title: `Task ${updated.taskId}`, domain: "Core" };
 
     return res.json({
       success: true,

@@ -428,7 +428,7 @@ export async function deleteTask(req, res) {
     const user = req.user;
     const { taskId } = req.params;
 
-    const task = await Task.findOne({ taskId: String(taskId).trim() }).exec();
+    const task = await findTaskByIdOrKey(taskId);
     if (!task) {
       return res.status(404).json({ success: false, message: "Task not found." });
     }
@@ -437,7 +437,8 @@ export async function deleteTask(req, res) {
       return res.status(403).json({ success: false, message: "Only admins can delete tasks." });
     }
 
-    await Task.deleteOne({ taskId: task.taskId }).exec();
+    await Task.deleteOne({ _id: task._id }).exec();
+    await TaskAssignment.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
 
     await TaskEvent.create({
       eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,

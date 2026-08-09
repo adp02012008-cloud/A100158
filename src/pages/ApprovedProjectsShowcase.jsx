@@ -244,24 +244,24 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                   </h3>
 
                   <div style={{ fontSize: "13px", color: "#cbd5e1", marginBottom: "10px" }}>
-                    Lead Creator: <strong style={{ color: "#f8fafc" }}>{submitterName}</strong>
+                    Lead Submitter: <strong style={{ color: "#f8fafc" }}>{submitterName}</strong>
                   </div>
 
-                  {Array.isArray(sub.submittedFor) && sub.submittedFor.length > 0 && (
-                    <div style={{ marginBottom: "12px", background: "rgba(15, 23, 42, 0.6)", padding: "8px 12px", borderRadius: "8px" }}>
-                      <small style={{ color: "#94a3b8", display: "block", fontSize: "11px", marginBottom: "4px" }}>Contributors / Team:</small>
-                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                        {sub.submittedFor.map((m, idx) => (
-                          <span
-                            key={typeof m === "object" ? m._id || idx : m}
-                            style={{ background: "rgba(255, 255, 255, 0.08)", color: "#e2e8f0", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}
-                          >
-                            ✓ {getDisplayName(m)}
-                          </span>
-                        ))}
-                      </div>
+                  <div style={{ marginBottom: "14px", background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.18) 100%)", border: "1px solid rgba(52, 211, 153, 0.3)", padding: "10px 14px", borderRadius: "10px" }}>
+                    <small style={{ color: "#34d399", fontWeight: "700", display: "block", fontSize: "12px", marginBottom: "6px" }}>
+                      🏆 Task Completed & Recognized By:
+                    </small>
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      {(Array.isArray(sub.submittedFor) && sub.submittedFor.length > 0 ? sub.submittedFor : [sub.submittedBy]).map((m, idx) => (
+                        <span
+                          key={typeof m === "object" ? m._id || idx : m}
+                          style={{ background: "rgba(16, 185, 129, 0.25)", color: "#ecfdf5", border: "1px solid rgba(52, 211, 153, 0.4)", padding: "3px 10px", borderRadius: "14px", fontSize: "12px", fontWeight: "600" }}
+                        >
+                          🏅 {getDisplayName(m)}
+                        </span>
+                      ))}
                     </div>
-                  )}
+                  </div>
 
                   {sub.notes && (
                     <p style={{ fontSize: "13px", color: "#94a3b8", margin: "0 0 14px 0", lineClamp: 3, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
