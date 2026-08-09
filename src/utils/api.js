@@ -1,4 +1,4 @@
-// src/utils/api.js
+// src/utils/api.js - Production Render API integration
 import { onAuthStateChanged } from "firebase/auth";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
