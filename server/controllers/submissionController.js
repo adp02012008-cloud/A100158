@@ -5,7 +5,7 @@ import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
 import { User } from "../models/User.js";
 import { canSubmit, canManageDomain, isAdmin } from "../services/authorizationService.js";
-import { recalculateTaskState, validateSubmissionPayload } from "../services/taskStateService.js";
+import { recalculateTaskState, validateSubmissionPayload, findTaskByIdOrKey } from "../services/taskStateService.js";
 import { withTransaction } from "../utils/dbTransaction.js";
 
 export async function createSubmission(req, res) {
@@ -17,10 +17,10 @@ export async function createSubmission(req, res) {
       if (!taskId) return { statusCode: 400, body: { success: false, message: "TaskId is required." } };
 
       const queryOpts = session ? { session } : {};
-      const task = await Task.findById(taskId, null, queryOpts).exec();
+      const task = await findTaskByIdOrKey(taskId, queryOpts);
       if (!task) return { statusCode: 404, body: { success: false, message: "Task not found." } };
 
-      const activeAssignments = await TaskAssignment.find({ taskId: task._id, status: "ACTIVE" }, null, queryOpts).exec();
+      const activeAssignments = await TaskAssignment.find({ taskId: { $in: [task.taskId, String(task._id)] }, status: "ACTIVE" }, null, queryOpts).exec();
       const activeUserIds = activeAssignments.map((a) => String(a.userId));
       const isAssigned = activeUserIds.includes(String(user._id));
 

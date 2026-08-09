@@ -1,9 +1,21 @@
+import mongoose from "mongoose";
 import { Task } from "../models/Task.js";
 import { TaskAssignment } from "../models/TaskAssignment.js";
 import { TaskSubmission } from "../models/TaskSubmission.js";
 import { TaskReview } from "../models/TaskReview.js";
 import { TaskEvent } from "../models/TaskEvent.js";
 import { Notification } from "../models/Notification.js";
+
+/**
+ * Safely fetches a Task document by either ObjectId or String taskId business key.
+ */
+export async function findTaskByIdOrKey(identifier, queryOpts = {}) {
+  if (!identifier) return null;
+  const cleanId = String(identifier).trim();
+  const isObjectId = mongoose.Types.ObjectId.isValid(cleanId);
+  const filter = isObjectId ? { $or: [{ _id: cleanId }, { taskId: cleanId }] } : { taskId: cleanId };
+  return await Task.findOne(filter, null, queryOpts).exec();
+}
 
 /**
  * Derives effective state of a specific submission version.
@@ -46,14 +58,14 @@ export function getEffectiveVersionState(reviewsList = []) {
 export async function recalculateTaskState(taskId, session = null) {
   const queryOpts = session ? { session } : {};
 
-  const task = await Task.findById(taskId, null, queryOpts).exec();
+  const task = await findTaskByIdOrKey(taskId, queryOpts);
   if (!task) {
     throw new Error(`Task not found: ${taskId}`);
   }
 
   // Active assignments
   const activeAssignments = await TaskAssignment.find({
-    taskId: task._id,
+    taskId: { $in: [task.taskId, String(task._id)] },
     status: "ACTIVE",
   }, null, queryOpts).exec();
 
@@ -61,8 +73,8 @@ export async function recalculateTaskState(taskId, session = null) {
   const activeAssigneeCount = activeUserIds.length;
 
   // Submissions and Reviews
-  const submissions = await TaskSubmission.find({ taskId: task._id }, null, queryOpts).exec();
-  const reviews = await TaskReview.find({ taskId: task._id }, null, queryOpts).exec();
+  const submissions = await TaskSubmission.find({ taskId: { $in: [task.taskId, String(task._id)] } }, null, queryOpts).exec();
+  const reviews = await TaskReview.find({ taskId: { $in: [task.taskId, String(task._id)] } }, null, queryOpts).exec();
 
   // Group by submissionGroupId -> find highest version
   const groupMap = new Map();
