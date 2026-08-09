@@ -96,7 +96,7 @@ export async function createSubmission(req, res) {
         queryOpts
       );
 
-      // Notify Admins
+      // Notify admins
       const adminUsers = await User.find({ role: "ADMIN", status: "ACTIVE" }, null, queryOpts).exec();
       for (const adm of adminUsers) {
         const eventKey = `NTF-SUBMIT-${newSubmission._id}-${adm._id}`;
@@ -106,7 +106,7 @@ export async function createSubmission(req, res) {
             notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             targetUserId: adm._id,
             type: "NEW_SUBMISSION",
-            taskId: task._id,
+            taskId: task.taskId,
             submissionId: newSubmission._id,
             title: "Deliverable Submitted 📥",
             message: `${user.name} submitted V${nextVersion} for "${task.title}".`,
@@ -135,9 +135,10 @@ export async function createSubmission(req, res) {
 export async function getSubmissions(req, res) {
   try {
     const user = req.user;
-    const { taskId } = req.query;
+    const { taskId, status, publicView } = req.query;
     const filter = {};
     if (taskId) filter.taskId = taskId;
+    if (status) filter.status = String(status).toUpperCase();
 
     const submissions = await TaskSubmission.find(filter)
       .sort({ submittedAt: -1 })
@@ -145,7 +146,7 @@ export async function getSubmissions(req, res) {
       .exec();
 
     const authorized = submissions.filter((sub) => {
-      if (isAdmin(user)) return true;
+      if (isAdmin(user) || publicView === "true" || sub.status === "APPROVED") return true;
       const isCreator = String(sub.submittedBy?._id || sub.submittedBy) === String(user._id);
       const isFor = (sub.submittedFor || []).some((u) => String(u._id || u) === String(user._id));
       return isCreator || isFor;
@@ -169,10 +170,62 @@ export async function getSubmissionById(req, res) {
   }
 }
 
-// Immutability Rule: Explicitly reject PUT / DELETE on taskSubmissions
-export async function rejectSubmissionEdit(req, res) {
-  return res.status(403).json({
-    success: false,
-    message: "Immutable Collection: Submissions cannot be modified or deleted. Submit a new version instead.",
-  });
+/**
+ * PUT /api/submissions/:id
+ * Admin OR Authorized assigned member (with active memberEditUntil window) updates submission.
+ */
+export async function updateSubmission(req, res) {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+    const { githubUrl, demoUrl, notes, files, status, memberEditUntil } = req.body;
+
+    const submission = await TaskSubmission.findById(id).exec();
+    if (!submission) {
+      return res.status(404).json({ success: false, message: "Submission not found." });
+    }
+
+    const isUserAdmin = isAdmin(user);
+    const isCreator = String(submission.submittedBy) === String(user._id);
+    const isFor = (submission.submittedFor || []).some((u) => String(u) === String(user._id));
+    const isOwner = isCreator || isFor;
+
+    const isEditWindowActive = submission.memberEditUntil && new Date(submission.memberEditUntil) > new Date();
+
+    if (!isUserAdmin && (!isOwner || !isEditWindowActive)) {
+      return res.status(403).json({
+        success: false,
+        message: "Editing locked. Only Admins or assigned team members with an active edit window permission can update this submission.",
+      });
+    }
+
+    if (githubUrl !== undefined) submission.githubUrl = String(githubUrl).trim();
+    if (demoUrl !== undefined) submission.demoUrl = String(demoUrl).trim();
+    if (notes !== undefined) submission.notes = String(notes).trim();
+    if (Array.isArray(files)) submission.files = files.map((f) => String(f.url || f));
+
+    // Admin-only fields
+    if (isUserAdmin) {
+      if (status) submission.status = String(status).toUpperCase();
+      if (memberEditUntil !== undefined) {
+        submission.memberEditUntil = memberEditUntil ? new Date(memberEditUntil) : null;
+      }
+    }
+
+    await submission.save();
+
+    if (submission.taskId) {
+      await recalculateTaskState(submission.taskId);
+    }
+
+    const updated = await TaskSubmission.findById(id).populate("taskId submittedBy submittedFor").exec();
+
+    return res.json({
+      success: true,
+      message: "Submission updated successfully.",
+      submission: updated,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
 }

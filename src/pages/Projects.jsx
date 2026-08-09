@@ -1,7 +1,6 @@
 // src/pages/Projects.jsx
-import TeamCollectionPage from "../components/TeamCollectionPage";
-import { TEAM_SECTION_CONFIGS } from "../config/teamSections";
+import ApprovedProjectsShowcase from "./ApprovedProjectsShowcase";
 
 export default function Projects({ search }) {
-  return <TeamCollectionPage config={TEAM_SECTION_CONFIGS.projects} search={search} />;
+  return <ApprovedProjectsShowcase search={search} />;
 }

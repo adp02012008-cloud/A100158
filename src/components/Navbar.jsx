@@ -98,6 +98,13 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                 >
                   📋 <span>Assign Tasks</span>
                 </button>
+                <button
+                  type="button"
+                  className={`nav-link-btn ${page === "review-deliverables" ? "active" : ""}`}
+                  onClick={() => setPage("review-deliverables")}
+                >
+                  📥 <span>Review Deliverables</span>
+                </button>
               </>
             )}
 

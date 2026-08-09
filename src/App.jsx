@@ -11,6 +11,7 @@ import Projects from "./pages/Projects";
 import Certificates from "./pages/Certificates";
 import Opportunities from "./pages/Opportunities";
 import Profile from "./pages/Profile";
+import AdminSubmissionsReview from "./pages/AdminSubmissionsReview";
 import UserRosterAdmin from "./pages/UserRosterAdmin";
 import LoginGate from "./components/LoginGate";
 import InstallPWA from "./components/InstallPWA";
@@ -52,6 +53,9 @@ export default function App() {
           )}
           {auth.role === "admin" && visiblePage === "assign-tasks" && (
             <TaskAssignmentAdmin search={search} />
+          )}
+          {auth.role === "admin" && visiblePage === "review-deliverables" && (
+            <AdminSubmissionsReview search={search} />
           )}
 
           {isTeamMember && visiblePage === "my-tasks" && <MyTasksMember search={search} />}

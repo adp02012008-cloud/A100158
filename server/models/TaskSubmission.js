@@ -77,6 +77,10 @@ const taskSubmissionSchema = new mongoose.Schema(
       default: "SUBMITTED",
       uppercase: true,
     },
+    memberEditUntil: {
+      type: Date,
+      default: null,
+    },
     submittedAt: {
       type: Date,
       default: Date.now,
