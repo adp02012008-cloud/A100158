@@ -6,6 +6,7 @@ import { User } from "../models/User.js";
 import { canViewTask, canModifyTask, isAdmin } from "../utils/authHelpers.js";
 import { calculateTaskCoverage } from "../utils/coverageEngine.js";
 import { withTransaction } from "../utils/dbTransaction.js";
+import { findTaskByIdOrKey } from "../services/taskStateService.js";
 
 /**
  * GET /api/tasks
