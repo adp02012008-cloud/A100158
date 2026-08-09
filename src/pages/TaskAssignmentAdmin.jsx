@@ -345,11 +345,16 @@ export default function TaskAssignmentAdmin({ search = "" }) {
               <div className="task-assigned-section">
                 <div className="task-assigned-title">Assigned Squad / Members:</div>
                 <div className="task-members-chips">
-                  {(t.assignedEmails || []).map((email) => (
-                    <span key={email} className="member-chip">
-                      👤 {userMap[normalizeEmail(email)] || email}
-                    </span>
-                  ))}
+                  {(t.assignedEmails || []).map((item, idx) => {
+                    const itemEmail = typeof item === "object" ? item?.email || item?.name : item;
+                    const displayName = typeof item === "object" ? item?.name || item?.email : (userMap[normalizeEmail(itemEmail)] || itemEmail);
+                    const safeDisplay = typeof displayName === "object" ? displayName?.name || displayName?.email || "" : String(displayName);
+                    return (
+                      <span key={typeof item === "object" ? item._id || idx : item} className="member-chip">
+                        👤 {safeDisplay}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
 
