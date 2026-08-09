@@ -272,6 +272,10 @@ export async function updateUserProfile(req, res) {
       position,
       linkedin,
       github,
+      ROLE,
+      role,
+      STATUS,
+      status,
     } = req.body;
 
     const user = await User.findById(id);
@@ -289,6 +293,38 @@ export async function updateUserProfile(req, res) {
     if (CLUSTER) user.clusterName = CLUSTER.trim();
 
     if (isAdmin(req.user)) {
+      if (ROLE || role) {
+        const newRole = String(ROLE || role).toUpperCase();
+        if (["ADMIN", "MEMBER"].includes(newRole)) {
+          if (user.role === "ADMIN" && newRole === "MEMBER") {
+            const activeAdminCount = await User.countDocuments({ role: "ADMIN", status: "ACTIVE" });
+            if (activeAdminCount <= 1) {
+              return res.status(400).json({
+                success: false,
+                message: "Safety Restriction: Cannot demote the last remaining active system administrator.",
+              });
+            }
+          }
+          user.role = newRole;
+        }
+      }
+
+      if (STATUS || status) {
+        const newStatus = String(STATUS || status).toUpperCase();
+        if (["ACTIVE", "INACTIVE"].includes(newStatus)) {
+          if (user.role === "ADMIN" && newStatus === "INACTIVE") {
+            const activeAdminCount = await User.countDocuments({ role: "ADMIN", status: "ACTIVE" });
+            if (activeAdminCount <= 1) {
+              return res.status(400).json({
+                success: false,
+                message: "Safety Restriction: Cannot deactivate the last remaining active system administrator.",
+              });
+            }
+          }
+          user.status = newStatus;
+        }
+      }
+
       if (activityPts !== undefined) user.activityPoints = Number(activityPts) || 0;
       if (rewardPts !== undefined) user.rewardPoints = Number(rewardPts) || 0;
     }
@@ -420,3 +456,49 @@ export async function updateUserStatus(req, res) {
     return res.status(500).json({ success: false, message: err.message });
   }
 }
+
+/**
+ * DELETE /api/users/:id
+ * Admin permanently deletes a user record with last admin safety check.
+ */
+export async function deleteUser(req, res) {
+  try {
+    if (!isAdmin(req.user)) {
+      return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
+    }
+
+    const { id } = req.params;
+    let user = await User.findById(id);
+    if (!user) {
+      user = await User.findOne({ userId: id });
+    }
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Last admin safety check
+    if (user.role === "ADMIN" && user.status === "ACTIVE") {
+      const activeAdminCount = await User.countDocuments({ role: "ADMIN", status: "ACTIVE" });
+      if (activeAdminCount <= 1) {
+        return res.status(400).json({
+          success: false,
+          message: "Safety Restriction: Cannot delete the last remaining active system administrator.",
+        });
+      }
+    }
+
+    await User.findByIdAndDelete(user._id);
+
+    await AuditLog.create({
+      auditId: `AUD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      actorUserId: req.user._id,
+      actionType: "DELETE_USER",
+      targetEntity: "User",
+      targetId: String(user._id),
+      details: { email: user.email, name: user.name, role: user.role },
+    });
+
+    return res.json({ success: true, message: `User '${user.name}' deleted successfully.` });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+

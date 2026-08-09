@@ -22,6 +22,8 @@ export default function EditModal({ student, onClose, onSaved }) {
     POSITION: student.POSITION || student.position || "",
     CLUSTER: student.CLUSTER || student.clusterName || "",
     JOINED: student.JOINED || student.joinedDate || "",
+    ROLE: student.ROLE || student.role || "MEMBER",
+    STATUS: student.STATUS || student.status || "ACTIVE",
   });
 
   const [courseEdits, setCourseEdits] = useState(() => {
@@ -71,9 +73,29 @@ export default function EditModal({ student, onClose, onSaved }) {
   };
 
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
   const setAdmin = (key, val) => setAdminForm((p) => ({ ...p, [key]: val }));
+
+  const handleDeleteUser = async () => {
+    const userName = student.Name || student.name || "this user";
+    if (!window.confirm(`⚠️ ARE YOU SURE?\n\nThis will permanently delete ${userName} from MongoDB.\n\nThis action cannot be undone.`)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      const targetId = student._id || student.userId;
+      await apiFetch(`/users/${targetId}`, { method: "DELETE" });
+      alert(`User '${userName}' deleted successfully.`);
+      if (onSaved) onSaved();
+      onClose();
+    } catch (err) {
+      alert("Failed to delete user: " + err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -123,12 +145,38 @@ export default function EditModal({ student, onClose, onSaved }) {
 
         {isAdmin && (
           <div className="edit-section">
-            <h4 className="edit-section-title">Identity</h4>
+            <h4 className="edit-section-title">Identity & Administrative Settings</h4>
             <div className="edit-grid">
               <EditField label="Name" value={adminForm.Name} onChange={(v) => setAdmin("Name", v)} />
-              <EditField label="Position" value={adminForm.POSITION} onChange={(v) => setAdmin("POSITION", v)} />
+              <EditField label="Position (e.g. Member 1, Team Lead, Admin)" value={adminForm.POSITION} onChange={(v) => setAdmin("POSITION", v)} />
               <EditField label="Cluster" value={adminForm.CLUSTER} onChange={(v) => setAdmin("CLUSTER", v)} />
-              <EditField label="Joined" value={adminForm.JOINED} onChange={(v) => setAdmin("JOINED", v)} />
+              <EditField label="Joined Date" value={adminForm.JOINED} onChange={(v) => setAdmin("JOINED", v)} />
+              
+              <div className="edit-field">
+                <label className="edit-label">Role (Permission)</label>
+                <select
+                  className="edit-input"
+                  style={{ background: "#0f172a", color: "#f8fafc" }}
+                  value={adminForm.ROLE}
+                  onChange={(e) => setAdmin("ROLE", e.target.value)}
+                >
+                  <option value="MEMBER">🎓 MEMBER (Team Member)</option>
+                  <option value="ADMIN">👑 ADMIN (System Administrator)</option>
+                </select>
+              </div>
+
+              <div className="edit-field">
+                <label className="edit-label">Account Status</label>
+                <select
+                  className="edit-input"
+                  style={{ background: "#0f172a", color: "#f8fafc" }}
+                  value={adminForm.STATUS}
+                  onChange={(e) => setAdmin("STATUS", e.target.value)}
+                >
+                  <option value="ACTIVE">✅ ACTIVE</option>
+                  <option value="INACTIVE">⛔ INACTIVE (Deactivated)</option>
+                </select>
+              </div>
             </div>
           </div>
         )}
@@ -234,10 +282,31 @@ export default function EditModal({ student, onClose, onSaved }) {
         </div>
 
         <div className="edit-actions">
-          <button className="edit-cancel-btn" onClick={onClose} disabled={saving}>
+          {isAdmin && (
+            <button
+              type="button"
+              className="delete-user-btn"
+              style={{
+                backgroundColor: "rgba(239, 68, 68, 0.2)",
+                border: "1px solid rgba(239, 68, 68, 0.4)",
+                color: "#f87171",
+                padding: "8px 16px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "600",
+                marginRight: "auto",
+              }}
+              onClick={handleDeleteUser}
+              disabled={saving || deleting}
+            >
+              {deleting ? "Deleting…" : "🗑️ Delete User"}
+            </button>
+          )}
+
+          <button className="edit-cancel-btn" onClick={onClose} disabled={saving || deleting}>
             Cancel
           </button>
-          <button className="edit-save-btn" onClick={handleSave} disabled={saving}>
+          <button className="edit-save-btn" onClick={handleSave} disabled={saving || deleting}>
             {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>

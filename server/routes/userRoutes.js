@@ -10,6 +10,7 @@ import {
   updateUserProfile,
   updateUserRole,
   updateUserStatus,
+  deleteUser,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -26,5 +27,6 @@ router.get("/dashboard", getDashboardUsers);
 router.put("/:id", updateUserProfile);
 router.put("/:id/role", updateUserRole);
 router.put("/:id/status", updateUserStatus);
+router.delete("/:id", deleteUser);
 
 export default router;
