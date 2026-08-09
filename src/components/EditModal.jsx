@@ -317,11 +317,23 @@ export default function EditModal({ student, onClose, onSaved }) {
 
 function EditField({ label, value, onChange, type = "text" }) {
   return (
-    <div className="edit-field">
-      <label className="edit-label">{label}</label>
+    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+      <label className="edit-label" style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1" }}>{label}</label>
       <input
         className="edit-input"
         type={type}
+        style={{
+          width: "100%",
+          padding: "10px 14px",
+          background: "rgba(15, 23, 42, 0.6)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          borderRadius: "8px",
+          color: "#f8fafc",
+          fontSize: "14px",
+          outline: "none",
+          boxSizing: "border-box",
+          colorScheme: type === "date" ? "dark" : undefined,
+        }}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
