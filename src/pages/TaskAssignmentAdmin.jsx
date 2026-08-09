@@ -362,23 +362,16 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 <button
                   type="button"
                   className="btn-secondary"
-                  onClick={() => openSubmissionsModal(t)}
-                >
-                  📥 Deliverables
-                </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
                   onClick={() => openEditModal(t)}
                 >
-                  ✏️ Edit
+                  ✏️ Edit Task
                 </button>
                 <button
                   type="button"
                   className="btn-danger"
                   onClick={() => handleDeleteTask(t.id)}
                 >
-                  🗑️ Delete
+                  🗑️ Delete Task
                 </button>
               </div>
             </div>

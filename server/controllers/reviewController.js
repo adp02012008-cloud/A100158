@@ -49,6 +49,12 @@ export async function createReview(req, res) {
         queryOpts
       );
 
+      // Update submission status directly on model
+      if (["APPROVED", "CHANGES_REQUESTED"].includes(cleanDecision)) {
+        submission.status = cleanDecision;
+        await submission.save(queryOpts);
+      }
+
       // Recalculate Task State & Coverage
       await recalculateTaskState(submission.taskId, session);
 

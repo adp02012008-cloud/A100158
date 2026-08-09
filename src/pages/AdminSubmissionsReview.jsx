@@ -290,6 +290,12 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
             const isEditWindowActive = sub.memberEditUntil && new Date(sub.memberEditUntil) > new Date();
 
+            const hasHigherResubmission = submissions.some(
+              (other) =>
+                other.submissionGroupId === sub.submissionGroupId &&
+                other.version > sub.version
+            );
+
             return (
               <div
                 key={subId}
@@ -303,13 +309,18 @@ export default function AdminSubmissionsReview({ search = "" }) {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
                   <div>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px", flexWrap: "wrap" }}>
                       <span style={{ padding: "4px 10px", borderRadius: "12px", background: "rgba(99, 102, 241, 0.2)", color: "#818cf8", fontSize: "12px", fontWeight: "700" }}>
                         {taskDomain}
                       </span>
-                      <span style={{ padding: "4px 10px", borderRadius: "12px", background: "rgba(14, 165, 233, 0.2)", color: "#38bdf8", fontSize: "12px", fontWeight: "700" }}>
-                        Version V{sub.version || 1}
+                      <span style={{ padding: "4px 10px", borderRadius: "12px", background: sub.version > 1 ? "rgba(168, 85, 247, 0.25)" : "rgba(14, 165, 233, 0.2)", color: sub.version > 1 ? "#c084fc" : "#38bdf8", fontSize: "12px", fontWeight: "700" }}>
+                        {sub.version > 1 ? `🔄 Resubmitted Version V${sub.version}` : `Version V${sub.version || 1}`}
                       </span>
+                      {hasHigherResubmission && (
+                        <span style={{ padding: "4px 10px", borderRadius: "12px", background: "rgba(34, 197, 94, 0.2)", color: "#4ade80", fontSize: "12px", fontWeight: "700" }}>
+                          🎉 Corrected Version Received!
+                        </span>
+                      )}
                       {sub.submissionType === "COLLABORATIVE" && (
                         <span style={{ padding: "4px 10px", borderRadius: "12px", background: "rgba(168, 85, 247, 0.2)", color: "#c084fc", fontSize: "12px", fontWeight: "700" }}>
                           👥 Collaborative Team

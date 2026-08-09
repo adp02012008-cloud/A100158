@@ -75,17 +75,15 @@ export default function MyTasksMember({ search = "" }) {
     });
   }, [tasks, userEmail, students, auth.role, search, filterTab]);
 
-  const openSubmitModal = (task) => {
+  const openSubmitModal = (task, existingSub = null) => {
     setActiveTask(task);
-    // Prefill existing submission if any
-    const existing = submissions.find((s) => s.taskId === task.id && normalizeEmail(s.studentEmail) === userEmail);
-    if (existing) {
-      setGithubUrl(existing.githubUrl || "");
-      setDemoUrl(existing.demoUrl || "");
-      setNotes(existing.notes || "");
-      setStatus(existing.status || "Submitted");
-      setFiles(existing.files || []);
-      setSubmitForAll(existing.submissionType === "COLLABORATIVE");
+    if (existingSub) {
+      setGithubUrl(existingSub.githubUrl || "");
+      setDemoUrl(existingSub.demoUrl || "");
+      setNotes(existingSub.notes || "");
+      setStatus("Submitted");
+      setFiles(existingSub.files || []);
+      setSubmitForAll(task.submissionMode === "COLLABORATIVE");
     } else {
       setGithubUrl("");
       setDemoUrl("");
@@ -206,9 +204,30 @@ export default function MyTasksMember({ search = "" }) {
           </div>
         ) : (
           myTasks.map((t) => {
-            const mySub = submissions.find(
-              (s) => s.taskId === t.id && normalizeEmail(s.studentEmail) === userEmail
-            );
+            const taskIdStr = String(t.taskId || t.id || t._id);
+            const taskSubs = submissions
+              .filter((s) => {
+                const sTaskId = typeof s.taskId === "object" ? s.taskId?.taskId || s.taskId?._id : s.taskId;
+                return String(sTaskId) === taskIdStr;
+              })
+              .sort((a, b) => (b.version || 1) - (a.version || 1));
+
+            const latestSub = taskSubs[0];
+
+            const taskRevs = reviews
+              .filter((r) => {
+                const rTaskId = typeof r.taskId === "object" ? r.taskId?.taskId || r.taskId?._id : r.taskId;
+                return String(rTaskId) === taskIdStr;
+              })
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            const latestRev = taskRevs[0];
+            const hasChangesRequested =
+              (latestSub && (latestSub.status || "").toUpperCase() === "CHANGES_REQUESTED") ||
+              (latestRev && latestRev.decision === "CHANGES_REQUESTED");
+            const isApproved =
+              (latestSub && (latestSub.status || "").toUpperCase() === "APPROVED") ||
+              (latestRev && latestRev.decision === "APPROVED");
 
             return (
               <div key={t.id} className="task-card">
@@ -233,19 +252,40 @@ export default function MyTasksMember({ search = "" }) {
                   </span>
                 </div>
 
-                {mySub && (
-                  <div className="my-sub-banner">
-                    ✅ Deliverable Submitted ({new Date(mySub.submittedAt).toLocaleDateString()})
+                {hasChangesRequested && (
+                  <div style={{ background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.35)", borderRadius: "10px", padding: "12px 14px", marginTop: "12px" }}>
+                    <div style={{ color: "#f87171", fontWeight: "700", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      ⚠️ Changes Requested by Admin:
+                    </div>
+                    <div style={{ color: "#cbd5e1", fontSize: "13px", marginTop: "4px" }}>
+                      "{latestRev?.feedback || "Admin requested corrections on your submission. Please update your code/demo links and resubmit."}"
+                    </div>
+                    <div style={{ color: "#94a3b8", fontSize: "11px", marginTop: "6px" }}>
+                      Click <strong>"📤 Resubmit Corrected Deliverable (V{(latestSub?.version || 1) + 1})"</strong> below to submit your changes.
+                    </div>
                   </div>
                 )}
 
-                <div className="task-actions-row">
+                {latestSub && !hasChangesRequested && (
+                  <div style={{ background: isApproved ? "rgba(34, 197, 94, 0.15)" : "rgba(14, 165, 233, 0.15)", border: `1px solid ${isApproved ? "rgba(34, 197, 94, 0.3)" : "rgba(14, 165, 233, 0.3)"}`, borderRadius: "10px", padding: "10px 14px", marginTop: "12px" }}>
+                    <span style={{ color: isApproved ? "#4ade80" : "#38bdf8", fontWeight: "700", fontSize: "13px" }}>
+                      {isApproved ? "✅ Deliverable Approved & Published" : `📥 Version V${latestSub.version || 1} Under Admin Review`}
+                    </span>
+                  </div>
+                )}
+
+                <div className="task-actions-row" style={{ marginTop: "14px" }}>
                   <button
                     type="button"
                     className="btn-primary"
-                    onClick={() => openSubmitModal(t)}
+                    style={hasChangesRequested ? { background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", boxShadow: "0 4px 14px rgba(239, 68, 68, 0.3)" } : undefined}
+                    onClick={() => openSubmitModal(t, latestSub)}
                   >
-                    {mySub ? "✏️ Update Submission" : "📤 Submit Deliverables"}
+                    {hasChangesRequested
+                      ? `📤 Resubmit Corrected Deliverable (V${(latestSub?.version || 1) + 1})`
+                      : latestSub
+                      ? `📤 Resubmit Deliverable (V${(latestSub?.version || 1) + 1})`
+                      : "📤 Submit Deliverables"}
                   </button>
                 </div>
               </div>
