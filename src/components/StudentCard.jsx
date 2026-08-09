@@ -27,6 +27,7 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
   const status     = getStatus(student.ACTIVITY, avgActivity);
   const progress   = Math.min(100, targetActivity > 0 ? (student.ACTIVITY / targetActivity) * 100 : 0);
   const remaining  = Math.max(0, targetActivity - student.ACTIVITY);
+  const difference = Math.abs((student.ACTIVITY || 0) - (avgActivity || 0)).toFixed(1);
   const cleanAuthEmail = (auth.email || "").toLowerCase().trim();
   const studentEmails = [
     student.email,
