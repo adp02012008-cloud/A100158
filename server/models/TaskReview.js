@@ -10,9 +10,9 @@ const taskReviewSchema = new mongoose.Schema(
       index: true,
     },
     taskId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
+      type: String,
       required: [true, "Task reference is required"],
+      trim: true,
       index: true,
     },
     submissionId: {

@@ -157,7 +157,7 @@ export async function createTask(req, res) {
           [
             {
               assignmentId,
-              taskId: newTask._id,
+              taskId,
               userId: assigneeUser ? assigneeUser._id : user._id,
               assigneeEmail,
               assignedBy: user._id,
@@ -314,7 +314,7 @@ export async function updateTask(req, res) {
                 [
                   {
                     assignmentId,
-                    taskId: task._id,
+                    taskId: task.taskId,
                     userId: assigneeUser ? assigneeUser._id : user._id,
                     assigneeEmail: email,
                     assignedBy: user._id,
