@@ -148,8 +148,8 @@ export default function NotificationCenter({ onSelectTask }) {
             ) : (
               displayedList.map((n) => (
                 <div
-                  key={n.id}
-                  className={`notif-item ${!n.read ? "unread" : ""}`}
+                  key={n.id || n._id || n.notificationId}
+                  className={`notif-item ${!n.read && !n.readAt ? "unread" : ""}`}
                   onClick={() => handleItemClick(n)}
                 >
                   <div className="notif-item-title">{n.title}</div>

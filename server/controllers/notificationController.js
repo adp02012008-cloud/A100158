@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Notification } from "../models/Notification.js";
 
 /**
@@ -13,20 +14,33 @@ export async function getNotifications(req, res) {
     // 48-Hour Cutoff for Read Notifications
     const cutoff48h = new Date(Date.now() - 48 * 3600 * 1000);
 
+    const userFilter = [
+      { targetUserId: user._id },
+      ...(cleanEmail ? [{ targetEmail: cleanEmail }] : []),
+    ];
+
+    const readStateFilter = [
+      { readAt: null },
+      { readAt: { $gte: cutoff48h } },
+    ];
+
     const filter = {
-      $or: [
-        { targetUserId: user._id },
-        ...(cleanEmail ? [{ targetEmail: cleanEmail }] : []),
-      ],
-      $or: [
-        { readAt: null },
-        { readAt: { $gte: cutoff48h } },
+      $and: [
+        { $or: userFilter },
+        { $or: readStateFilter },
       ],
     };
 
-    const notifications = await Notification.find(filter)
+    const rawNotifications = await Notification.find(filter)
       .sort({ createdAt: -1 })
       .exec();
+
+    // Map read boolean property for clean frontend consumption
+    const notifications = rawNotifications.map((n) => {
+      const doc = n.toObject();
+      doc.read = Boolean(doc.readAt);
+      return doc;
+    });
 
     return res.json({ success: true, count: notifications.length, notifications });
   } catch (err) {
@@ -44,12 +58,18 @@ export async function markNotificationRead(req, res) {
     const user = req.user;
     const cleanEmail = user.email ? user.email.toLowerCase().trim() : null;
 
+    const userFilter = [
+      { targetUserId: user._id },
+      ...(cleanEmail ? [{ targetEmail: cleanEmail }] : []),
+    ];
+
+    const isObjId = mongoose.Types.ObjectId.isValid(id);
+
     const notification = await Notification.findOneAndUpdate(
       {
-        $or: [{ _id: id }, { notificationId: id }],
-        $or: [
-          { targetUserId: user._id },
-          ...(cleanEmail ? [{ targetEmail: cleanEmail }] : []),
+        $and: [
+          { $or: [ ...(isObjId ? [{ _id: id }] : []), { notificationId: id } ] },
+          { $or: userFilter },
         ],
       },
       { readAt: new Date() },
@@ -57,7 +77,10 @@ export async function markNotificationRead(req, res) {
     ).exec();
 
     if (!notification) return res.status(404).json({ success: false, message: "Notification not found" });
-    return res.json({ success: true, notification });
+
+    const doc = notification.toObject();
+    doc.read = true;
+    return res.json({ success: true, notification: doc });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -72,12 +95,14 @@ export async function markAllNotificationsRead(req, res) {
     const user = req.user;
     const cleanEmail = user.email ? user.email.toLowerCase().trim() : null;
 
+    const userFilter = [
+      { targetUserId: user._id },
+      ...(cleanEmail ? [{ targetEmail: cleanEmail }] : []),
+    ];
+
     await Notification.updateMany(
       {
-        $or: [
-          { targetUserId: user._id },
-          ...(cleanEmail ? [{ targetEmail: cleanEmail }] : []),
-        ],
+        $or: userFilter,
         readAt: null,
       },
       { readAt: new Date() }
