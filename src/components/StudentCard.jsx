@@ -13,7 +13,7 @@ function getStatus(activity, avgActivity) {
   return                          { text: "Needs Improvement", className: "status-low",     icon: "🔴" };
 }
 
-export default function StudentCard({ student, onClick, onEdit, onRoleChanged, avgActivity, targetActivity }) {
+export default function StudentCard({ student, onClick, onEdit, onRoleChanged, avgActivity, targetActivity = 0 }) {
   const { auth, currentUser } = useAuth();
 
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);

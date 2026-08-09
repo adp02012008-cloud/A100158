@@ -351,7 +351,6 @@ export default function Dashboard({ search, setPage }) {
               key={i}
               student={s}
               avgActivity={avgActivity}
-              targetActivity={targetActivity}
               onClick={setSelected}
               onEdit={setEditing}
               onRoleChanged={loadData}
