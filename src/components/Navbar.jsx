@@ -19,15 +19,16 @@ export default function Navbar({ page, setPage, search, setSearch }) {
     auth.role === "admin"
       ? auth.viewMode === "admin"
         ? "👑 Admin"
-        : "👁 Admin (Member View)"
+        : "👁 Member View"
       : auth.role === "student"
-      ? "🎓 Team Member"
+      ? "🎓 Member"
       : "👀 Public";
 
   const pageSearchLabels = {
     dashboard: "Search students…",
     leaderboard: "Search leaderboard…",
-    "assign-tasks": "Search task assignments…",
+    "manage-users": "Search members…",
+    "assign-tasks": "Search assignments…",
     "my-tasks": "Search my tasks…",
     hackathons: "Search hackathons…",
     gallery: "Search gallery…",
@@ -37,22 +38,23 @@ export default function Navbar({ page, setPage, search, setSearch }) {
   };
 
   return (
-    <>
-      <header className="nav">
-        <div className="logo-wrap">
-          <div className="logo-icon">
-            <img
-              src={logo}
-              alt="Bug Slayers Logo"
-              style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "14px" }}
-            />
+    <header className="navbar-sticky-wrapper">
+      <div className="navbar-card">
+        {/* Top Header Row */}
+        <div className="nav-top-row">
+          <div className="logo-wrap" onClick={() => setPage("dashboard")} style={{ cursor: "pointer" }}>
+            <div className="logo-icon">
+              <img
+                src={logo}
+                alt="Bug Slayers Logo"
+                style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "10px" }}
+              />
+            </div>
+            <h1 className="logo">
+              Bug <span className="highlight">Slayers</span>
+            </h1>
           </div>
-          <h1 className="logo">
-            Bug <span className="highlight">Slayers</span>
-          </h1>
-        </div>
 
-        <div className="nav-right">
           <div className="search-wrap">
             <span className="search-icon">🔍</span>
             <input
@@ -65,14 +67,16 @@ export default function Navbar({ page, setPage, search, setSearch }) {
 
           <div className="controls">
             <button
-              className={page === "dashboard" ? "active" : ""}
+              type="button"
+              className={`nav-link-btn ${page === "dashboard" ? "active" : ""}`}
               onClick={() => setPage("dashboard")}
             >
               🏠 <span>Dashboard</span>
             </button>
 
             <button
-              className={page === "leaderboard" ? "active" : ""}
+              type="button"
+              className={`nav-link-btn ${page === "leaderboard" ? "active" : ""}`}
               onClick={() => setPage("leaderboard")}
             >
               🥇 <span>Leaderboard</span>
@@ -81,13 +85,15 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             {auth.role === "admin" && auth.viewMode === "admin" && (
               <>
                 <button
-                  className={page === "manage-users" ? "active" : ""}
+                  type="button"
+                  className={`nav-link-btn ${page === "manage-users" ? "active" : ""}`}
                   onClick={() => setPage("manage-users")}
                 >
                   👥 <span>Manage Members</span>
                 </button>
                 <button
-                  className={page === "assign-tasks" ? "active" : ""}
+                  type="button"
+                  className={`nav-link-btn ${page === "assign-tasks" ? "active" : ""}`}
                   onClick={() => setPage("assign-tasks")}
                 >
                   📋 <span>Assign Tasks</span>
@@ -96,14 +102,20 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             )}
 
             {auth.role === "admin" && (
-              <button className="view-toggle-btn" onClick={toggleViewMode} title="Toggle admin/member view">
+              <button
+                type="button"
+                className="view-toggle-btn"
+                onClick={toggleViewMode}
+                title="Toggle view mode"
+              >
                 {auth.viewMode === "admin" ? "🔀 Member View" : "🔀 Admin View"}
               </button>
             )}
 
             {auth.isLoggedIn && (
               <button
-                className={page === "profile" ? "active" : ""}
+                type="button"
+                className={`nav-link-btn ${page === "profile" ? "active" : ""}`}
                 onClick={() => setPage("profile")}
               >
                 👤 <span>Profile</span>
@@ -115,35 +127,33 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             )}
 
             <button className="role-btn" type="button" disabled>{roleLabel}</button>
-            <button type="button" onClick={logout}>🚪 Logout</button>
+            <button className="logout-btn" type="button" onClick={logout}>🚪 Logout</button>
           </div>
         </div>
-      </header>
 
-      {isTeamMember && (
-        <nav className="team-subnav" aria-label="Private team pages">
-          <div className="team-subnav-label">
-            <span>🔒</span>
-            <div>
+        {/* Secondary Subnav Row (Team Links) */}
+        {isTeamMember && (
+          <div className="team-subnav-row">
+            <div className="team-subnav-label">
+              <span>🔒</span>
               <strong>Private Team Hub</strong>
-              <small>Visible only to registered group members</small>
+            </div>
+
+            <div className="team-subnav-links">
+              {TEAM_LINKS.map((link) => (
+                <button
+                  type="button"
+                  key={link.key}
+                  className={`subnav-link-btn ${page === link.key ? "active" : ""}`}
+                  onClick={() => setPage(link.key)}
+                >
+                  <span>{link.icon}</span> {link.label}
+                </button>
+              ))}
             </div>
           </div>
-
-          <div className="team-subnav-links">
-            {TEAM_LINKS.map((link) => (
-              <button
-                type="button"
-                key={link.key}
-                className={page === link.key ? "active" : ""}
-                onClick={() => setPage(link.key)}
-              >
-                <span>{link.icon}</span> {link.label}
-              </button>
-            ))}
-          </div>
-        </nav>
-      )}
-    </>
+        )}
+      </div>
+    </header>
   );
 }
