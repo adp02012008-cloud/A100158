@@ -299,6 +299,12 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
             const prevChangesRequested = previousReviews.find((r) => r.decision === "CHANGES_REQUESTED");
 
+            const hasHigherResubmission = submissions.some(
+              (other) =>
+                other.submissionGroupId === sub.submissionGroupId &&
+                other.version > sub.version
+            );
+
             return (
               <div
                 key={subId}
