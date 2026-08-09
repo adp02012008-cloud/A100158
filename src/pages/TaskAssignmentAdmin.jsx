@@ -26,6 +26,14 @@ const DOMAINS = [
   "Other",
 ];
 
+const getTaskEffectiveStatus = (t) => {
+  const st = (t.status || "IN_PROGRESS").toUpperCase();
+  if (st === "COMPLETED" || st === "APPROVED") return "Completed";
+  if (st === "UNDER_REVIEW" || st === "SUBMITTED") return "Under Review";
+  if (st === "CHANGES_REQUESTED") return "Changes Requested";
+  return "In Progress";
+};
+
 export default function TaskAssignmentAdmin({ search = "" }) {
   const { auth } = useAuth();
   const [tasks, setTasks] = useState([]);
