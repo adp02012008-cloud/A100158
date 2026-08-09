@@ -35,6 +35,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   // Filters
   const [domainFilter, setDomainFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
 
   // Modals
   const [modalOpen, setModalOpen] = useState(false);
