@@ -10,6 +10,7 @@ import Gallery from "./pages/Gallery";
 import Projects from "./pages/Projects";
 import Certificates from "./pages/Certificates";
 import Opportunities from "./pages/Opportunities";
+import Profile from "./pages/Profile";
 import LoginGate from "./components/LoginGate";
 import InstallPWA from "./components/InstallPWA";
 import { useAuth } from "./context/AuthContext";
@@ -44,6 +45,7 @@ export default function App() {
         <main className="page-content">
           {visiblePage === "dashboard" && <Dashboard search={search} />}
           {visiblePage === "leaderboard" && <Leaderboard search={search} />}
+          {visiblePage === "profile" && <Profile />}
           {auth.role === "admin" && visiblePage === "assign-tasks" && (
             <TaskAssignmentAdmin search={search} />
           )}

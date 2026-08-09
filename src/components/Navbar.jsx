@@ -94,6 +94,15 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             )}
 
             {auth.isLoggedIn && (
+              <button
+                className={page === "profile" ? "active" : ""}
+                onClick={() => setPage("profile")}
+              >
+                👤 <span>Profile</span>
+              </button>
+            )}
+
+            {auth.isLoggedIn && (
               <NotificationCenter onSelectTask={() => setPage("my-tasks")} />
             )}
 

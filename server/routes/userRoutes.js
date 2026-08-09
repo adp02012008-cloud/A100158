@@ -3,6 +3,7 @@ import { verifyAuthToken } from "../middleware/authMiddleware.js";
 import {
   getAllUsers,
   getCurrentUser,
+  updateSelfProfile,
   getAssignableUsers,
   getDashboardUsers,
   createUser,
@@ -18,6 +19,8 @@ router.use(verifyAuthToken);
 router.get("/", getAllUsers);
 router.post("/", createUser);
 router.get("/me", getCurrentUser);
+router.patch("/me", updateSelfProfile);
+router.put("/me", updateSelfProfile);
 router.get("/assignable", getAssignableUsers);
 router.get("/dashboard", getDashboardUsers);
 router.put("/:id", updateUserProfile);

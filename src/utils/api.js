@@ -245,3 +245,15 @@ export async function scriptPost(body = {}) {
   }
   return { success: true };
 }
+
+export async function fetchMyProfile() {
+  return await apiFetch("/users/me");
+}
+
+export async function updateMyProfile(payload) {
+  return await apiFetch("/users/me", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+

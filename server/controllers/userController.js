@@ -1,4 +1,5 @@
 import { User } from "../models/User.js";
+import { Cluster } from "../models/Cluster.js";
 import { UserCourseProgress } from "../models/UserCourseProgress.js";
 import { Course } from "../models/Course.js";
 import { CoursePointRule } from "../models/CoursePointRule.js";
@@ -36,6 +37,95 @@ export async function getCurrentUser(req, res) {
     return res.status(500).json({ success: false, message: err.message });
   }
 }
+
+/**
+ * PATCH /api/users/me
+ * Updates current authenticated user's own profile.
+ * Strictly updates ONLY explicitly permitted personal & professional fields.
+ * Protected fields (role, status, activityPoints, rewardPoints, clusterId, clusterName, position, userId, firebaseUid, enrolmentNumber, email, _id) cannot be modified via self-profile.
+ */
+export async function updateSelfProfile(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const {
+      name,
+      personalEmail,
+      bitEmail,
+      mobile,
+      linkedin,
+      github,
+      primaryInterests,
+      secondaryInterests,
+      specializations,
+    } = req.body;
+
+    if (name !== undefined) {
+      const trimmedName = String(name).trim();
+      if (!trimmedName) {
+        return res.status(400).json({ success: false, message: "Name cannot be empty." });
+      }
+      user.name = trimmedName;
+    }
+
+    if (personalEmail !== undefined) {
+      user.personalEmail = String(personalEmail).trim().toLowerCase();
+    }
+
+    if (bitEmail !== undefined) {
+      user.bitEmail = String(bitEmail).trim().toLowerCase();
+    }
+
+    if (mobile !== undefined) {
+      user.mobile = String(mobile).trim();
+    }
+
+    if (linkedin !== undefined) {
+      user.linkedin = String(linkedin).trim();
+    }
+
+    if (github !== undefined) {
+      user.github = String(github).trim();
+    }
+
+    if (primaryInterests !== undefined) {
+      if (Array.isArray(primaryInterests)) {
+        user.primaryInterests = primaryInterests.map((s) => String(s).trim()).filter(Boolean);
+      } else if (typeof primaryInterests === "string") {
+        user.primaryInterests = primaryInterests.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
+
+    if (secondaryInterests !== undefined) {
+      if (Array.isArray(secondaryInterests)) {
+        user.secondaryInterests = secondaryInterests.map((s) => String(s).trim()).filter(Boolean);
+      } else if (typeof secondaryInterests === "string") {
+        user.secondaryInterests = secondaryInterests.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
+
+    if (specializations !== undefined) {
+      if (Array.isArray(specializations)) {
+        user.specializations = specializations.map((s) => String(s).trim()).filter(Boolean);
+      } else if (typeof specializations === "string") {
+        user.specializations = specializations.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
+
+    await user.save();
+    const updatedUser = await User.findById(user._id).populate("clusterId").exec();
+
+    return res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
 
 /**
  * GET /api/users/assignable
