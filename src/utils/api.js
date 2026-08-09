@@ -116,6 +116,7 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
  * MongoDB Roster Helper: fetches active user roster from MongoDB backend
  */
 export async function fetchSheetData(sheetName = "Sheet1") {
+  if (!firebaseAuth.currentUser) return [];
   try {
     const data = await apiFetch("/users/assignable");
     if (Array.isArray(data?.users)) {

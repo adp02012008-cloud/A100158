@@ -17,7 +17,7 @@ export default function NotificationCenter({ onSelectTask }) {
   const userEmail = auth.email || "";
 
   const loadNotifs = async () => {
-    if (!userEmail) return;
+    if (!auth.isLoggedIn || !userEmail) return;
     try {
       const list = await getNotificationsForUser(userEmail);
       setNotifications(list || []);
