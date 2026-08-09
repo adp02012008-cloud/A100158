@@ -3,133 +3,95 @@ import { TaskSubmission } from "../models/TaskSubmission.js";
 import { TaskReview } from "../models/TaskReview.js";
 import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
-import { canReviewSubmission, getEffectiveSubmissionVersionState, isAdmin } from "../utils/authHelpers.js";
-import { calculateTaskCoverage } from "../utils/coverageEngine.js";
+import { canReview, isAdmin } from "../services/authorizationService.js";
+import { recalculateTaskState } from "../services/taskStateService.js";
+import { recalculateUserPoints } from "../services/pointsService.js";
 import { withTransaction } from "../utils/dbTransaction.js";
 
-/**
- * POST /api/reviews
- * Creates an immutable admin review record inside a MongoDB Transaction.
- */
 export async function createReview(req, res) {
   try {
     const result = await withTransaction(async (session) => {
       const user = req.user;
-      if (!isAdmin(user)) {
-        return { statusCode: 403, body: { success: false, message: "Only admins can submit reviews." } };
-      }
-
       const { submissionId, decision, feedback } = req.body;
 
-      if (!submissionId || !String(submissionId).trim()) {
-        return { statusCode: 400, body: { success: false, message: "SubmissionId is required." } };
-      }
-
-      const validDecisions = ["APPROVED", "CHANGES_REQUESTED", "COMMENTED"];
-      const cleanDecision = String(decision || "").trim().toUpperCase();
-
-      if (!validDecisions.includes(cleanDecision)) {
-        return {
-          statusCode: 400,
-          body: {
-            success: false,
-            message: `Invalid review decision. Allowed values: ${validDecisions.join(", ")}`,
-          },
-        };
+      if (!submissionId || !decision) {
+        return { statusCode: 400, body: { success: false, message: "submissionId and decision are required." } };
       }
 
       const queryOpts = session ? { session } : {};
-
-      // 1. Fetch target TaskSubmission
-      const cleanSubId = String(submissionId).trim();
-      const submission = await TaskSubmission.findOne({ submissionId: cleanSubId }, null, queryOpts).exec();
+      const submission = await TaskSubmission.findById(submissionId, null, queryOpts).exec();
       if (!submission) {
-        return { statusCode: 404, body: { success: false, message: "Target submission not found." } };
+        return { statusCode: 404, body: { success: false, message: "Submission not found." } };
       }
 
-      // Authorization check
-      if (!canReviewSubmission(user, submission)) {
-        return { statusCode: 403, body: { success: false, message: "Forbidden from reviewing this submission." } };
+      if (!canReview(user, submission)) {
+        return { statusCode: 403, body: { success: false, message: "Access denied. Only Admins can review submissions." } };
       }
 
-      const reviewerEmail = user.email.toLowerCase();
-      const reviewId = `REV-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 6)}`;
+      const cleanDecision = String(decision).trim().toUpperCase();
+      if (!["COMMENTED", "APPROVED", "CHANGES_REQUESTED"].includes(cleanDecision)) {
+        return { statusCode: 400, body: { success: false, message: "Invalid review decision." } };
+      }
 
-      // 2. Create Immutable TaskReview Record inside Transaction
+      const reviewId = `REV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const [newReview] = await TaskReview.create(
         [
           {
             reviewId,
             taskId: submission.taskId,
-            submissionId: cleanSubId,
+            submissionId: submission._id,
             version: submission.version,
-            reviewerEmail,
+            reviewerId: user._id,
             decision: cleanDecision,
             feedback: (feedback || "").trim(),
-            createdAt: new Date(),
           },
         ],
         queryOpts
       );
 
-      // 3. Update Submission Status based on authoritative getEffectiveSubmissionVersionState
-      const allVersionReviews = await TaskReview.find({ submissionId: cleanSubId }, null, queryOpts).exec();
-      const effectiveState = getEffectiveSubmissionVersionState(allVersionReviews);
+      // Recalculate Task State & Coverage
+      await recalculateTaskState(submission.taskId, session);
 
-      submission.status = effectiveState;
-      await submission.save(queryOpts);
+      // Recalculate submitter points if approved
+      if (cleanDecision === "APPROVED") {
+        for (const targetUserId of submission.submittedFor) {
+          await recalculateUserPoints(targetUserId, session);
+        }
+      }
 
-      // 4. Recalculate Task Coverage & Update Task Status Atomically
-      await calculateTaskCoverage(submission.taskId, session);
-
-      // 5. Log TaskEvent inside Transaction
+      // Log TaskEvent
       await TaskEvent.create(
         [
           {
             eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             taskId: submission.taskId,
-            submissionId: cleanSubId,
-            actorEmail: reviewerEmail,
-            eventType: `REVIEW_${cleanDecision}`,
-            details: {
-              version: submission.version,
-              decision: cleanDecision,
-              isSelfReview: reviewerEmail === submission.submittedBy.toLowerCase(),
-            },
+            submissionId: submission._id,
+            actorUserId: user._id,
+            eventType: "REVIEW_CREATED",
+            details: { decision: cleanDecision, version: submission.version },
           },
         ],
         queryOpts
       );
 
-      // 6. Notify Submitting & Represented Members inside Transaction
-      const recipients = Array.from(
-        new Set([submission.submittedBy, ...(submission.submittedFor || [])])
-      ).map((e) => e.toLowerCase());
-
-      const isSelfReview = reviewerEmail === submission.submittedBy.toLowerCase();
-
-      for (const targetEmail of recipients) {
-        const eventKey = `NTF-REV-${reviewId}-${targetEmail}`;
-        const title =
-          cleanDecision === "APPROVED"
-            ? "Deliverable Approved! ✅"
-            : cleanDecision === "CHANGES_REQUESTED"
-            ? "Changes Requested ⚠️"
-            : "New Review Feedback 💬";
+      // Notify submittedFor users
+      for (const targetUserId of submission.submittedFor) {
+        const eventKey = `NTF-REV-${newReview._id}-${targetUserId}`;
+        const title = cleanDecision === "APPROVED" ? "Submission Approved! 🎉" : cleanDecision === "CHANGES_REQUESTED" ? "Changes Requested ⚠️" : "New Review Comment 💬";
+        const message = `Admin ${user.name} reviewed your V${submission.version} submission (${cleanDecision}).`;
 
         await Notification.findOneAndUpdate(
-          { eventKey },
+          { targetUserId, eventKey },
           {
             notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            targetEmail,
-            type: "REVIEW",
+            targetUserId,
+            type: "REVIEW_DECISION",
             taskId: submission.taskId,
-            submissionId: cleanSubId,
+            submissionId: submission._id,
             title,
-            message: `${reviewerEmail} ${isSelfReview ? "(Self-Review)" : ""} reviewed V${submission.version}: ${cleanDecision}`,
+            message,
             eventKey,
             readAt: null,
-            createdAt: new Date(),
           },
           { upsert: true, new: true, ...queryOpts }
         ).exec();
@@ -137,37 +99,33 @@ export async function createReview(req, res) {
 
       return {
         statusCode: 201,
-        body: {
-          success: true,
-          message: "Review submitted successfully.",
-          review: newReview,
-          submissionStatus: submission.status,
-        },
+        body: { success: true, message: `Review (${cleanDecision}) submitted successfully.`, review: newReview },
       };
     });
 
     return res.status(result.statusCode).json(result.body);
-  } catch (error) {
-    return res.status(500).json({ success: false, message: "Error submitting review: " + error.message });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 }
 
-/**
- * GET /api/reviews
- * Fetches review log records for a given submission or task.
- */
 export async function getReviews(req, res) {
   try {
-    const { submissionId, taskId } = req.query;
+    const { taskId, submissionId } = req.query;
     const filter = {};
+    if (taskId) filter.taskId = taskId;
+    if (submissionId) filter.submissionId = submissionId;
 
-    if (submissionId) filter.submissionId = String(submissionId).trim();
-    if (taskId) filter.taskId = String(taskId).trim();
-
-    const reviews = await TaskReview.find(filter).sort({ createdAt: -1 }).exec();
-
-    return res.status(200).json({ success: true, count: reviews.length, reviews });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: "Error fetching reviews: " + error.message });
+    const reviews = await TaskReview.find(filter).sort({ createdAt: -1 }).populate("taskId submissionId reviewerId").exec();
+    return res.json({ success: true, reviews });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
+}
+
+export async function rejectReviewEdit(req, res) {
+  return res.status(403).json({
+    success: false,
+    message: "Immutable Collection: Reviews cannot be modified or deleted.",
+  });
 }

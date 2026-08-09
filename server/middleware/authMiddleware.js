@@ -13,21 +13,19 @@ try {
     firebaseAdminApp = admin.apps[0];
   }
 } catch {
-  // Gracefully fallback to REST API token verification if service account key is absent
+  // Fallback to REST API token verification
 }
 
 /**
- * Server-side Firebase ID Token Verification Middleware & Identity Attachment
+ * Authoritative Server-side Firebase Authentication Middleware
  *
- * Verifies Firebase ID Token via Firebase Admin SDK verifyIdToken() or Identity Toolkit API fallback,
- * normalizes email, queries MongoDB for authoritative role, creates missing user records if needed,
- * and attaches verified user object to req.user.
+ * Verifies Firebase ID Token, extracts firebaseUid, resolves authoritative User document by firebaseUid,
+ * and attaches server-derived req.user context.
  */
 export async function verifyAuthToken(req, res, next) {
   try {
     let token = "";
 
-    // 1. Extract Bearer token from headers or query/body fallback
     if (req.headers && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
       token = req.headers.authorization.split("Bearer ")[1].trim();
     } else if (req.query && req.query.token) {
@@ -42,7 +40,6 @@ export async function verifyAuthToken(req, res, next) {
 
     let decodedToken = null;
 
-    // 2. Try Firebase Admin SDK verifyIdToken if app is initialized
     if (firebaseAdminApp) {
       try {
         const decoded = await admin.auth().verifyIdToken(token);
@@ -52,11 +49,10 @@ export async function verifyAuthToken(req, res, next) {
           displayName: decoded.name || (decoded.email ? decoded.email.split("@")[0] : "User"),
         };
       } catch (adminErr) {
-        console.warn("Firebase Admin verifyIdToken failed, falling back to REST lookup:", adminErr.message);
+        console.warn("Firebase Admin verifyIdToken failed, using REST lookup fallback:", adminErr.message);
       }
     }
 
-    // 3. Fallback: Identity Toolkit REST API verification
     if (!decodedToken) {
       try {
         const apiKey = process.env.FIREBASE_WEB_API_KEY || "AIzaSyA-IZJElov16omfcApWpfWEVNA-F8ILX78";
@@ -74,29 +70,40 @@ export async function verifyAuthToken(req, res, next) {
 
         const data = await response.json();
         const fbUser = data?.users?.[0];
-        if (!fbUser || !fbUser.email) {
-          throw new Error("Could not resolve authenticated user identity from Firebase token.");
+        if (!fbUser || !fbUser.localId) {
+          throw new Error("Could not resolve authenticated identity from Firebase token.");
         }
 
         decodedToken = {
           uid: fbUser.localId,
-          email: fbUser.email.trim().toLowerCase(),
-          displayName: fbUser.displayName || fbUser.email.split("@")[0],
+          email: (fbUser.email || "").trim().toLowerCase(),
+          displayName: fbUser.displayName || (fbUser.email ? fbUser.email.split("@")[0] : "User"),
         };
       } catch (err) {
         return res.status(401).json({ success: false, message: "Authentication failed: " + err.message });
       }
     }
 
-    const cleanEmail = decodedToken.email.trim().toLowerCase();
+    const firebaseUid = decodedToken.uid;
+    const cleanEmail = decodedToken.email;
 
-    // 4. Find or Upsert MongoDB User record for authoritative role determination
-    let dbUser = await User.findOne({ email: cleanEmail }).exec();
+    // Resolve user by firebaseUid first, then email fallback
+    let dbUser = await User.findOne({ firebaseUid }).exec();
 
-    if (!dbUser) {
+    if (!dbUser && cleanEmail) {
+      dbUser = await User.findOne({ email: cleanEmail }).exec();
+      if (dbUser) {
+        // Link firebaseUid to existing user record
+        dbUser.firebaseUid = firebaseUid;
+        await dbUser.save();
+      }
+    }
+
+    if (!dbUser && cleanEmail) {
       const initialRole = isAdminEmail(cleanEmail) ? "ADMIN" : "MEMBER";
       dbUser = await User.create({
         userId: `USR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        firebaseUid,
         email: cleanEmail,
         name: decodedToken.displayName || cleanEmail.split("@")[0],
         role: initialRole,
@@ -104,19 +111,23 @@ export async function verifyAuthToken(req, res, next) {
       });
     }
 
+    if (!dbUser) {
+      return res.status(401).json({ success: false, message: "Could not resolve user identity in database." });
+    }
+
     if (dbUser.status !== "ACTIVE") {
       return res.status(403).json({ success: false, message: "Account is inactive. Access denied." });
     }
 
-    // 5. Attach server-derived, authoritative user identity to request context
     req.user = {
       _id: dbUser._id,
       userId: dbUser.userId,
+      firebaseUid: dbUser.firebaseUid,
       email: dbUser.email,
       name: dbUser.name,
       role: dbUser.role.toUpperCase(),
       status: dbUser.status,
-      uid: decodedToken.uid,
+      clusterId: dbUser.clusterId,
     };
 
     next();
@@ -125,9 +136,6 @@ export async function verifyAuthToken(req, res, next) {
   }
 }
 
-/**
- * Middleware: Require ADMIN role
- */
 export function requireAdmin(req, res, next) {
   if (!req.user || req.user.role !== "ADMIN") {
     return res.status(403).json({ success: false, message: "Access denied. Admin role required." });

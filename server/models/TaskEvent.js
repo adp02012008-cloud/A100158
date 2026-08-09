@@ -4,55 +4,42 @@ const taskEventSchema = new mongoose.Schema(
   {
     eventId: {
       type: String,
-      required: true,
+      required: [true, "Event ID is required"],
       unique: true,
-      trim: true,
-    },
-    taskId: {
-      type: String,
-      required: [true, "Task ID is required"],
       trim: true,
       index: true,
     },
-    submissionId: {
-      type: String,
-      default: "",
-      trim: true,
+    taskId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      required: [true, "Task reference is required"],
+      index: true,
     },
-    actorEmail: {
-      type: String,
-      required: [true, "Actor email is required"],
-      lowercase: true,
-      trim: true,
+    submissionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TaskSubmission",
+      default: null,
+    },
+    actorUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
     eventType: {
       type: String,
-      required: [true, "EventType is required"],
-      uppercase: true,
+      required: [true, "Event type is required"],
       trim: true,
     },
     details: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
-    timestamps: false, // Append-only audit history
+    timestamps: true,
     collection: "taskEvents",
   }
 );
-
-// Indexes
-taskEventSchema.index({ taskId: 1, createdAt: -1 });
-taskEventSchema.index({ actorEmail: 1, createdAt: -1 });
-
-taskEventSchema.pre("save", function (next) {
-  if (this.actorEmail) this.actorEmail = this.actorEmail.trim().toLowerCase();
-  next();
-});
 
 export const TaskEvent = mongoose.model("TaskEvent", taskEventSchema);

@@ -2,12 +2,22 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
-import taskRoutes from "./routes/taskRoutes.js";
+
 import userRoutes from "./routes/userRoutes.js";
+import clusterRoutes from "./routes/clusterRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
+import pointRoutes from "./routes/pointRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
+import hackathonRoutes from "./routes/hackathonRoutes.js";
+import galleryRoutes from "./routes/galleryRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import certificateRoutes from "./routes/certificateRoutes.js";
+import opportunityRoutes from "./routes/opportunityRoutes.js";
+import customCollectionRoutes from "./routes/customCollectionRoutes.js";
 
 dotenv.config();
 
@@ -25,19 +35,27 @@ app.get("/api/health", (req, res) => {
 });
 
 // API Routes
-app.use("/api/tasks", taskRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/clusters", clusterRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/points", pointRoutes);
+app.use("/api/tasks", taskRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/hackathons", hackathonRoutes);
+app.use("/api/gallery", galleryRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/certificates", certificateRoutes);
+app.use("/api/opportunities", opportunityRoutes);
+app.use("/api/custom-collections", customCollectionRoutes);
 
-// Export for server or test runner
 export { app };
 
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
-    console.log(`⚡ Express Task Engine Server running on port ${PORT}`);
+    console.log(`⚡ Express Bug Slayers Master Server running on port ${PORT}`);
   });
 
   connectDB()
@@ -45,7 +63,6 @@ if (process.env.NODE_ENV !== "test") {
       console.log("✅ Database initialized successfully.");
     })
     .catch((err) => {
-      console.warn("⚠️ Database connection pending or failed:", err.message);
-      console.warn("💡 Tip: Add a valid MONGODB_URI (e.g. MongoDB Atlas link) to your .env file.");
+      console.warn("⚠️ Database connection error:", err.message);
     });
 }

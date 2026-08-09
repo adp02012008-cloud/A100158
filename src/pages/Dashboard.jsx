@@ -1,21 +1,13 @@
-
 // src/pages/Dashboard.jsx
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { fetchSheetData } from "../utils/api";
+import { apiFetch } from "../utils/api";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import { useAuth } from "../context/AuthContext";
 import StudentCard from "../components/StudentCard";
 import Modal from "../components/Modal";
 import EditModal from "../components/EditModal";
 
-// ── Helpers ───────────────────────────────────────────────────
 const normalize = (str) => String(str || "").toLowerCase().replace(/\s+/g, "").trim();
-
-const isEmptyValue = (val) => {
-  if (val === null || val === undefined) return true;
-  const x = String(val).trim().toUpperCase();
-  return ["", "NIL", "NUL", "NULL", "-", "NA", "0"].includes(x);
-};
 
 const PREREQUISITES = {
   [normalize("Version Control – Git, GitHub")]: [normalize("HTML / CSS")],
@@ -24,24 +16,8 @@ const PREREQUISITES = {
   [normalize("NodeJS")]: [normalize("React")],
 };
 
-// ── Data helpers ──────────────────────────────────────────────
-function getStudentCourseDetails(studentName, coursesRows) {
-  const list = [];
-  coursesRows.forEach((row) => {
-    const keys = Object.keys(row);
-    const courseName = String(row[keys[0]] || "").trim();
-    const studentCol = keys.find((k) => normalize(k) === normalize(studentName));
-    const raw   = studentCol ? row[studentCol] : null;
-    const value = raw === null || raw === undefined ? "" : String(raw).trim();
-    if (courseName && !isEmptyValue(value)) {
-      list.push({ courseName, currentLevel: value, display: `${courseName} - ${value}` });
-    }
-  });
-  return list;
-}
-
 function getLevelColumns(row) {
-  return Object.keys(row).filter((k) => normalize(k).startsWith("level"));
+  return Object.keys(row || {}).filter((k) => normalize(k).startsWith("level"));
 }
 
 function resolveCurrentLevelIndex(currentLevel, levelColumns) {
@@ -69,7 +45,7 @@ function getFirstAvailableLevel(pointRow, levelColumns) {
 
 function canTakeCourseByCluster(student, pointRow) {
   const sc = normalize(student.CLUSTER);
-  const ac = normalize(pointRow["Cluster Access"] || "");
+  const ac = normalize(pointRow["Cluster Access"] || pointRow.clusterAccess || "");
   if (!ac || ac === "") return true;
   if (ac === normalize("Both")) return true;
   if (ac === normalize("Core") && sc === normalize("Core")) return true;
@@ -87,18 +63,17 @@ function canTakeCourseByPrerequisite(courseName, studentCourses) {
 
 function buildAvailableOptions(student, courseDetails, pointsRows) {
   const courseMap = {};
-  courseDetails.forEach((c) => { courseMap[normalize(c.courseName)] = c.currentLevel; });
+  (courseDetails || []).forEach((c) => { courseMap[normalize(c.courseName)] = c.currentLevel; });
 
   const options = [];
 
-  pointsRows.forEach((row) => {
-    const keys = Object.keys(row);
-    const courseName = String(row[keys[0]] || "").trim();
+  (pointsRows || []).forEach((row) => {
+    const courseName = String(row.courseName || row.name || Object.values(row)[0] || "").trim();
     if (!courseName) return;
     if (!canTakeCourseByCluster(student, row)) return;
-    if (!canTakeCourseByPrerequisite(courseName, courseDetails)) return;
+    if (!canTakeCourseByPrerequisite(courseName, courseDetails || [])) return;
 
-    const levelCols = getLevelColumns(row);
+    const levelCols = getLevelColumns(row.levelPoints || row);
     if (levelCols.length === 0) return;
 
     const ck = normalize(courseName);
@@ -108,11 +83,11 @@ function buildAvailableOptions(student, courseDetails, pointsRows) {
       const ci = resolveCurrentLevelIndex(currentLevel, levelCols);
       const ni = ci + 1;
       if (ci !== -1 && ni < levelCols.length) {
-        const pts = Number(row[levelCols[ni]] || 0);
+        const pts = Number((row.levelPoints ? row.levelPoints[levelCols[ni]] : row[levelCols[ni]]) || 0);
         if (pts > 0) options.push({ courseName, source: "next-level", currentLevel, nextLevel: levelCols[ni], points: pts });
       }
     } else {
-      const first = getFirstAvailableLevel(row, levelCols);
+      const first = getFirstAvailableLevel(row.levelPoints || row, levelCols);
       if (first) options.push({ courseName, source: "new-course", currentLevel: null, ...first });
     }
   });
@@ -127,8 +102,8 @@ function makeComboKey(items) {
 function buildCombinationSuggestions(options, gap) {
   if (options.length === 0) return [];
   const results = [];
-  const seen    = new Set();
-  const maxD    = Math.min(options.length, 5);
+  const seen = new Set();
+  const maxD = Math.min(options.length, 5);
 
   const bt = (start, combo, total) => {
     if (combo.length > 0) {
@@ -157,70 +132,49 @@ function buildCombinationSuggestions(options, gap) {
 }
 
 function buildSuggestions(student, avgActivity, pointsRows) {
-  const gap  = Math.max(0, Math.ceil(avgActivity - student.ACTIVITY));
+  const gap = Math.max(0, Math.ceil(avgActivity - student.ACTIVITY));
   const opts = buildAvailableOptions(student, student.COURSE_DETAILS, pointsRows);
   return { gap, allOptions: opts, combinations: buildCombinationSuggestions(opts, gap) };
 }
 
-// ── Component ─────────────────────────────────────────────────
 export default function Dashboard({ search }) {
   const { auth } = useAuth();
 
-  const [students,       setStudents]       = useState([]);
-  const [pointsRows,     setPointsRows]     = useState([]);
-  const [selected,       setSelected]       = useState(null);
-  const [editing,        setEditing]        = useState(null);
-  const [clusterFilter,  setClusterFilter]  = useState("All");
+  const [students, setStudents] = useState([]);
+  const [pointsRows, setPointsRows] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [clusterFilter, setClusterFilter] = useState("All");
   const [targetActivity, setTargetActivity] = useState(200);
-  const [dataLoaded,     setDataLoaded]     = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
-      const [studentsRaw, cRows, pRows] = await Promise.all([
-        fetchSheetData("Sheet1"),
-        fetchSheetData("Courses"),
-        fetchSheetData("points"),
-      ]);
-
+      const res = await apiFetch("/users/dashboard");
+      const cleaned = res.users || [];
+      const pRows = res.pointsRules || [];
       setPointsRows(pRows);
 
-      const cleaned = (studentsRaw || []).map((st) => {
-        const safeName      = String(st.Name || "").trim();
-        const courseDetails = getStudentCourseDetails(safeName, cRows);
-        return {
-          ...st,
-          Name:           safeName,
-          POSITION:       String(st.POSITION || "").trim(),
-          JOINED:         String(st.JOINED   || "").trim(),
-          CLUSTER:        String(st.CLUSTER  || "").trim(),
-          ACTIVITY:       Number(st["ACTIVITY POINT"] || 0),
-          REWARD:         Number(st["REWARD POINT"]   || 0),
-          LINKEDIN:       st.LINKEDIN || st["LinkedIn"] || st["Linked In"] || "",
-          GITHUB:         st.GITHUB   || st["GitHub"]   || st["Git Hub"]   || "",
-          COURSES:        courseDetails.map((c) => c.display),
-          COURSE_DETAILS: courseDetails,
-          COURSE_COUNT:   courseDetails.length,
-        };
-      });
-
-      const total       = cleaned.reduce((s, x) => s + x.ACTIVITY, 0);
+      const total = cleaned.reduce((s, x) => s + (x["ACTIVITY POINT"] || 0), 0);
       const avgActivity = cleaned.length > 0 ? total / cleaned.length : 0;
 
       const enriched = cleaned.map((student) => {
         const s = buildSuggestions(student, avgActivity, pRows);
         return {
           ...student,
-          GAP_TO_AVG:              s.gap,
-          ALL_SUGGESTIONS:         s.allOptions,
+          ACTIVITY: Number(student["ACTIVITY POINT"] || 0),
+          REWARD: Number(student["REWARD POINT"] || 0),
+          GAP_TO_AVG: s.gap,
+          ALL_SUGGESTIONS: s.allOptions,
           SUGGESTION_COMBINATIONS: s.combinations,
-          AVG_ACTIVITY:            avgActivity,
+          AVG_ACTIVITY: avgActivity,
         };
       });
 
       setStudents(enriched);
       setDataLoaded(true);
     } catch (err) {
-      console.error("Error loading data:", err);
+      console.error("Error loading dashboard from MongoDB:", err);
       setStudents([]);
       setDataLoaded(true);
     }
@@ -228,103 +182,31 @@ export default function Dashboard({ search }) {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const handleSaved = useCallback((updatedPayload) => {
-    setStudents((prev) => {
-      const updated = prev.map((s) => {
-        if (s["ENROLMENT NUMBER"] !== updatedPayload["ENROLMENT NUMBER"]) return s;
+  const handleSaved = useCallback(() => {
+    loadData();
+  }, [loadData]);
 
-        // Patch basic fields
-        const patched = {
-          ...s,
-          LINKEDIN: updatedPayload.LINKEDIN ?? s.LINKEDIN,
-          GITHUB:   updatedPayload.GITHUB   ?? s.GITHUB,
-          ACTIVITY: updatedPayload["ACTIVITY POINT"] !== undefined
-            ? Number(updatedPayload["ACTIVITY POINT"]) : s.ACTIVITY,
-          REWARD: updatedPayload["REWARD POINT"] !== undefined
-            ? Number(updatedPayload["REWARD POINT"]) : s.REWARD,
-          Name:     updatedPayload.Name     ?? s.Name,
-          POSITION: updatedPayload.POSITION ?? s.POSITION,
-          CLUSTER:  updatedPayload.CLUSTER  ?? s.CLUSTER,
-          JOINED:   updatedPayload.JOINED   ?? s.JOINED,
-        };
-
-        // Patch course details if COURSE_UPDATES is present
-        if (updatedPayload.COURSE_UPDATES) {
-          const updates    = updatedPayload.COURSE_UPDATES; // { courseName: level }
-          let newDetails   = [...(s.COURSE_DETAILS || [])];
-
-          Object.entries(updates).forEach(([courseName, level]) => {
-            const idx = newDetails.findIndex((c) => c.courseName === courseName);
-            if (!level) {
-              // Remove the course if level set to empty
-              if (idx !== -1) newDetails.splice(idx, 1);
-            } else if (idx !== -1) {
-              // Update existing
-              newDetails[idx] = {
-                ...newDetails[idx],
-                currentLevel: level,
-                display: `${courseName} - ${level}`,
-              };
-            } else {
-              // Add new
-              newDetails.push({
-                courseName,
-                currentLevel: level,
-                display: `${courseName} - ${level}`,
-              });
-            }
-          });
-
-          patched.COURSE_DETAILS = newDetails;
-          patched.COURSES        = newDetails.map((c) => c.display);
-          patched.COURSE_COUNT   = newDetails.length;
-        }
-
-        return patched;
-      });
-
-      // Recalculate avg + suggestions after patch
-      const total       = updated.reduce((sum, x) => sum + x.ACTIVITY, 0);
-      const avgActivity = updated.length > 0 ? total / updated.length : 0;
-      return updated.map((student) => {
-        const s = buildSuggestions(student, avgActivity, pointsRows);
-        return {
-          ...student,
-          GAP_TO_AVG:              s.gap,
-          ALL_SUGGESTIONS:         s.allOptions,
-          SUGGESTION_COMBINATIONS: s.combinations,
-          AVG_ACTIVITY:            avgActivity,
-        };
-      });
-    });
-  }, [pointsRows]);
-
-  // ── Filtered list ─────────────────────────────────────────────
   const filtered = useMemo(() => {
     return students.filter((s) => {
-      const matchSearch  = (s.Name || "").toLowerCase().includes((search || "").toLowerCase());
+      const matchSearch = (s.Name || "").toLowerCase().includes((search || "").toLowerCase());
       const matchCluster = clusterFilter === "All" || s.CLUSTER === clusterFilter;
       return matchSearch && matchCluster;
     });
   }, [students, search, clusterFilter]);
 
-  // ── Summary stats ─────────────────────────────────────────────
-  const total              = students.reduce((sum, s) => sum + s.ACTIVITY, 0);
-  const avgActivity        = students.length > 0 ? total / students.length : 0;
-  const belowAverageCount  = students.filter((s) => s.ACTIVITY < avgActivity).length;
+  const total = students.reduce((sum, s) => sum + s.ACTIVITY, 0);
+  const avgActivity = students.length > 0 ? total / students.length : 0;
+  const belowAverageCount = students.filter((s) => s.ACTIVITY < avgActivity).length;
   const topPerformersCount = students.filter((s) => s.ACTIVITY > avgActivity + 5).length;
-  const coreCount          = students.filter((s) => s.CLUSTER === "Core").length;
-  const computerCount      = students.filter((s) => s.CLUSTER === "Computer Cluster").length;
+  const coreCount = students.filter((s) => s.CLUSTER === "Core").length;
+  const computerCount = students.filter((s) => s.CLUSTER === "Computer Cluster").length;
 
-  const topFive  = [...filtered].sort((a, b) => b.ACTIVITY - a.ACTIVITY).slice(0, 5);
+  const topFive = [...filtered].sort((a, b) => b.ACTIVITY - a.ACTIVITY).slice(0, 5);
   const chartMax = topFive.length > 0 ? Math.max(...topFive.map((s) => s.ACTIVITY), 1) : 1;
-
-  // Admin-only: can export
   const canExport = auth.role === "admin" && auth.viewMode === "admin";
 
   return (
     <div>
-      {/* ── Toolbar ───────────────────────────────────────────── */}
       <div className="dashboard-toolbar">
         <div className="filter-group">
           <div className="cluster-filter">
@@ -358,7 +240,6 @@ export default function Dashboard({ search }) {
         )}
       </div>
 
-      {/* ── Stats ─────────────────────────────────────────────── */}
       <div className="stats">
         <div className="stat-box"><h3>Total Activity</h3><p>{total}</p></div>
         <div className="stat-box"><h3>Average Activity</h3><p>{avgActivity.toFixed(2)}</p></div>
@@ -366,7 +247,6 @@ export default function Dashboard({ search }) {
         <div className="stat-box"><h3>Top Performers</h3><p>{topPerformersCount}</p></div>
       </div>
 
-      {/* ── Analytics grid ────────────────────────────────────── */}
       <div className="analytics-grid">
         <div className="analytics-card">
           <h3>Top 5 Students by Activity</h3>
@@ -392,7 +272,6 @@ export default function Dashboard({ search }) {
         </div>
       </div>
 
-      {/* ── Cards ─────────────────────────────────────────────── */}
       {!dataLoaded ? (
         <div className="empty-state">
           <div className="empty-icon">⏳</div>
@@ -419,10 +298,7 @@ export default function Dashboard({ search }) {
         </div>
       )}
 
-      {/* ── View modal ────────────────────────────────────────── */}
       {selected && <Modal student={selected} onClose={() => setSelected(null)} />}
-
-      {/* ── Edit modal ────────────────────────────────────────── */}
       {editing && (
         <EditModal
           student={editing}

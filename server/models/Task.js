@@ -54,10 +54,9 @@ const taskSchema = new mongoose.Schema(
       uppercase: true,
     },
     createdBy: {
-      type: String,
-      required: [true, "CreatedBy email is required"],
-      lowercase: true,
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
       index: true,
     },
     completedAt: {
@@ -70,13 +69,5 @@ const taskSchema = new mongoose.Schema(
     collection: "tasks",
   }
 );
-
-// Pre-save hook to normalize createdBy email
-taskSchema.pre("save", function (next) {
-  if (this.createdBy) {
-    this.createdBy = this.createdBy.trim().toLowerCase();
-  }
-  next();
-});
 
 export const Task = mongoose.model("Task", taskSchema);

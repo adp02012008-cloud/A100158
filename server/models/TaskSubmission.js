@@ -1,28 +1,18 @@
 import mongoose from "mongoose";
 
-const fileItemSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    url: { type: String, default: "" },
-    dataUrl: { type: String, default: "" },
-    type: { type: String, default: "" },
-    size: { type: Number, default: 0 },
-  },
-  { _id: false }
-);
-
 const taskSubmissionSchema = new mongoose.Schema(
   {
     submissionId: {
       type: String,
-      required: true,
+      required: [true, "Submission ID is required"],
       unique: true,
       trim: true,
+      index: true,
     },
     taskId: {
-      type: String,
-      required: [true, "Task ID is required"],
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      required: [true, "Task reference is required"],
       index: true,
     },
     submissionGroupId: {
@@ -32,33 +22,34 @@ const taskSubmissionSchema = new mongoose.Schema(
       index: true,
     },
     parentSubmissionId: {
-      type: String,
-      default: "",
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TaskSubmission",
+      default: null,
     },
     version: {
       type: Number,
       required: true,
-      default: 1,
       min: 1,
     },
     submissionType: {
       type: String,
       enum: ["INDIVIDUAL", "COLLABORATIVE"],
       default: "INDIVIDUAL",
-      uppercase: true,
     },
     submittedBy: {
-      type: String,
-      required: [true, "SubmittedBy email is required"],
-      lowercase: true,
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "SubmittedBy user is required"],
       index: true,
     },
-    submittedFor: {
-      type: [{ type: String, lowercase: true, trim: true, index: true }],
-      default: [],
-    },
+    submittedFor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true,
+      },
+    ],
     githubUrl: {
       type: String,
       default: "",
@@ -74,19 +65,17 @@ const taskSubmissionSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    files: {
-      type: [fileItemSchema],
-      default: [],
-    },
+    files: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     status: {
       type: String,
-      enum: {
-        values: ["SUBMITTED", "APPROVED", "CHANGES_REQUESTED"],
-        message: "{VALUE} is not a valid submission status",
-      },
+      enum: ["SUBMITTED", "APPROVED", "CHANGES_REQUESTED"],
       default: "SUBMITTED",
       uppercase: true,
-      index: true,
     },
     submittedAt: {
       type: Date,
@@ -94,21 +83,12 @@ const taskSubmissionSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: false, // Immutable: no updatedAt
+    timestamps: true,
     collection: "taskSubmissions",
   }
 );
 
-// Indexes
-taskSubmissionSchema.index({ submissionGroupId: 1, version: -1 });
+// Compound Unique Index: (submissionGroupId, version)
 taskSubmissionSchema.index({ submissionGroupId: 1, version: 1 }, { unique: true });
-
-taskSubmissionSchema.pre("save", function (next) {
-  if (this.submittedBy) this.submittedBy = this.submittedBy.trim().toLowerCase();
-  if (Array.isArray(this.submittedFor)) {
-    this.submittedFor = this.submittedFor.map((e) => String(e).trim().toLowerCase());
-  }
-  next();
-});
 
 export const TaskSubmission = mongoose.model("TaskSubmission", taskSubmissionSchema);

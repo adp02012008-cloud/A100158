@@ -4,28 +4,27 @@ const taskAssignmentSchema = new mongoose.Schema(
   {
     assignmentId: {
       type: String,
-      required: true,
+      required: [true, "Assignment ID is required"],
       unique: true,
-      trim: true,
-    },
-    taskId: {
-      type: String,
-      required: [true, "Task ID is required"],
       trim: true,
       index: true,
     },
-    assigneeEmail: {
-      type: String,
-      required: [true, "Assignee email is required"],
-      lowercase: true,
-      trim: true,
+    taskId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      required: [true, "Task reference is required"],
+      index: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User reference is required"],
       index: true,
     },
     assignedBy: {
-      type: String,
-      required: [true, "AssignedBy email is required"],
-      lowercase: true,
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     assignedAt: {
       type: Date,
@@ -43,6 +42,7 @@ const taskAssignmentSchema = new mongoose.Schema(
       },
       default: "ACTIVE",
       uppercase: true,
+      index: true,
     },
   },
   {
@@ -51,19 +51,13 @@ const taskAssignmentSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-taskAssignmentSchema.index({ taskId: 1, assigneeEmail: 1, status: 1 });
-
-// Ensure unique ACTIVE assignment per task and assignee
+// Partial Unique Index for (taskId, userId) where status === 'ACTIVE'
 taskAssignmentSchema.index(
-  { taskId: 1, assigneeEmail: 1 },
-  { unique: true, partialFilterExpression: { status: "ACTIVE" } }
+  { taskId: 1, userId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: "ACTIVE" },
+  }
 );
-
-taskAssignmentSchema.pre("save", function (next) {
-  if (this.assigneeEmail) this.assigneeEmail = this.assigneeEmail.trim().toLowerCase();
-  if (this.assignedBy) this.assignedBy = this.assignedBy.trim().toLowerCase();
-  next();
-});
 
 export const TaskAssignment = mongoose.model("TaskAssignment", taskAssignmentSchema);

@@ -4,33 +4,31 @@ const taskReviewSchema = new mongoose.Schema(
   {
     reviewId: {
       type: String,
-      required: true,
+      required: [true, "Review ID is required"],
       unique: true,
-      trim: true,
-    },
-    taskId: {
-      type: String,
-      required: [true, "Task ID is required"],
       trim: true,
       index: true,
     },
+    taskId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      required: [true, "Task reference is required"],
+      index: true,
+    },
     submissionId: {
-      type: String,
-      required: [true, "Submission ID is required"],
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TaskSubmission",
+      required: [true, "Submission reference is required"],
       index: true,
     },
     version: {
       type: Number,
-      required: [true, "Submission version is required"],
-      min: 1,
-      index: true,
+      required: true,
     },
-    reviewerEmail: {
-      type: String,
-      required: [true, "Reviewer email is required"],
-      lowercase: true,
-      trim: true,
+    reviewerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Reviewer user reference is required"],
       index: true,
     },
     decision: {
@@ -39,7 +37,7 @@ const taskReviewSchema = new mongoose.Schema(
         values: ["COMMENTED", "APPROVED", "CHANGES_REQUESTED"],
         message: "{VALUE} is not a valid review decision",
       },
-      required: true,
+      required: [true, "Review decision is required"],
       uppercase: true,
     },
     feedback: {
@@ -47,24 +45,11 @@ const taskReviewSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
   },
   {
-    timestamps: false, // Immutable: no updatedAt
+    timestamps: true,
     collection: "taskReviews",
   }
 );
-
-// Indexes
-taskReviewSchema.index({ submissionId: 1, version: 1 });
-taskReviewSchema.index({ taskId: 1, createdAt: -1 });
-
-taskReviewSchema.pre("save", function (next) {
-  if (this.reviewerEmail) this.reviewerEmail = this.reviewerEmail.trim().toLowerCase();
-  next();
-});
 
 export const TaskReview = mongoose.model("TaskReview", taskReviewSchema);

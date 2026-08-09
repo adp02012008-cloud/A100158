@@ -1,32 +1,31 @@
 // src/pages/Leaderboard.jsx
-//added
 import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchSheetData } from "../utils/api";
+import { apiFetch } from "../utils/api";
 
 function getInitials(name = "") {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
 }
 
 export default function Leaderboard({ search }) {
-  const [students, setStudents]     = useState([]);
-  const [filter, setFilter]         = useState("activity");
-  const [open, setOpen]             = useState(false);
+  const [students, setStudents] = useState([]);
+  const [filter, setFilter] = useState("activity");
+  const [open, setOpen] = useState(false);
   const [rankChanges, setRankChanges] = useState({});
-  const previousRanksRef            = useRef({});
+  const previousRanksRef = useRef({});
 
   useEffect(() => {
-    fetchSheetData("Sheet1")
-      .then((data) => {
-        const cleaned = (data || []).map((s) => ({
+    apiFetch("/users/dashboard")
+      .then((res) => {
+        const cleaned = (res.users || []).map((s) => ({
           ...s,
-          Name:     (s.Name || "").trim(),
-          ACTIVITY: Number(s["ACTIVITY POINT"] || 0),
-          REWARD:   Number(s["REWARD POINT"]   || 0),
-          POSITION: (s.POSITION || "").trim(),
+          Name: (s.Name || s.name || "").trim(),
+          ACTIVITY: Number(s["ACTIVITY POINT"] ?? s.activityPoints ?? 0),
+          REWARD: Number(s["REWARD POINT"] ?? s.rewardPoints ?? 0),
+          POSITION: (s.POSITION || s.position || "").trim(),
         }));
         setStudents(cleaned);
       })
-      .catch((err) => console.error("Leaderboard load error:", err));
+      .catch((err) => console.error("Leaderboard load error from MongoDB:", err));
   }, []);
 
   const filtered = useMemo(() =>
@@ -52,7 +51,7 @@ export default function Leaderboard({ search }) {
   }, [sorted]);
 
   const topThree = sorted.slice(0, 3);
-  const others   = sorted.slice(3);
+  const others = sorted.slice(3);
 
   const getMovement = (name) => {
     const c = rankChanges[name] || 0;
@@ -79,7 +78,7 @@ export default function Leaderboard({ search }) {
           {open && (
             <div className="dropdown-menu">
               <div onClick={() => { setFilter("activity"); setOpen(false); }}>Activity Points</div>
-              <div onClick={() => { setFilter("reward");   setOpen(false); }}>Reward Points</div>
+              <div onClick={() => { setFilter("reward"); setOpen(false); }}>Reward Points</div>
             </div>
           )}
         </div>

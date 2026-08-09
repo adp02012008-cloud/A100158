@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { scriptPost, POINTS_URL } from "../utils/api";
+import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 
 function getLevelColumns(row) {
-  return Object.keys(row).filter((k) => k.toLowerCase().startsWith("level"));
+  return Object.keys(row || {}).filter((k) => k.toLowerCase().startsWith("level"));
 }
 
 export default function EditModal({ student, onClose, onSaved }) {
@@ -11,17 +11,17 @@ export default function EditModal({ student, onClose, onSaved }) {
   const isAdmin = auth.role === "admin" && auth.viewMode === "admin";
 
   const [form, setForm] = useState({
-    LINKEDIN:         student.LINKEDIN || "",
-    GITHUB:           student.GITHUB   || "",
-    "ACTIVITY POINT": student.ACTIVITY ?? "",
-    "REWARD POINT":   student.REWARD   ?? "",
+    LINKEDIN: student.LINKEDIN || student.linkedin || "",
+    GITHUB: student.GITHUB || student.github || "",
+    "ACTIVITY POINT": student.ACTIVITY ?? student.activityPoints ?? "",
+    "REWARD POINT": student.REWARD ?? student.rewardPoints ?? "",
   });
 
   const [adminForm, setAdminForm] = useState({
-    Name:     student.Name     || "",
-    POSITION: student.POSITION || "",
-    CLUSTER:  student.CLUSTER  || "",
-    JOINED:   student.JOINED   || "",
+    Name: student.Name || student.name || "",
+    POSITION: student.POSITION || student.position || "",
+    CLUSTER: student.CLUSTER || student.clusterName || "",
+    JOINED: student.JOINED || student.joinedDate || "",
   });
 
   const [courseEdits, setCourseEdits] = useState(() => {
@@ -32,33 +32,35 @@ export default function EditModal({ student, onClose, onSaved }) {
     return init;
   });
 
-  const [pointsRows,    setPointsRows]    = useState([]);
+  const [pointsRows, setPointsRows] = useState([]);
   const [pointsLoading, setPointsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(POINTS_URL)
-      .then((r) => r.json())
-      .then((data) => setPointsRows(data || []))
+    apiFetch("/points/rules")
+      .then((res) => {
+        const rules = res.rules || [];
+        setPointsRows(rules);
+      })
       .catch(() => setPointsRows([]))
       .finally(() => setPointsLoading(false));
   }, []);
 
   const courseLevelOptions = {};
   pointsRows.forEach((row) => {
-    const keys       = Object.keys(row);
-    const courseName = String(row[keys[0]] || "").trim();
+    const courseName = row.courseName || row.courseId?.name || "";
     if (!courseName) return;
-    const levels = getLevelColumns(row).filter((l) => Number(row[l] || 0) > 0);
+    const levelMap = row.levelPoints || {};
+    const levels = Object.keys(levelMap).filter((l) => Number(levelMap[l] || 0) > 0);
     if (levels.length > 0) courseLevelOptions[courseName] = levels;
   });
 
   const allKnownCourses = pointsRows
-    .map((row) => String(row[Object.keys(row)[0]] || "").trim())
+    .map((row) => row.courseName || row.courseId?.name)
     .filter(Boolean);
 
   const enrolledCourseNames = (student.COURSE_DETAILS || []).map((c) => c.courseName);
 
-  const [newCourseName,  setNewCourseName]  = useState("");
+  const [newCourseName, setNewCourseName] = useState("");
   const [newCourseLevel, setNewCourseLevel] = useState("");
 
   const handleAddCourse = () => {
@@ -70,53 +72,35 @@ export default function EditModal({ student, onClose, onSaved }) {
 
   const [saving, setSaving] = useState(false);
 
-  const set      = (key, val) => setForm((p)      => ({ ...p, [key]: val }));
+  const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
   const setAdmin = (key, val) => setAdminForm((p) => ({ ...p, [key]: val }));
 
   const handleSave = async () => {
     setSaving(true);
+    try {
+      const payload = {
+        "ENROLMENT NUMBER": student["ENROLMENT NUMBER"] || student.enrolmentNumber,
+        LINKEDIN: form.LINKEDIN,
+        GITHUB: form.GITHUB,
+        "ACTIVITY POINT": form["ACTIVITY POINT"],
+        "REWARD POINT": form["REWARD POINT"],
+        ...(isAdmin ? adminForm : {}),
+        COURSE_UPDATES: courseEdits,
+      };
 
-    const profilePayload = {
-      "ENROLMENT NUMBER": student["ENROLMENT NUMBER"],
-      LINKEDIN:           form.LINKEDIN,
-      GITHUB:             form.GITHUB,
-      "ACTIVITY POINT":   form["ACTIVITY POINT"],
-      "REWARD POINT":     form["REWARD POINT"],
-      ...(isAdmin ? adminForm : {}),
-    };
-
-    const action = isAdmin ? "adminUpdateStudent" : "studentUpdateOwn";
-    scriptPost({ action, requesterEmail: auth.email, payload: profilePayload });
-
-    // ── Only send courses that actually changed ──────────────
-    const originalLevels = {};
-    (student.COURSE_DETAILS || []).forEach((c) => {
-      originalLevels[c.courseName] = c.currentLevel || "";
-    });
-
-    const changedCourses = {};
-    Object.entries(courseEdits).forEach(([courseName, level]) => {
-      if (level !== (originalLevels[courseName] ?? "")) {
-        changedCourses[courseName] = level;
-      }
-    });
-
-    if (Object.keys(changedCourses).length > 0) {
-      scriptPost({
-        action:         "updateCourses",
-        requesterEmail: auth.email,
-        payload: {
-          "ENROLMENT NUMBER": student["ENROLMENT NUMBER"],
-          studentName:        student.Name,
-          COURSE_UPDATES:     changedCourses,
-        },
+      const targetId = student._id || student.userId;
+      await apiFetch(`/users/${targetId}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
       });
-    }
 
-    // Update UI immediately (optimistic)
-    onSaved({ ...profilePayload, COURSE_UPDATES: courseEdits });
-    setSaving(false);
-    onClose();
+      onSaved({ ...payload, COURSE_UPDATES: courseEdits });
+      onClose();
+    } catch (err) {
+      alert("Failed to save changes: " + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const displayedCourses = [
@@ -134,32 +118,29 @@ export default function EditModal({ student, onClose, onSaved }) {
         <button className="close-btn" onClick={onClose}>✕</button>
 
         <h3 className="edit-modal-title">
-          {isAdmin ? `✏️ Edit — ${student.Name}` : "✏️ Update My Profile"}
+          {isAdmin ? `✏️ Edit — ${student.Name || student.name}` : "✏️ Update My Profile"}
         </h3>
 
-        {/* ── Admin-only: identity fields ────────────────────── */}
         {isAdmin && (
           <div className="edit-section">
             <h4 className="edit-section-title">Identity</h4>
             <div className="edit-grid">
-              <EditField label="Name"     value={adminForm.Name}     onChange={(v) => setAdmin("Name", v)} />
+              <EditField label="Name" value={adminForm.Name} onChange={(v) => setAdmin("Name", v)} />
               <EditField label="Position" value={adminForm.POSITION} onChange={(v) => setAdmin("POSITION", v)} />
-              <EditField label="Cluster"  value={adminForm.CLUSTER}  onChange={(v) => setAdmin("CLUSTER", v)} />
-              <EditField label="Joined"   value={adminForm.JOINED}   onChange={(v) => setAdmin("JOINED", v)} />
+              <EditField label="Cluster" value={adminForm.CLUSTER} onChange={(v) => setAdmin("CLUSTER", v)} />
+              <EditField label="Joined" value={adminForm.JOINED} onChange={(v) => setAdmin("JOINED", v)} />
             </div>
           </div>
         )}
 
-        {/* ── Social links ───────────────────────────────────── */}
         <div className="edit-section">
           <h4 className="edit-section-title">Social Links</h4>
           <div className="edit-grid">
             <EditField label="LinkedIn URL" value={form.LINKEDIN} onChange={(v) => set("LINKEDIN", v)} />
-            <EditField label="GitHub URL"   value={form.GITHUB}   onChange={(v) => set("GITHUB", v)} />
+            <EditField label="GitHub URL" value={form.GITHUB} onChange={(v) => set("GITHUB", v)} />
           </div>
         </div>
 
-        {/* ── Points ────────────────────────────────────────── */}
         <div className="edit-section">
           <h4 className="edit-section-title">Points</h4>
           <div className="edit-grid">
@@ -178,7 +159,6 @@ export default function EditModal({ student, onClose, onSaved }) {
           </div>
         </div>
 
-        {/* ── Course Levels ──────────────────────────────────── */}
         <div className="edit-section">
           <h4 className="edit-section-title">Course Levels</h4>
 
@@ -192,7 +172,7 @@ export default function EditModal({ student, onClose, onSaved }) {
 
               <div className="course-edit-list">
                 {displayedCourses.map((courseName) => {
-                  const levels     = courseLevelOptions[courseName] || [];
+                  const levels = courseLevelOptions[courseName] || ["LEVEL-0", "LEVEL-1", "LEVEL-2", "LEVEL-3"];
                   const currentVal = courseEdits[courseName] ?? "";
                   return (
                     <div key={courseName} className="course-edit-row">
@@ -233,7 +213,7 @@ export default function EditModal({ student, onClose, onSaved }) {
                     onChange={(e) => setNewCourseLevel(e.target.value)}
                   >
                     <option value="">Select level…</option>
-                    {(courseLevelOptions[newCourseName] || []).map((l) => (
+                    {(courseLevelOptions[newCourseName] || ["LEVEL-0", "LEVEL-1", "LEVEL-2", "LEVEL-3"]).map((l) => (
                       <option key={l} value={l}>{l}</option>
                     ))}
                   </select>
@@ -247,7 +227,7 @@ export default function EditModal({ student, onClose, onSaved }) {
               </div>
 
               <p className="edit-note" style={{ marginTop: "10px" }}>
-                💡 Changes are saved to the sheet in the background.
+                💡 Changes are saved directly to MongoDB.
               </p>
             </>
           )}
@@ -258,7 +238,7 @@ export default function EditModal({ student, onClose, onSaved }) {
             Cancel
           </button>
           <button className="edit-save-btn" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving…" : "Save to Sheet"}
+            {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>
       </div>

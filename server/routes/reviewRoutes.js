@@ -1,12 +1,17 @@
 import express from "express";
-import { verifyAuthToken, requireAdmin } from "../middleware/authMiddleware.js";
-import { createReview, getReviews } from "../controllers/reviewController.js";
+import { verifyAuthToken } from "../middleware/authMiddleware.js";
+import { createReview, getReviews, rejectReviewEdit } from "../controllers/reviewController.js";
 
 const router = express.Router();
 
 router.use(verifyAuthToken);
 
-router.post("/", requireAdmin, createReview);
 router.get("/", getReviews);
+router.post("/", createReview);
+
+// Immutability rejection routes
+router.put("/:id", rejectReviewEdit);
+router.patch("/:id", rejectReviewEdit);
+router.delete("/:id", rejectReviewEdit);
 
 export default router;

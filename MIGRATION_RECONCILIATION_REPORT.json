@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-08-09T05:14:17.306Z",
+  "sourceRecordCounts": {
+    "Sheet1": 13,
+    "Courses": 34,
+    "points": 34,
+    "Tasks": 1,
+    "TaskAssignments": 0,
+    "Notifications": 10,
+    "Hackathons": 0,
+    "Gallery": 0,
+    "Projects": 0,
+    "Certificates": 0,
+    "Opportunities": 0
+  },
+  "migratedRecordCounts": {
+    "clusters": 2,
+    "users": 13,
+    "courses": 30,
+    "userCourseProgress": 156,
+    "tasks": 1,
+    "notifications": 10
+  },
+  "skippedRecords": [],
+  "duplicateRecords": [],
+  "unresolvedRelationships": [],
+  "ambiguousRelationships": [],
+  "reconciliationStatus": "SUCCESS"
+}

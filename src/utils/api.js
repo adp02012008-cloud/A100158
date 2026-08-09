@@ -5,9 +5,6 @@ import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-export const STUDENT_URL = "";
-export const COURSE_URL = "";
-export const POINTS_URL = "";
 
 async function waitForFirebaseUser(timeoutMs = 8000) {
   if (firebaseAuth.currentUser) return firebaseAuth.currentUser;
@@ -83,7 +80,6 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
     headers,
   });
 
-  // Handle Token Expiry / 401 Unauthorized with token force-refresh retry
   if (response.status === 401 && !isRetry) {
     console.warn("Received 401 Unauthorized. Retrying request with refreshed Firebase ID Token...");
     try {
@@ -117,7 +113,7 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
 }
 
 /**
- * Roster Helper: fetches active user roster from MongoDB backend
+ * MongoDB Roster Helper: fetches active user roster from MongoDB backend
  */
 export async function fetchSheetData(sheetName = "Sheet1") {
   try {
@@ -153,32 +149,75 @@ export async function listTeamRecords(sheetName) {
     const res = await apiFetch("/reviews");
     return res.reviews || [];
   }
+  if (sheetName === "Hackathons") {
+    const res = await apiFetch("/hackathons");
+    return res.hackathons || [];
+  }
+  if (sheetName === "Gallery") {
+    const res = await apiFetch("/gallery");
+    return res.gallery || [];
+  }
+  if (sheetName === "Projects") {
+    const res = await apiFetch("/projects");
+    return res.projects || [];
+  }
+  if (sheetName === "Certificates") {
+    const res = await apiFetch("/certificates");
+    return res.certificates || [];
+  }
+  if (sheetName === "Opportunities") {
+    const res = await apiFetch("/opportunities");
+    return res.opportunities || [];
+  }
   return fetchSheetData(sheetName);
 }
 
 export async function addTeamRecord(sheetName, record) {
-  if (sheetName === "Tasks") {
-    return apiFetch("/tasks", { method: "POST", body: JSON.stringify(record) });
-  }
-  if (sheetName === "TaskSubmissions") {
-    return apiFetch("/submissions", { method: "POST", body: JSON.stringify(record) });
-  }
-  if (sheetName === "TaskReviews") {
-    return apiFetch("/reviews", { method: "POST", body: JSON.stringify(record) });
+  const endpointMap = {
+    Tasks: "/tasks",
+    TaskSubmissions: "/submissions",
+    TaskReviews: "/reviews",
+    Hackathons: "/hackathons",
+    Gallery: "/gallery",
+    Projects: "/projects",
+    Certificates: "/certificates",
+    Opportunities: "/opportunities",
+  };
+  const ep = endpointMap[sheetName];
+  if (ep) {
+    return apiFetch(ep, { method: "POST", body: JSON.stringify(record) });
   }
   return { success: true };
 }
 
 export async function updateTeamRecord(sheetName, idField, idValue, record) {
-  if (sheetName === "Tasks") {
-    return apiFetch(`/tasks/${idValue}`, { method: "PUT", body: JSON.stringify(record) });
+  const endpointMap = {
+    Tasks: `/tasks/${idValue}`,
+    Hackathons: `/hackathons/${idValue}`,
+    Gallery: `/gallery/${idValue}`,
+    Projects: `/projects/${idValue}`,
+    Certificates: `/certificates/${idValue}`,
+    Opportunities: `/opportunities/${idValue}`,
+  };
+  const ep = endpointMap[sheetName];
+  if (ep) {
+    return apiFetch(ep, { method: "PUT", body: JSON.stringify(record) });
   }
   return { success: true };
 }
 
 export async function deleteTeamRecord(sheetName, idField, idValue) {
-  if (sheetName === "Tasks") {
-    return apiFetch(`/tasks/${idValue}`, { method: "DELETE" });
+  const endpointMap = {
+    Tasks: `/tasks/${idValue}`,
+    Hackathons: `/hackathons/${idValue}`,
+    Gallery: `/gallery/${idValue}`,
+    Projects: `/projects/${idValue}`,
+    Certificates: `/certificates/${idValue}`,
+    Opportunities: `/opportunities/${idValue}`,
+  };
+  const ep = endpointMap[sheetName];
+  if (ep) {
+    return apiFetch(ep, { method: "DELETE" });
   }
   return { success: true };
 }

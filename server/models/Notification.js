@@ -4,72 +4,60 @@ const notificationSchema = new mongoose.Schema(
   {
     notificationId: {
       type: String,
-      required: true,
+      required: [true, "Notification ID is required"],
       unique: true,
       trim: true,
+      index: true,
     },
-    targetEmail: {
-      type: String,
-      required: [true, "Target email is required"],
-      lowercase: true,
-      trim: true,
+    targetUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Target user reference is required"],
       index: true,
     },
     type: {
       type: String,
-      default: "TASK",
-      uppercase: true,
+      required: true,
+      trim: true,
     },
     taskId: {
-      type: String,
-      default: "",
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      default: null,
     },
     submissionId: {
-      type: String,
-      default: "",
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TaskSubmission",
+      default: null,
     },
     title: {
       type: String,
-      required: [true, "Notification title is required"],
+      required: true,
       trim: true,
     },
     message: {
       type: String,
-      required: [true, "Notification message is required"],
+      required: true,
       trim: true,
     },
     eventKey: {
       type: String,
-      required: [true, "EventKey is required for deduplication"],
-      unique: true,
+      required: true,
       trim: true,
       index: true,
     },
     readAt: {
       type: Date,
       default: null,
-      index: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
     collection: "notifications",
   }
 );
 
-// Indexes
-notificationSchema.index({ targetEmail: 1, readAt: 1 });
-notificationSchema.index({ targetEmail: 1, createdAt: -1 });
-
-notificationSchema.pre("save", function (next) {
-  if (this.targetEmail) this.targetEmail = this.targetEmail.trim().toLowerCase();
-  next();
-});
+// Compound Unique Index: (targetUserId, eventKey)
+notificationSchema.index({ targetUserId: 1, eventKey: 1 }, { unique: true });
 
 export const Notification = mongoose.model("Notification", notificationSchema);
