@@ -130,7 +130,7 @@ export async function calculateTaskCoverage(taskId, session = null) {
     coveragePercentage,
     coveredUsers,
     uncoveredUsers,
-    taskStatus: updatedTaskStatus,
+    taskStatus: newStatus,
     completedAt,
   };
 }
