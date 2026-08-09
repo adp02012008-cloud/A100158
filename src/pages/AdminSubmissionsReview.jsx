@@ -290,11 +290,14 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
             const isEditWindowActive = sub.memberEditUntil && new Date(sub.memberEditUntil) > new Date();
 
-            const hasHigherResubmission = submissions.some(
-              (other) =>
-                other.submissionGroupId === sub.submissionGroupId &&
-                other.version > sub.version
-            );
+            const previousReviews = reviews.filter((r) => {
+              const rSubId = typeof r.submissionId === "object" ? r.submissionId?._id : r.submissionId;
+              const isCurrentSub = String(rSubId) === String(subId);
+              const isSameTask = String(r.taskId?._id || r.taskId) === String(sub.taskId?._id || sub.taskId);
+              return !isCurrentSub && isSameTask;
+            }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            const prevChangesRequested = previousReviews.find((r) => r.decision === "CHANGES_REQUESTED");
 
             return (
               <div
@@ -422,6 +425,28 @@ export default function AdminSubmissionsReview({ search = "" }) {
                 {sub.notes && (
                   <div style={{ marginTop: "12px", fontSize: "14px", color: "#cbd5e1", background: "rgba(15, 23, 42, 0.4)", padding: "10px 14px", borderRadius: "8px" }}>
                     💬 <strong>Submitter Notes:</strong> {sub.notes}
+                  </div>
+                )}
+
+                {prevChangesRequested && (
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      background: "linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.15) 100%)",
+                      border: "1px solid rgba(245, 158, 11, 0.35)",
+                      borderRadius: "10px",
+                      padding: "12px 16px",
+                    }}
+                  >
+                    <div style={{ color: "#fbbf24", fontWeight: "700", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      ⚠️ Previous Admin Correction Request (Reason V{prevChangesRequested.version || 1} Was Not Approved):
+                    </div>
+                    <div style={{ color: "#f8fafc", fontSize: "13px", marginTop: "4px", fontStyle: "italic" }}>
+                      "{prevChangesRequested.feedback || "Admin requested corrections on the previous version before approving."}"
+                    </div>
+                    <div style={{ color: "#94a3b8", fontSize: "11px", marginTop: "6px" }}>
+                      📅 Feedback written on {new Date(prevChangesRequested.createdAt).toLocaleString()}
+                    </div>
                   </div>
                 )}
 

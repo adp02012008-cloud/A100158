@@ -100,17 +100,22 @@ export async function createSubmission(req, res) {
       const adminUsers = await User.find({ role: "ADMIN", status: "ACTIVE" }, null, queryOpts).exec();
       for (const adm of adminUsers) {
         const eventKey = `NTF-SUBMIT-${newSubmission._id}-${adm._id}`;
+        const title = nextVersion > 1 ? "Corrected Deliverable Resubmitted 📥" : "Deliverable Submitted 📥";
+        const message = nextVersion > 1
+          ? `${user.name} submitted corrected Version V${nextVersion} for "${task.title}" following your review feedback.`
+          : `${user.name} submitted V${nextVersion} for "${task.title}".`;
+
         await Notification.findOneAndUpdate(
           { targetUserId: adm._id, eventKey },
           {
             notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             targetUserId: adm._id,
             targetEmail: (adm.email || "").toLowerCase().trim(),
-            type: "NEW_SUBMISSION",
+            type: nextVersion > 1 ? "RESUBMISSION_DELIVERED" : "NEW_SUBMISSION",
             taskId: task.taskId,
             submissionId: newSubmission._id,
-            title: "Deliverable Submitted 📥",
-            message: `${user.name} submitted V${nextVersion} for "${task.title}".`,
+            title,
+            message,
             eventKey,
             readAt: null,
             createdAt: new Date(),
