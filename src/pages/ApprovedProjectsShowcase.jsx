@@ -403,47 +403,57 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                     )}
                   </div>
 
-                  <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
-                    {isEditAllowed && (
-                      <button
-                        onClick={() => handleOpenEditModal(sub)}
-                        style={{
-                          flex: 1,
-                          padding: "8px 12px",
-                          borderRadius: "8px",
-                          background: "rgba(56, 189, 248, 0.15)",
-                          border: "1px solid rgba(56, 189, 248, 0.3)",
-                          color: "#38bdf8",
-                          fontWeight: "600",
-                          fontSize: "12px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        ✏️ Edit Deliverable
-                      </button>
-                    )}
+                  {isEditAllowed && (
+                    <button
+                      onClick={() => handleOpenEditModal(sub)}
+                      style={{
+                        width: "100%",
+                        marginTop: "10px",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        background: "rgba(56, 189, 248, 0.15)",
+                        border: "1px solid rgba(56, 189, 248, 0.3)",
+                        color: "#38bdf8",
+                        fontWeight: "700",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      ✏️ Edit Deliverable (Edit Window Active)
+                    </button>
+                  )}
 
-                    {isUserAdmin && (
-                      <button
-                        onClick={() => {
-                          setDeleteSub(sub);
-                          setDeleteConfirmText("");
-                        }}
-                        style={{
-                          padding: "8px 14px",
-                          borderRadius: "8px",
-                          background: "rgba(239, 68, 68, 0.15)",
-                          border: "1px solid rgba(239, 68, 68, 0.35)",
-                          color: "#f87171",
-                          fontWeight: "700",
-                          fontSize: "12px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        🗑️ Delete Project
-                      </button>
-                    )}
-                  </div>
+                  {isUserAdmin && (
+                    <button
+                      onClick={() => {
+                        setDeleteSub(sub);
+                        setDeleteConfirmText("");
+                      }}
+                      style={{
+                        width: "100%",
+                        marginTop: "10px",
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        background: "linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.25) 100%)",
+                        border: "1px solid rgba(239, 68, 68, 0.4)",
+                        color: "#f87171",
+                        fontWeight: "700",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        boxShadow: "0 2px 10px rgba(239, 68, 68, 0.15)",
+                      }}
+                    >
+                      🗑️ Delete Project
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -641,25 +651,79 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
               </div>
 
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
-                  Team Contributors (Select multiple)
-                </label>
-                <select
-                  multiple
-                  value={directForm.submittedFor}
-                  onChange={(e) => {
-                    const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
-                    setDirectForm({ ...directForm, submittedFor: selected });
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>
+                    Team Contributors / Squad Members (Click buttons to select)
+                  </label>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setDirectForm({ ...directForm, submittedFor: users.map((u) => u._id) })}
+                      style={{ fontSize: "11px", color: "#34d399", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(52, 211, 153, 0.3)", padding: "2px 8px", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      ✓ Select All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDirectForm({ ...directForm, submittedFor: [] })}
+                      style={{ fontSize: "11px", color: "#f87171", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "2px 8px", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}
+                    >
+                      ✕ Clear All
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    maxHeight: "160px",
+                    overflowY: "auto",
+                    padding: "12px",
+                    background: "#0f172a",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    borderRadius: "10px",
                   }}
-                  style={{ width: "100%", height: "100px", padding: "10px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
                 >
-                  {users.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.name} ({u.email})
-                    </option>
-                  ))}
-                </select>
-                <small style={{ color: "#94a3b8", fontSize: "11px" }}>Hold Ctrl/Cmd to select multiple members</small>
+                  {users.map((u) => {
+                    const isSelected = (directForm.submittedFor || []).includes(u._id);
+                    return (
+                      <button
+                        key={u._id}
+                        type="button"
+                        onClick={() => {
+                          const current = directForm.submittedFor || [];
+                          const next = isSelected
+                            ? current.filter((id) => id !== u._id)
+                            : [...current, u._id];
+                          setDirectForm({ ...directForm, submittedFor: next });
+                        }}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          background: isSelected
+                            ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+                            : "rgba(255, 255, 255, 0.06)",
+                          border: isSelected
+                            ? "1px solid #34d399"
+                            : "1px solid rgba(255, 255, 255, 0.15)",
+                          color: isSelected ? "#ffffff" : "#94a3b8",
+                          boxShadow: isSelected ? "0 2px 8px rgba(16, 185, 129, 0.3)" : "none",
+                        }}
+                      >
+                        {isSelected ? "✓ " : "+ "} {u.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                <small style={{ color: "#94a3b8", fontSize: "11px", marginTop: "4px", display: "block" }}>
+                  Selected {directForm.submittedFor.length} contributor(s)
+                </small>
               </div>
 
               <div>
