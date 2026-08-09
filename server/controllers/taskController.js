@@ -113,7 +113,7 @@ export async function createTask(req, res) {
             dueDate: dueDate || "",
             submissionMode: submissionMode || "FLEXIBLE",
             status: "PENDING",
-            createdBy: createdByEmail,
+            createdBy: user._id,
           },
         ],
         queryOpts
@@ -125,8 +125,9 @@ export async function createTask(req, res) {
         new Set(rawAssigned.map((e) => String(e).trim().toLowerCase()).filter(Boolean))
       );
 
+      let validUsers = [];
       if (normalizedAssigned.length > 0) {
-        const validUsers = await User.find(
+        validUsers = await User.find(
           {
             email: { $in: normalizedAssigned },
             status: "ACTIVE",
@@ -150,14 +151,16 @@ export async function createTask(req, res) {
 
       const createdAssignments = [];
       for (const assigneeEmail of normalizedAssigned) {
+        const assigneeUser = validUsers.find((u) => u.email.toLowerCase() === assigneeEmail);
         const assignmentId = `ASN-${taskId}-${Math.random().toString(36).substring(2, 6)}`;
         const [assignment] = await TaskAssignment.create(
           [
             {
               assignmentId,
-              taskId,
+              taskId: newTask._id,
+              userId: assigneeUser ? assigneeUser._id : user._id,
               assigneeEmail,
-              assignedBy: createdByEmail,
+              assignedBy: user._id,
               assignedAt: new Date(),
               status: "ACTIVE",
             },
@@ -300,19 +303,21 @@ export async function updateTask(req, res) {
 
             if (existingRemoved) {
               existingRemoved.status = "ACTIVE";
-              existingRemoved.assignedBy = actorEmail;
+              existingRemoved.assignedBy = user._id;
               existingRemoved.assignedAt = new Date();
               existingRemoved.removedAt = null;
               await existingRemoved.save(queryOpts);
             } else {
+              const assigneeUser = validUsers.find((u) => u.email.toLowerCase() === email);
               const assignmentId = `ASN-${task.taskId}-${Math.random().toString(36).substring(2, 6)}`;
               await TaskAssignment.create(
                 [
                   {
                     assignmentId,
-                    taskId: task.taskId,
+                    taskId: task._id,
+                    userId: assigneeUser ? assigneeUser._id : user._id,
                     assigneeEmail: email,
-                    assignedBy: actorEmail,
+                    assignedBy: user._id,
                     assignedAt: new Date(),
                     status: "ACTIVE",
                   },

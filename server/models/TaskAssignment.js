@@ -21,6 +21,11 @@ const taskAssignmentSchema = new mongoose.Schema(
       required: [true, "User reference is required"],
       index: true,
     },
+    assigneeEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
     assignedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
