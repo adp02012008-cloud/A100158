@@ -304,6 +304,7 @@ export default function Dashboard({ search }) {
               targetActivity={targetActivity}
               onClick={setSelected}
               onEdit={setEditing}
+              onRoleChanged={loadData}
             />
           ))}
         </div>

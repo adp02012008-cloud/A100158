@@ -1,5 +1,6 @@
 // src/components/StudentCard.jsx
 import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../utils/api";
 
 function getInitials(name = "") {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
@@ -12,7 +13,7 @@ function getStatus(activity, avgActivity) {
   return                          { text: "Needs Improvement", className: "status-low",     icon: "🔴" };
 }
 
-export default function StudentCard({ student, onClick, onEdit, avgActivity, targetActivity }) {
+export default function StudentCard({ student, onClick, onEdit, onRoleChanged, avgActivity, targetActivity }) {
   const { auth, effectiveRole } = useAuth();
 
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
@@ -31,6 +32,7 @@ export default function StudentCard({ student, onClick, onEdit, avgActivity, tar
   const isAdmin      = auth.role === "admin" && auth.viewMode === "admin";
   const isOwnStudent = effectiveRole === "student" && auth.ownedEnrolment === student["ENROLMENT NUMBER"];
   const canEdit      = isAdmin || isOwnStudent;
+  const isUserAdmin  = student.ROLE === "ADMIN" || student.role === "ADMIN";
 
   return (
     <div
@@ -70,9 +72,18 @@ export default function StudentCard({ student, onClick, onEdit, avgActivity, tar
                 </div>
               </div>
 
-              <div className="card-meta-line">
+              <div className="card-meta-line" style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
                 <span className="badge">{student.POSITION}</span>
                 <span className="cluster-pill">{student.CLUSTER || "Unknown"}</span>
+                {isUserAdmin ? (
+                  <span className="badge" style={{ background: "rgba(234, 179, 8, 0.2)", color: "#eab308", border: "1px solid rgba(234, 179, 8, 0.4)" }}>
+                    👑 Admin
+                  </span>
+                ) : (
+                  <span className="badge" style={{ background: "rgba(99, 102, 241, 0.15)", color: "#818cf8" }}>
+                    🎓 Member
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -113,14 +124,54 @@ export default function StudentCard({ student, onClick, onEdit, avgActivity, tar
 
       </div>
 
-      {/* Edit button pinned to bottom — always visible regardless of content height */}
+      {/* Edit button & Quick Role Toggle pinned to bottom */}
       {canEdit && (
-        <button
-          className="card-edit-btn"
-          onClick={(e) => { e.stopPropagation(); onEdit(student); }}
-        >
-          ✏️ {isAdmin ? "Edit" : "Update My Card"}
-        </button>
+        <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+          <button
+            className="card-edit-btn"
+            style={{ flex: 1 }}
+            onClick={(e) => { e.stopPropagation(); onEdit(student); }}
+          >
+            ✏️ {isAdmin ? "Edit" : "Update My Card"}
+          </button>
+
+          {isAdmin && (
+            <button
+              type="button"
+              className="card-edit-btn"
+              style={{
+                background: isUserAdmin ? "rgba(99, 102, 241, 0.2)" : "rgba(234, 179, 8, 0.2)",
+                color: isUserAdmin ? "#818cf8" : "#eab308",
+                border: "1px solid rgba(255,255,255,0.1)",
+                flex: "0 0 auto",
+                padding: "8px 12px",
+                fontSize: "12px",
+              }}
+              title={isUserAdmin ? "Demote Admin to Member" : "Promote Member to Admin"}
+              onClick={async (e) => {
+                e.stopPropagation();
+                const newRole = isUserAdmin ? "MEMBER" : "ADMIN";
+                const confirmMsg = isUserAdmin
+                  ? `Demote ${student.Name} from Admin to Member?`
+                  : `Promote ${student.Name} to System Admin?`;
+                if (!window.confirm(confirmMsg)) return;
+                try {
+                  const targetId = student._id || student.userId;
+                  const res = await apiFetch(`/users/${targetId}/role`, {
+                    method: "PUT",
+                    body: JSON.stringify({ role: newRole }),
+                  });
+                  alert(`Role updated: ${student.Name} is now a ${newRole === "ADMIN" ? "System Admin 👑" : "Team Member 🎓"}`);
+                  if (onRoleChanged) onRoleChanged();
+                } catch (err) {
+                  alert("Failed to update role: " + err.message);
+                }
+              }}
+            >
+              {isUserAdmin ? "🎓 Demote to Member" : "👑 Make Admin"}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
