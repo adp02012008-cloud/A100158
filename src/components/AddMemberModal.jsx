@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch } from "../utils/api";
 
 export default function AddMemberModal({ onClose, onCreated }) {
@@ -10,8 +10,17 @@ export default function AddMemberModal({ onClose, onCreated }) {
     clusterName: "Core",
     role: "MEMBER",
   });
+  const [existingClusters, setExistingClusters] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    apiFetch("/clusters")
+      .then((res) => {
+        if (res?.clusters) setExistingClusters(res.clusters);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleChange = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -83,25 +92,30 @@ export default function AddMemberModal({ onClose, onCreated }) {
           </div>
 
           <div>
-            <label className="edit-label">Cluster</label>
-            <select
-              className="course-edit-select"
+            <label className="edit-label">Cluster (Type or Select)</label>
+            <input
+              className="edit-input"
+              list="clusters-list"
               value={form.clusterName}
               onChange={(e) => handleChange("clusterName", e.target.value)}
-              style={{ width: "100%", padding: "10px" }}
-            >
-              <option value="Core">Core</option>
-              <option value="Computer Cluster">Computer Cluster</option>
-            </select>
+              placeholder="e.g. Core, Computer Cluster, Electronics"
+            />
+            <datalist id="clusters-list">
+              <option value="Core" />
+              <option value="Computer Cluster" />
+              {existingClusters.map((c) => (
+                <option key={c._id || c.name} value={c.name} />
+              ))}
+            </datalist>
           </div>
 
           <div>
-            <label className="edit-label">Position</label>
+            <label className="edit-label">Position (e.g. Member 1, Team Lead)</label>
             <input
               className="edit-input"
               value={form.position}
               onChange={(e) => handleChange("position", e.target.value)}
-              placeholder="e.g. Member"
+              placeholder="e.g. Member 1, Member 2, Team Lead"
             />
           </div>
 
