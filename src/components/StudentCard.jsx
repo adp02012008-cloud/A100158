@@ -27,12 +27,21 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
   const status     = getStatus(student.ACTIVITY, avgActivity);
   const progress   = Math.min(100, targetActivity > 0 ? (student.ACTIVITY / targetActivity) * 100 : 0);
   const remaining  = Math.max(0, targetActivity - student.ACTIVITY);
-  const difference = Math.abs(student.ACTIVITY - avgActivity).toFixed(1);
+  const cleanAuthEmail = (auth.email || "").toLowerCase().trim();
+  const studentEmails = [
+    student.email,
+    student.personalEmail,
+    student.bitEmail,
+  ].filter(Boolean).map((e) => String(e).toLowerCase().trim());
 
-  const isAdmin      = auth.role === "admin" && auth.viewMode === "admin";
-  const isOwnStudent = effectiveRole === "student" && auth.ownedEnrolment === student["ENROLMENT NUMBER"];
-  const canEdit      = isAdmin || isOwnStudent;
-  const isUserAdmin  = student.ROLE === "ADMIN" || student.role === "ADMIN";
+  const isOwnStudent = Boolean(
+    (cleanAuthEmail && studentEmails.includes(cleanAuthEmail)) ||
+    (auth.ownedEnrolment && (student["ENROLMENT NUMBER"] === auth.ownedEnrolment || student.enrolmentNumber === auth.ownedEnrolment))
+  );
+
+  const isAdminView = auth.role === "admin" && auth.viewMode === "admin";
+  const canEdit     = isAdminView || isOwnStudent;
+  const isUserAdmin = student.ROLE === "ADMIN" || student.role === "ADMIN";
 
   return (
     <div
@@ -130,7 +139,7 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
           className="card-edit-btn"
           onClick={(e) => { e.stopPropagation(); onEdit(student); }}
         >
-          ✏️ {isAdmin ? "Edit" : "Update My Card"}
+          ✏️ {isAdminView ? "Edit" : "Update My Card"}
         </button>
       )}
     </div>
