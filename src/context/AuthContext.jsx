@@ -6,6 +6,7 @@ import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 import { clearUserCache } from "../utils/taskStorage";
+import { fetchMyProfile } from "../utils/api";
 
 const AuthContext = createContext();
 
@@ -38,6 +39,19 @@ function loadSavedPublicAuth() {
 
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(loadSavedPublicAuth);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    if (auth.isLoggedIn && auth.role !== "public") {
+      fetchMyProfile()
+        .then((res) => {
+          if (res?.user) setCurrentUser(res.user);
+        })
+        .catch(() => setCurrentUser(null));
+    } else {
+      setCurrentUser(null);
+    }
+  }, [auth.isLoggedIn, auth.role, auth.email]);
 
   useEffect(() => {
     if (auth.isLoggedIn && auth.role === "public") {
@@ -94,6 +108,7 @@ export function AuthProvider({ children }) {
     } finally {
       clearUserCache();
       setAuth(DEFAULT_AUTH);
+      setCurrentUser(null);
       localStorage.removeItem("bugSlayersAuth");
     }
   }, []);
@@ -117,6 +132,7 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       auth,
+      currentUser,
       effectiveRole,
       isTeamMember,
       isAdmin,
@@ -124,7 +140,7 @@ export function AuthProvider({ children }) {
       logout,
       toggleViewMode,
     }),
-    [auth, effectiveRole, isTeamMember, isAdmin, login, logout, toggleViewMode]
+    [auth, currentUser, effectiveRole, isTeamMember, isAdmin, login, logout, toggleViewMode]
   );
 
   return (

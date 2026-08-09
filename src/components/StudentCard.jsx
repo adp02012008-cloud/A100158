@@ -14,7 +14,7 @@ function getStatus(activity, avgActivity) {
 }
 
 export default function StudentCard({ student, onClick, onEdit, onRoleChanged, avgActivity, targetActivity }) {
-  const { auth, effectiveRole } = useAuth();
+  const { auth, currentUser } = useAuth();
 
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
 
@@ -35,6 +35,12 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
   ].filter(Boolean).map((e) => String(e).toLowerCase().trim());
 
   const isOwnStudent = Boolean(
+    (currentUser && (
+      (currentUser._id && student._id && String(currentUser._id) === String(student._id)) ||
+      (currentUser.userId && student.userId && String(currentUser.userId) === String(student.userId)) ||
+      (currentUser.enrolmentNumber && (student["ENROLMENT NUMBER"] === currentUser.enrolmentNumber || student.enrolmentNumber === currentUser.enrolmentNumber)) ||
+      (currentUser.email && studentEmails.includes(String(currentUser.email).toLowerCase().trim()))
+    )) ||
     (cleanAuthEmail && studentEmails.includes(cleanAuthEmail)) ||
     (auth.ownedEnrolment && (student["ENROLMENT NUMBER"] === auth.ownedEnrolment || student.enrolmentNumber === auth.ownedEnrolment))
   );
