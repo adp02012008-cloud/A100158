@@ -284,24 +284,44 @@ export default function MyTasksMember({ search = "" }) {
                 {latestSub && !hasChangesRequested && (
                   <div style={{ background: isApproved ? "rgba(34, 197, 94, 0.15)" : "rgba(14, 165, 233, 0.15)", border: `1px solid ${isApproved ? "rgba(34, 197, 94, 0.3)" : "rgba(14, 165, 233, 0.3)"}`, borderRadius: "10px", padding: "10px 14px", marginTop: "12px" }}>
                     <span style={{ color: isApproved ? "#4ade80" : "#38bdf8", fontWeight: "700", fontSize: "13px" }}>
-                      {isApproved ? "✅ Deliverable Approved & Published" : `📥 Version V${latestSub.version || 1} Under Admin Review`}
+                      {isApproved ? "✅ Deliverable Approved & Published (Submissions Locked)" : `📥 Version V${latestSub.version || 1} Under Admin Review`}
                     </span>
                   </div>
                 )}
 
                 <div className="task-actions-row" style={{ marginTop: "14px" }}>
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    style={hasChangesRequested ? { background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", boxShadow: "0 4px 14px rgba(239, 68, 68, 0.3)" } : undefined}
-                    onClick={() => openSubmitModal(t, latestSub)}
-                  >
-                    {hasChangesRequested
-                      ? `📤 Resubmit Corrected Deliverable (V${(latestSub?.version || 1) + 1})`
-                      : latestSub
-                      ? `📤 Resubmit Deliverable (V${(latestSub?.version || 1) + 1})`
-                      : "📤 Submit Deliverables"}
-                  </button>
+                  {isApproved ? (
+                    <div style={{ width: "100%", textAlign: "center" }}>
+                      <span
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          padding: "10px 14px",
+                          borderRadius: "8px",
+                          background: "rgba(34, 197, 94, 0.12)",
+                          border: "1px solid rgba(34, 197, 94, 0.35)",
+                          color: "#4ade80",
+                          fontWeight: "700",
+                          fontSize: "13px",
+                        }}
+                      >
+                        🔒 Submissions Locked — Deliverable Approved & Published
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={hasChangesRequested ? { background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", boxShadow: "0 4px 14px rgba(239, 68, 68, 0.3)" } : undefined}
+                      onClick={() => openSubmitModal(t, latestSub)}
+                    >
+                      {hasChangesRequested
+                        ? `📤 Resubmit Corrected Deliverable (V${(latestSub?.version || 1) + 1})`
+                        : latestSub
+                        ? `📤 Resubmit Deliverable (V${(latestSub?.version || 1) + 1})`
+                        : "📤 Submit Deliverables"}
+                    </button>
+                  )}
                 </div>
               </div>
             );

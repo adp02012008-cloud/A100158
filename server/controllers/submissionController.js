@@ -33,6 +33,23 @@ export async function createSubmission(req, res) {
         };
       }
 
+      // Determine submissionGroupId
+      let groupId = reqGroupId ? String(reqGroupId).trim() : `GRP-${task.taskId}-${user.userId}`;
+      const existingGroupSubs = await TaskSubmission.find({ submissionGroupId: groupId }, null, queryOpts)
+        .sort({ version: -1 })
+        .exec();
+
+      // BLOCK NEW RESUBMISSIONS IF CURRENT LATEST VERSION IS APPROVED
+      if (existingGroupSubs.length > 0 && existingGroupSubs[0].status === "APPROVED") {
+        return {
+          statusCode: 400,
+          body: {
+            success: false,
+            message: "Deliverable for this task has already been approved and published. New resubmissions are locked.",
+          },
+        };
+      }
+
       const submittedForInput = Array.isArray(submittedFor) ? submittedFor : [user._id];
       const finalSubmittedForUserIds = await validateSubmissionPayload(
         task,
@@ -41,12 +58,6 @@ export async function createSubmission(req, res) {
         Boolean(submitForAll),
         task.submissionMode
       );
-
-      // Determine submissionGroupId
-      let groupId = reqGroupId ? String(reqGroupId).trim() : `GRP-${task.taskId}-${user.userId}`;
-      const existingGroupSubs = await TaskSubmission.find({ submissionGroupId: groupId }, null, queryOpts)
-        .sort({ version: -1 })
-        .exec();
 
       let nextVersion = 1;
       let parentSubId = null;
@@ -259,7 +270,21 @@ export async function getSubmissions(req, res) {
       return isCreator || isFor;
     });
 
-    return res.json({ success: true, count: authorized.length, submissions: authorized });
+    // DEDUPLICATE APPROVED SHOWCASE SUBMISSIONS BY SUBMISSION GROUP ID SO MULTIPLE VERSIONS NEVER PRODUCE DUPLICATE CARDS
+    let finalSubmissions = authorized;
+    if (publicView === "true" || status === "APPROVED") {
+      const groupMap = new Map();
+      authorized.forEach((sub) => {
+        const key = sub.submissionGroupId || sub.taskId?.taskId || sub.taskId;
+        const existing = groupMap.get(key);
+        if (!existing || sub.version > existing.version) {
+          groupMap.set(key, sub);
+        }
+      });
+      finalSubmissions = Array.from(groupMap.values());
+    }
+
+    return res.json({ success: true, count: finalSubmissions.length, submissions: finalSubmissions });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -289,7 +314,7 @@ export async function updateSubmission(req, res) {
   try {
     const { id } = req.params;
     const user = req.user;
-    const { githubUrl, demoUrl, notes, files, status, memberEditUntil } = req.body;
+    const { githubUrl, demoUrl, notes, files, status, memberEditUntil, editHours } = req.body;
 
     const submission = await TaskSubmission.findById(id).exec();
     if (!submission) {
@@ -318,7 +343,10 @@ export async function updateSubmission(req, res) {
     // Admin-only fields
     if (isUserAdmin) {
       if (status) submission.status = String(status).toUpperCase();
-      if (memberEditUntil !== undefined) {
+      if (editHours !== undefined) {
+        const hrs = Number(editHours) || 0;
+        submission.memberEditUntil = hrs > 0 ? new Date(Date.now() + hrs * 3600 * 1000) : null;
+      } else if (memberEditUntil !== undefined) {
         submission.memberEditUntil = memberEditUntil ? new Date(memberEditUntil) : null;
       }
     }

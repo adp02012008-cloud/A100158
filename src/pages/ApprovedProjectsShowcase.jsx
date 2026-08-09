@@ -114,6 +114,7 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
       githubUrl: sub.githubUrl || "",
       demoUrl: sub.demoUrl || "",
       notes: sub.notes || "",
+      editHours: "0",
     });
   };
 
@@ -403,7 +404,7 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                     )}
                   </div>
 
-                  {isEditAllowed && (
+                  {(isEditAllowed || isUserAdmin) && (
                     <button
                       onClick={() => handleOpenEditModal(sub)}
                       style={{
@@ -423,7 +424,7 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                         gap: "6px",
                       }}
                     >
-                      ✏️ Edit Deliverable (Edit Window Active)
+                      ✏️ {isUserAdmin ? "Edit Project & Assign Permissions" : "Edit Deliverable (Edit Window Active)"}
                     </button>
                   )}
 
@@ -877,6 +878,39 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                   onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                 />
               </div>
+
+              {isUserAdmin && (
+                <div>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#fbbf24", display: "block", marginBottom: "6px" }}>
+                    ⏱️ Assign Temporary Member Edit Window Permission
+                  </label>
+                  <select
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      background: "rgba(15, 23, 42, 0.9)",
+                      border: "1px solid rgba(245, 158, 11, 0.4)",
+                      color: "#f8fafc",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                    }}
+                    value={editForm.editHours || "0"}
+                    onChange={(e) => setEditForm({ ...editForm, editHours: e.target.value })}
+                  >
+                    <option value="0">🔒 Locked (No Member Edit Allowed)</option>
+                    <option value="1">⏱️ Allow Member Edit for 1 Hour</option>
+                    <option value="24">⏱️ Allow Member Edit for 24 Hours</option>
+                    <option value="48">⏱️ Allow Member Edit for 48 Hours</option>
+                    <option value="168">⏱️ Allow Member Edit for 7 Days</option>
+                  </select>
+                  <small style={{ color: "#94a3b8", fontSize: "11px", marginTop: "4px", display: "block" }}>
+                    {editModalSub?.memberEditUntil && new Date(editModalSub.memberEditUntil) > new Date()
+                      ? `Current window active until: ${new Date(editModalSub.memberEditUntil).toLocaleString()}`
+                      : "Members currently cannot edit links until a window is granted."}
+                  </small>
+                </div>
+              )}
 
               <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
                 <button
