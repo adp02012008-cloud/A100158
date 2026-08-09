@@ -17,7 +17,7 @@ export default function NotificationCenter({ onSelectTask }) {
   const userEmail = auth.email || "";
 
   const loadNotifs = async () => {
-    if (!auth.isLoggedIn || !userEmail) return;
+    if (!auth?.isLoggedIn || !auth?.token || !userEmail) return;
     try {
       const list = await getNotificationsForUser(userEmail);
       setNotifications(list || []);
@@ -27,10 +27,14 @@ export default function NotificationCenter({ onSelectTask }) {
   };
 
   useEffect(() => {
+    if (!auth?.isLoggedIn || !auth?.token || !userEmail) {
+      setNotifications([]);
+      return;
+    }
     loadNotifs();
     const interval = setInterval(loadNotifs, 5000);
     return () => clearInterval(interval);
-  }, [userEmail]);
+  }, [userEmail, auth?.isLoggedIn, auth?.token]);
 
   useEffect(() => {
     function handleClickOutside(event) {

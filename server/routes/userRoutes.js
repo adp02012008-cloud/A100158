@@ -15,6 +15,10 @@ import {
 
 const router = express.Router();
 
+// 1. Public route for Dashboard & Leaderboard view
+router.get("/dashboard", getDashboardUsers);
+
+// 2. Protected user management & profile routes
 router.use(verifyAuthToken);
 
 router.get("/", getAllUsers);
@@ -23,7 +27,6 @@ router.get("/me", getCurrentUser);
 router.patch("/me", updateSelfProfile);
 router.put("/me", updateSelfProfile);
 router.get("/assignable", getAssignableUsers);
-router.get("/dashboard", getDashboardUsers);
 router.put("/:id", updateUserProfile);
 router.put("/:id/role", updateUserRole);
 router.put("/:id/status", updateUserStatus);

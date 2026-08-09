@@ -4,9 +4,11 @@ import { getClusters, createCluster, updateCluster, deleteCluster, assignMemberC
 
 const router = express.Router();
 
-router.use(verifyAuthToken);
-
+// Public read route for Dashboard filter options
 router.get("/", getClusters);
+
+// Protected mutation routes
+router.use(verifyAuthToken);
 router.post("/", requireAdmin, createCluster);
 router.put("/:id", requireAdmin, updateCluster);
 router.delete("/:id", requireAdmin, deleteCluster);
