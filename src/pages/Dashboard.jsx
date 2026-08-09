@@ -268,22 +268,46 @@ export default function Dashboard({ search }) {
         </div>
 
         {isAdminView && (
-          <div className="export-buttons" style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            <button onClick={() => setShowAddMember(true)} style={{ background: "#4f46e5", color: "#fff" }}>
+          <div className="export-buttons" style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+            <button
+              onClick={() => setShowAddMember(true)}
+              style={{
+                background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+                color: "#fff",
+                border: "none",
+                fontWeight: "600",
+                boxShadow: "0 4px 12px rgba(99, 102, 241, 0.25)",
+              }}
+            >
               ➕ Add Member
             </button>
-            <button onClick={() => setShowAddCourse(true)} style={{ background: "#059669", color: "#fff" }}>
-              ➕ Add Course
-            </button>
-            <button onClick={() => setShowManageCourses(true)} style={{ background: "#0284c7", color: "#fff" }}>
+
+            <button
+              onClick={() => setShowManageCourses(true)}
+              style={{
+                background: "linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)",
+                color: "#fff",
+                border: "none",
+                fontWeight: "600",
+                boxShadow: "0 4px 12px rgba(56, 189, 248, 0.25)",
+              }}
+            >
               📚 Manage Courses
             </button>
-            <button onClick={() => setShowAddCluster(true)} style={{ background: "#d97706", color: "#fff" }}>
-              ➕ Add Cluster
-            </button>
-            <button onClick={() => setShowManageClusters(true)} style={{ background: "#b45309", color: "#fff" }}>
+
+            <button
+              onClick={() => setShowManageClusters(true)}
+              style={{
+                background: "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
+                color: "#fff",
+                border: "none",
+                fontWeight: "600",
+                boxShadow: "0 4px 12px rgba(245, 158, 11, 0.25)",
+              }}
+            >
               🏛️ Manage Clusters
             </button>
+
             <button onClick={() => exportToExcel(filtered)}>📊 Export Excel</button>
             <button onClick={() => exportToPDF(filtered)}>📄 Export PDF</button>
           </div>

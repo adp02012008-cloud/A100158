@@ -56,18 +56,28 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
       <div className="modal-box edit-modal-box" style={{ maxWidth: "750px" }} onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}>✕</button>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingRight: "40px", flexWrap: "wrap", gap: "12px" }}>
           <div>
             <h3 className="edit-modal-title" style={{ margin: 0 }}>🏛️ Manage System Clusters</h3>
             <p style={{ fontSize: "13px", color: "#94a3b8", margin: "4px 0 0 0" }}>
-              View, edit, create, or delete clusters available across the platform.
+              Add new clusters, edit names/descriptions, or delete clusters.
             </p>
           </div>
 
           <button
             className="btn primary"
             onClick={() => setShowAddCluster(true)}
-            style={{ fontSize: "13px", padding: "8px 14px", background: "#d97706" }}
+            style={{
+              fontSize: "13px",
+              padding: "8px 16px",
+              background: "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              fontWeight: "600",
+              boxShadow: "0 4px 12px rgba(245, 158, 11, 0.25)",
+              cursor: "pointer",
+            }}
           >
             ➕ Add New Cluster
           </button>

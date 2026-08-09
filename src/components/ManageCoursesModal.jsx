@@ -69,18 +69,28 @@ export default function ManageCoursesModal({ onClose }) {
       <div className="modal-box edit-modal-box" style={{ maxWidth: "800px" }} onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}>✕</button>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "12px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingRight: "40px", flexWrap: "wrap", gap: "12px" }}>
           <div>
             <h3 className="edit-modal-title" style={{ margin: 0 }}>📚 Manage System Courses</h3>
             <p style={{ fontSize: "13px", color: "#94a3b8", margin: "4px 0 0 0" }}>
-              View, edit levels/points, or delete available system courses.
+              Add new courses, edit level points, or delete courses.
             </p>
           </div>
 
           <button
             className="btn primary"
             onClick={() => setShowAddCourse(true)}
-            style={{ fontSize: "13px", padding: "8px 14px" }}
+            style={{
+              fontSize: "13px",
+              padding: "8px 16px",
+              background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              fontWeight: "600",
+              boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
+              cursor: "pointer",
+            }}
           >
             ➕ Add New Course
           </button>
