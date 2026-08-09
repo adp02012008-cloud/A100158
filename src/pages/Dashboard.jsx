@@ -10,6 +10,7 @@ import AddMemberModal from "../components/AddMemberModal";
 import AddCourseModal from "../components/AddCourseModal";
 import AddClusterModal from "../components/AddClusterModal";
 import ManageCoursesModal from "../components/ManageCoursesModal";
+import ManageClustersModal from "../components/ManageClustersModal";
 
 const normalize = (str) => String(str || "").toLowerCase().replace(/\s+/g, "").trim();
 
@@ -146,6 +147,7 @@ export default function Dashboard({ search }) {
 
   const [students, setStudents] = useState([]);
   const [pointsRows, setPointsRows] = useState([]);
+  const [systemClusters, setSystemClusters] = useState([]);
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
 
@@ -153,6 +155,7 @@ export default function Dashboard({ search }) {
   const [showAddCourse, setShowAddCourse] = useState(false);
   const [showAddCluster, setShowAddCluster] = useState(false);
   const [showManageCourses, setShowManageCourses] = useState(false);
+  const [showManageClusters, setShowManageClusters] = useState(false);
 
   const [clusterFilter, setClusterFilter] = useState("All");
   const [targetActivity, setTargetActivity] = useState(200);
@@ -160,10 +163,18 @@ export default function Dashboard({ search }) {
 
   const loadData = useCallback(async () => {
     try {
-      const res = await apiFetch("/users/dashboard");
+      const [res, clustersRes] = await Promise.all([
+        apiFetch("/users/dashboard"),
+        apiFetch("/clusters").catch(() => ({ clusters: [] })),
+      ]);
+
       const cleaned = res.users || [];
       const pRows = res.pointsRules || [];
       setPointsRows(pRows);
+
+      if (clustersRes?.clusters) {
+        setSystemClusters(clustersRes.clusters);
+      }
 
       const total = cleaned.reduce((s, x) => s + (x["ACTIVITY POINT"] || 0), 0);
       const avgActivity = cleaned.length > 0 ? total / cleaned.length : 0;
@@ -196,6 +207,22 @@ export default function Dashboard({ search }) {
     loadData();
   }, [loadData]);
 
+  const allClusterNames = useMemo(() => {
+    const dbNames = systemClusters.map((c) => c.name).filter(Boolean);
+    const studentNames = students.map((s) => s.CLUSTER).filter(Boolean);
+    return Array.from(new Set(["All", "Core", "Computer Cluster", ...dbNames, ...studentNames]));
+  }, [systemClusters, students]);
+
+  const clusterCounts = useMemo(() => {
+    const counts = {};
+    allClusterNames.filter((c) => c !== "All").forEach((c) => { counts[c] = 0; });
+    students.forEach((s) => {
+      const cName = s.CLUSTER || "Unknown";
+      counts[cName] = (counts[cName] || 0) + 1;
+    });
+    return counts;
+  }, [allClusterNames, students]);
+
   const filtered = useMemo(() => {
     return students.filter((s) => {
       const matchSearch = (s.Name || "").toLowerCase().includes((search || "").toLowerCase());
@@ -208,8 +235,6 @@ export default function Dashboard({ search }) {
   const avgActivity = students.length > 0 ? total / students.length : 0;
   const belowAverageCount = students.filter((s) => s.ACTIVITY < avgActivity).length;
   const topPerformersCount = students.filter((s) => s.ACTIVITY > avgActivity + 5).length;
-  const coreCount = students.filter((s) => s.CLUSTER === "Core").length;
-  const computerCount = students.filter((s) => s.CLUSTER === "Computer Cluster").length;
 
   const topFive = [...filtered].sort((a, b) => b.ACTIVITY - a.ACTIVITY).slice(0, 5);
   const chartMax = topFive.length > 0 ? Math.max(...topFive.map((s) => s.ACTIVITY), 1) : 1;
@@ -219,8 +244,8 @@ export default function Dashboard({ search }) {
     <div>
       <div className="dashboard-toolbar">
         <div className="filter-group">
-          <div className="cluster-filter">
-            {["All", "Core", "Computer Cluster"].map((c) => (
+          <div className="cluster-filter" style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+            {allClusterNames.map((c) => (
               <button
                 key={c}
                 className={clusterFilter === c ? "active" : ""}
@@ -256,6 +281,9 @@ export default function Dashboard({ search }) {
             <button onClick={() => setShowAddCluster(true)} style={{ background: "#d97706", color: "#fff" }}>
               ➕ Add Cluster
             </button>
+            <button onClick={() => setShowManageClusters(true)} style={{ background: "#b45309", color: "#fff" }}>
+              🏛️ Manage Clusters
+            </button>
             <button onClick={() => exportToExcel(filtered)}>📊 Export Excel</button>
             <button onClick={() => exportToPDF(filtered)}>📄 Export PDF</button>
           </div>
@@ -287,9 +315,13 @@ export default function Dashboard({ search }) {
 
         <div className="analytics-card">
           <h3>Cluster Distribution</h3>
-          <div className="distribution-grid">
-            <div className="distribution-box"><span>Core</span><strong>{coreCount}</strong></div>
-            <div className="distribution-box"><span>Computer Cluster</span><strong>{computerCount}</strong></div>
+          <div className="distribution-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "10px" }}>
+            {Object.entries(clusterCounts).map(([clusterName, count]) => (
+              <div key={clusterName} className="distribution-box">
+                <span>{clusterName}</span>
+                <strong>{count}</strong>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -334,6 +366,7 @@ export default function Dashboard({ search }) {
       {showAddCourse && <AddCourseModal onClose={() => setShowAddCourse(false)} onCreated={loadData} />}
       {showAddCluster && <AddClusterModal onClose={() => setShowAddCluster(false)} onCreated={loadData} />}
       {showManageCourses && <ManageCoursesModal onClose={() => { setShowManageCourses(false); loadData(); }} />}
+      {showManageClusters && <ManageClustersModal onClose={() => { setShowManageClusters(false); loadData(); }} onClustersUpdated={loadData} />}
     </div>
   );
 }
