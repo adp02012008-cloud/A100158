@@ -9,6 +9,7 @@ import EditModal from "../components/EditModal";
 import AddMemberModal from "../components/AddMemberModal";
 import AddCourseModal from "../components/AddCourseModal";
 import AddClusterModal from "../components/AddClusterModal";
+import ManageCoursesModal from "../components/ManageCoursesModal";
 
 const normalize = (str) => String(str || "").toLowerCase().replace(/\s+/g, "").trim();
 
@@ -151,6 +152,7 @@ export default function Dashboard({ search }) {
   const [showAddMember, setShowAddMember] = useState(false);
   const [showAddCourse, setShowAddCourse] = useState(false);
   const [showAddCluster, setShowAddCluster] = useState(false);
+  const [showManageCourses, setShowManageCourses] = useState(false);
 
   const [clusterFilter, setClusterFilter] = useState("All");
   const [targetActivity, setTargetActivity] = useState(200);
@@ -248,6 +250,9 @@ export default function Dashboard({ search }) {
             <button onClick={() => setShowAddCourse(true)} style={{ background: "#059669", color: "#fff" }}>
               ➕ Add Course
             </button>
+            <button onClick={() => setShowManageCourses(true)} style={{ background: "#0284c7", color: "#fff" }}>
+              📚 Manage Courses
+            </button>
             <button onClick={() => setShowAddCluster(true)} style={{ background: "#d97706", color: "#fff" }}>
               ➕ Add Cluster
             </button>
@@ -328,6 +333,7 @@ export default function Dashboard({ search }) {
       {showAddMember && <AddMemberModal onClose={() => setShowAddMember(false)} onCreated={loadData} />}
       {showAddCourse && <AddCourseModal onClose={() => setShowAddCourse(false)} onCreated={loadData} />}
       {showAddCluster && <AddClusterModal onClose={() => setShowAddCluster(false)} onCreated={loadData} />}
+      {showManageCourses && <ManageCoursesModal onClose={() => { setShowManageCourses(false); loadData(); }} />}
     </div>
   );
 }
