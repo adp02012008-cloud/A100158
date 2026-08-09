@@ -124,54 +124,14 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
 
       </div>
 
-      {/* Edit button & Quick Role Toggle pinned to bottom */}
+      {/* Edit button pinned to bottom */}
       {canEdit && (
-        <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-          <button
-            className="card-edit-btn"
-            style={{ flex: 1 }}
-            onClick={(e) => { e.stopPropagation(); onEdit(student); }}
-          >
-            ✏️ {isAdmin ? "Edit" : "Update My Card"}
-          </button>
-
-          {isAdmin && (
-            <button
-              type="button"
-              className="card-edit-btn"
-              style={{
-                background: isUserAdmin ? "rgba(99, 102, 241, 0.2)" : "rgba(234, 179, 8, 0.2)",
-                color: isUserAdmin ? "#818cf8" : "#eab308",
-                border: "1px solid rgba(255,255,255,0.1)",
-                flex: "0 0 auto",
-                padding: "8px 12px",
-                fontSize: "12px",
-              }}
-              title={isUserAdmin ? "Demote Admin to Member" : "Promote Member to Admin"}
-              onClick={async (e) => {
-                e.stopPropagation();
-                const newRole = isUserAdmin ? "MEMBER" : "ADMIN";
-                const confirmMsg = isUserAdmin
-                  ? `Demote ${student.Name} from Admin to Member?`
-                  : `Promote ${student.Name} to System Admin?`;
-                if (!window.confirm(confirmMsg)) return;
-                try {
-                  const targetId = student._id || student.userId;
-                  const res = await apiFetch(`/users/${targetId}/role`, {
-                    method: "PUT",
-                    body: JSON.stringify({ role: newRole }),
-                  });
-                  alert(`Role updated: ${student.Name} is now a ${newRole === "ADMIN" ? "System Admin 👑" : "Team Member 🎓"}`);
-                  if (onRoleChanged) onRoleChanged();
-                } catch (err) {
-                  alert("Failed to update role: " + err.message);
-                }
-              }}
-            >
-              {isUserAdmin ? "🎓 Demote to Member" : "👑 Make Admin"}
-            </button>
-          )}
-        </div>
+        <button
+          className="card-edit-btn"
+          onClick={(e) => { e.stopPropagation(); onEdit(student); }}
+        >
+          ✏️ {isAdmin ? "Edit" : "Update My Card"}
+        </button>
       )}
     </div>
   );

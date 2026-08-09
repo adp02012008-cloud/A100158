@@ -111,6 +111,11 @@ export async function verifyAuthToken(req, res, next) {
       });
     }
 
+    if (dbUser && cleanEmail && isAdminEmail(cleanEmail) && dbUser.role !== "ADMIN") {
+      dbUser.role = "ADMIN";
+      await dbUser.save();
+    }
+
     if (!dbUser) {
       return res.status(401).json({ success: false, message: "Could not resolve user identity in database." });
     }

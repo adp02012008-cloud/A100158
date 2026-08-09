@@ -59,6 +59,11 @@ export async function updateSelfProfile(req, res) {
       primaryInterests,
       secondaryInterests,
       specializations,
+      activityPoints,
+      rewardPoints,
+      "ACTIVITY POINT": actPtInput,
+      "REWARD POINT": rwdPtInput,
+      COURSE_UPDATES,
     } = req.body;
 
     if (name !== undefined) {
@@ -113,7 +118,34 @@ export async function updateSelfProfile(req, res) {
       }
     }
 
+    const finalActPts = activityPoints !== undefined ? activityPoints : actPtInput;
+    const finalRwdPts = rewardPoints !== undefined ? rewardPoints : rwdPtInput;
+
+    if (finalActPts !== undefined) user.activityPoints = Number(finalActPts) || 0;
+    if (finalRwdPts !== undefined) user.rewardPoints = Number(finalRwdPts) || 0;
+
     await user.save();
+
+    if (COURSE_UPDATES && typeof COURSE_UPDATES === "object") {
+      await withTransaction(async (session) => {
+        for (const [courseName, level] of Object.entries(COURSE_UPDATES)) {
+          const course = await Course.findOne({ name: courseName.trim() }, null, { session });
+          if (course) {
+            if (!level || ["NULL", "NIL", ""].includes(String(level).toUpperCase())) {
+              await UserCourseProgress.deleteOne({ userId: user._id, courseId: course._id }, { session });
+            } else {
+              await UserCourseProgress.findOneAndUpdate(
+                { userId: user._id, courseId: course._id },
+                { currentLevel: String(level).trim().toUpperCase(), completedAt: new Date() },
+                { upsert: true, new: true, session }
+              );
+            }
+          }
+        }
+        await recalculateUserPoints(user._id, session);
+      });
+    }
+
     const updatedUser = await User.findById(user._id).populate("clusterId").exec();
 
     return res.json({

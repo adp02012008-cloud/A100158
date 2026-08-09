@@ -79,12 +79,20 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             </button>
 
             {auth.role === "admin" && auth.viewMode === "admin" && (
-              <button
-                className={page === "assign-tasks" ? "active" : ""}
-                onClick={() => setPage("assign-tasks")}
-              >
-                📋 <span>Assign Tasks</span>
-              </button>
+              <>
+                <button
+                  className={page === "manage-users" ? "active" : ""}
+                  onClick={() => setPage("manage-users")}
+                >
+                  👥 <span>Manage Users & Roles</span>
+                </button>
+                <button
+                  className={page === "assign-tasks" ? "active" : ""}
+                  onClick={() => setPage("assign-tasks")}
+                >
+                  📋 <span>Assign Tasks</span>
+                </button>
+              </>
             )}
 
             {auth.role === "admin" && (

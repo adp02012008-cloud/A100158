@@ -22,6 +22,8 @@ export default function Profile() {
     primaryInterests: "",
     secondaryInterests: "",
     specializations: "",
+    activityPoints: "",
+    rewardPoints: "",
   });
 
   const loadProfile = async () => {
@@ -69,6 +71,8 @@ export default function Profile() {
       specializations: Array.isArray(user.specializations)
         ? user.specializations.join(", ")
         : user.specializations || "",
+      activityPoints: user.activityPoints ?? "",
+      rewardPoints: user.rewardPoints ?? "",
     });
   };
 
@@ -115,6 +119,8 @@ export default function Profile() {
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
+        activityPoints: Number(formData.activityPoints) || 0,
+        rewardPoints: Number(formData.rewardPoints) || 0,
       };
 
       const res = await updateMyProfile(payload);
@@ -552,6 +558,32 @@ export default function Profile() {
                 placeholder="https://linkedin.com/in/username"
                 value={formData.linkedin}
                 onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            {/* Permitted Field: Activity Points */}
+            <div>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "600" }}>Activity Points</label>
+              <input
+                className="search"
+                type="number"
+                placeholder="0"
+                value={formData.activityPoints}
+                onChange={(e) => setFormData({ ...formData, activityPoints: e.target.value })}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            {/* Permitted Field: Reward Points */}
+            <div>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "600" }}>Reward Points</label>
+              <input
+                className="search"
+                type="number"
+                placeholder="0"
+                value={formData.rewardPoints}
+                onChange={(e) => setFormData({ ...formData, rewardPoints: e.target.value })}
                 style={{ width: "100%" }}
               />
             </div>
