@@ -3,6 +3,7 @@ import { TaskSubmission } from "../models/TaskSubmission.js";
 import { TaskReview } from "../models/TaskReview.js";
 import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
+import { User } from "../models/User.js";
 import { canReview, isAdmin } from "../services/authorizationService.js";
 import { recalculateTaskState } from "../services/taskStateService.js";
 import { recalculateUserPoints } from "../services/pointsService.js";
