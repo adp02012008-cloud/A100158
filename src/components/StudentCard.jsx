@@ -117,16 +117,18 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
           <div className="mini-stat"><span>Reward</span><strong>{student.REWARD}</strong></div>
         </div>
 
-        <div className="progress-block">
-          <div className="progress-head">
-            <span>Activity Progress</span>
-            <span>{student.ACTIVITY} / {targetActivity}</span>
+        {targetActivity > 0 && (
+          <div className="progress-block">
+            <div className="progress-head">
+              <span>Activity Progress</span>
+              <span>{student.ACTIVITY} / {targetActivity}</span>
+            </div>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="progress-foot"><span>Remaining: {remaining}</span></div>
           </div>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${progress}%` }} />
-          </div>
-          <div className="progress-foot"><span>Remaining: {remaining}</span></div>
-        </div>
+        )}
 
         {student.ACTIVITY < avgActivity  && <p className="low">↓ {difference} below avg</p>}
         {student.ACTIVITY > avgActivity  && <p className="high">↑ {difference} above avg</p>}

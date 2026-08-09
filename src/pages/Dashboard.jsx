@@ -158,7 +158,6 @@ export default function Dashboard({ search, setPage }) {
   const [showManageClusters, setShowManageClusters] = useState(false);
 
   const [clusterFilter, setClusterFilter] = useState("All");
-  const [targetActivity, setTargetActivity] = useState(200);
   const [dataLoaded, setDataLoaded] = useState(false);
 
   const loadData = useCallback(async () => {
@@ -254,16 +253,6 @@ export default function Dashboard({ search, setPage }) {
                 {c}
               </button>
             ))}
-          </div>
-
-          <div className="target-box">
-            <label>Target Activity</label>
-            <input
-              type="number"
-              min="1"
-              value={targetActivity}
-              onChange={(e) => setTargetActivity(Math.max(1, Number(e.target.value) || 1))}
-            />
           </div>
         </div>
 
