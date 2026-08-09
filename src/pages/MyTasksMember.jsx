@@ -246,9 +246,17 @@ export default function MyTasksMember({ search = "" }) {
                 <div className="task-meta-row">
                   <span>📅 Deadline: {t.dueDate || "Flexible"}</span>
                   <span
-                    className={`task-status-pill status-${(t.status || "Pending").toLowerCase().replace(/\s+/g, "-")}`}
+                    className={`task-status-pill status-${(t.status || "Pending").toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-")}`}
                   >
-                    {t.status}
+                    {t.status === "UNDER_REVIEW"
+                      ? "⏳ Under Admin Review"
+                      : t.status === "CHANGES_REQUESTED"
+                      ? "⚠️ Changes Requested"
+                      : t.status === "COMPLETED" || t.status === "APPROVED"
+                      ? "✅ Approved"
+                      : t.status === "IN_PROGRESS"
+                      ? "⚡ In Progress"
+                      : t.status || "Pending"}
                   </span>
                 </div>
 

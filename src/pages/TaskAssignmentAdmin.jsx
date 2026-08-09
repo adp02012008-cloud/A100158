@@ -337,8 +337,16 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
               <div className="task-meta-row">
                 <span>📅 Due: {t.dueDate || "No deadline"}</span>
-                <span className={`task-status-pill status-${(t.status || "Pending").toLowerCase().replace(/\s+/g, "-")}`}>
-                  {t.status}
+                <span className={`task-status-pill status-${(t.status || "Pending").toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-")}`}>
+                  {t.status === "UNDER_REVIEW"
+                    ? "⏳ Under Admin Review"
+                    : t.status === "CHANGES_REQUESTED"
+                    ? "⚠️ Changes Requested"
+                    : t.status === "COMPLETED" || t.status === "APPROVED"
+                    ? "✅ Completed"
+                    : t.status === "IN_PROGRESS"
+                    ? "⚡ In Progress"
+                    : t.status || "Pending"}
                 </span>
               </div>
 
