@@ -6,6 +6,9 @@ import { useAuth } from "../context/AuthContext";
 import StudentCard from "../components/StudentCard";
 import Modal from "../components/Modal";
 import EditModal from "../components/EditModal";
+import AddMemberModal from "../components/AddMemberModal";
+import AddCourseModal from "../components/AddCourseModal";
+import AddClusterModal from "../components/AddClusterModal";
 
 const normalize = (str) => String(str || "").toLowerCase().replace(/\s+/g, "").trim();
 
@@ -144,6 +147,11 @@ export default function Dashboard({ search }) {
   const [pointsRows, setPointsRows] = useState([]);
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
+
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [showAddCourse, setShowAddCourse] = useState(false);
+  const [showAddCluster, setShowAddCluster] = useState(false);
+
   const [clusterFilter, setClusterFilter] = useState("All");
   const [targetActivity, setTargetActivity] = useState(200);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -203,7 +211,7 @@ export default function Dashboard({ search }) {
 
   const topFive = [...filtered].sort((a, b) => b.ACTIVITY - a.ACTIVITY).slice(0, 5);
   const chartMax = topFive.length > 0 ? Math.max(...topFive.map((s) => s.ACTIVITY), 1) : 1;
-  const canExport = auth.role === "admin" && auth.viewMode === "admin";
+  const isAdminView = auth.role === "admin" && auth.viewMode === "admin";
 
   return (
     <div>
@@ -232,8 +240,17 @@ export default function Dashboard({ search }) {
           </div>
         </div>
 
-        {canExport && (
-          <div className="export-buttons">
+        {isAdminView && (
+          <div className="export-buttons" style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <button onClick={() => setShowAddMember(true)} style={{ background: "#4f46e5", color: "#fff" }}>
+              ➕ Add Member
+            </button>
+            <button onClick={() => setShowAddCourse(true)} style={{ background: "#059669", color: "#fff" }}>
+              ➕ Add Course
+            </button>
+            <button onClick={() => setShowAddCluster(true)} style={{ background: "#d97706", color: "#fff" }}>
+              ➕ Add Cluster
+            </button>
             <button onClick={() => exportToExcel(filtered)}>📊 Export Excel</button>
             <button onClick={() => exportToPDF(filtered)}>📄 Export PDF</button>
           </div>
@@ -306,6 +323,10 @@ export default function Dashboard({ search }) {
           onSaved={handleSaved}
         />
       )}
+
+      {showAddMember && <AddMemberModal onClose={() => setShowAddMember(false)} onCreated={loadData} />}
+      {showAddCourse && <AddCourseModal onClose={() => setShowAddCourse(false)} onCreated={loadData} />}
+      {showAddCluster && <AddClusterModal onClose={() => setShowAddCluster(false)} onCreated={loadData} />}
     </div>
   );
 }
