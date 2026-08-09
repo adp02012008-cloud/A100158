@@ -74,19 +74,21 @@ export async function getNotificationsForUser(userEmail = "") {
   const clean = normalizeEmail(userEmail);
   if (!clean) return [];
 
+  const cutoff48h = Date.now() - 48 * 3600 * 1000;
+
   try {
     const data = await apiFetch("/notifications");
     if (Array.isArray(data?.notifications)) {
-      const parsed = data.notifications.map((n) => ({
-        ...n,
-        id: n.notificationId,
-        read: Boolean(n.readAt),
-      }));
-      // On successful backend response, update local user cache
+      const parsed = data.notifications
+        .filter((n) => !n.readAt || new Date(n.readAt).getTime() >= cutoff48h)
+        .map((n) => ({
+          ...n,
+          id: n.notificationId || n._id,
+          read: Boolean(n.readAt),
+        }));
       saveLocalNotifications(parsed, clean);
       return parsed;
     }
-    // If backend returns empty list, empty list replaces cache
     saveLocalNotifications([], clean);
     return [];
   } catch (err) {
@@ -94,7 +96,9 @@ export async function getNotificationsForUser(userEmail = "") {
   }
 
   const local = getLocalNotifications(clean);
-  return local.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  return local
+    .filter((n) => !n.readAt || new Date(n.readAt).getTime() >= cutoff48h)
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 }
 
 export async function markSingleNotificationRead(notificationId, userEmail = "") {

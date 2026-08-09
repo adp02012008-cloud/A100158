@@ -175,6 +175,7 @@ export async function createTask(req, res) {
           { eventKey },
           {
             notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            targetUserId: assigneeUser ? assigneeUser._id : null,
             targetEmail: assigneeEmail,
             type: "TASK_ASSIGNED",
             taskId,

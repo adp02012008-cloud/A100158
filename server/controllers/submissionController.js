@@ -105,6 +105,7 @@ export async function createSubmission(req, res) {
           {
             notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
             targetUserId: adm._id,
+            targetEmail: (adm.email || "").toLowerCase().trim(),
             type: "NEW_SUBMISSION",
             taskId: task.taskId,
             submissionId: newSubmission._id,
@@ -112,6 +113,7 @@ export async function createSubmission(req, res) {
             message: `${user.name} submitted V${nextVersion} for "${task.title}".`,
             eventKey,
             readAt: null,
+            createdAt: new Date(),
           },
           { upsert: true, new: true, ...queryOpts }
         ).exec();

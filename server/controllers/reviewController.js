@@ -80,17 +80,29 @@ export async function createReview(req, res) {
         queryOpts
       );
 
-      // Notify submittedFor users
-      for (const targetUserId of submission.submittedFor) {
-        const eventKey = `NTF-REV-${newReview._id}-${targetUserId}`;
-        const title = cleanDecision === "APPROVED" ? "Submission Approved! 🎉" : cleanDecision === "CHANGES_REQUESTED" ? "Changes Requested ⚠️" : "New Review Comment 💬";
+      // Notify lead submitter AND all covered team members
+      const recipientUserIds = new Set([
+        String(submission.submittedBy),
+        ...(submission.submittedFor || []).map((u) => String(u._id || u)),
+      ]);
+
+      for (const recipientId of recipientUserIds) {
+        const recipientUser = await User.findById(recipientId, null, queryOpts).exec();
+        const eventKey = `NTF-REV-${newReview._id}-${recipientId}`;
+        const title =
+          cleanDecision === "APPROVED"
+            ? "Submission Approved! 🎉"
+            : cleanDecision === "CHANGES_REQUESTED"
+            ? "Changes Requested ⚠️"
+            : "New Review Comment 💬";
         const message = `Admin ${user.name} reviewed your V${submission.version} submission (${cleanDecision}).`;
 
         await Notification.findOneAndUpdate(
-          { targetUserId, eventKey },
+          { eventKey },
           {
             notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            targetUserId,
+            targetUserId: recipientId,
+            targetEmail: recipientUser ? (recipientUser.email || "").toLowerCase().trim() : null,
             type: "REVIEW_DECISION",
             taskId: submission.taskId,
             submissionId: submission._id,
@@ -98,6 +110,7 @@ export async function createReview(req, res) {
             message,
             eventKey,
             readAt: null,
+            createdAt: new Date(),
           },
           { upsert: true, new: true, ...queryOpts }
         ).exec();

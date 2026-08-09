@@ -4,6 +4,7 @@ import { UserCourseProgress } from "../models/UserCourseProgress.js";
 import { Course } from "../models/Course.js";
 import { CoursePointRule } from "../models/CoursePointRule.js";
 import { AuditLog } from "../models/AuditLog.js";
+import { Notification } from "../models/Notification.js";
 import { isAdmin } from "../services/authorizationService.js";
 import { recalculateUserPoints } from "../services/pointsService.js";
 import { withTransaction } from "../utils/dbTransaction.js";
@@ -363,6 +364,21 @@ export async function updateUserProfile(req, res) {
     }
 
     await user.save();
+
+    if (isAdmin(req.user) && String(req.user._id) !== String(user._id)) {
+      const eventKey = `NTF-USERUPD-${user._id}-${Date.now()}`;
+      await Notification.create({
+        notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        targetUserId: user._id,
+        targetEmail: (user.email || "").toLowerCase().trim(),
+        type: "ACCOUNT_UPDATED",
+        title: "Account Profile Updated 👤",
+        message: `Admin ${req.user.name || "Administrator"} updated your account details (Role: ${user.role}, Position: ${user.position}).`,
+        eventKey,
+        readAt: null,
+        createdAt: new Date(),
+      });
+    }
 
     if (COURSE_UPDATES && typeof COURSE_UPDATES === "object") {
       await withTransaction(async (session) => {
