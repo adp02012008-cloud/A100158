@@ -84,7 +84,7 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                   className={page === "manage-users" ? "active" : ""}
                   onClick={() => setPage("manage-users")}
                 >
-                  👥 <span>Manage Users & Roles</span>
+                  👥 <span>Manage Members</span>
                 </button>
                 <button
                   className={page === "assign-tasks" ? "active" : ""}

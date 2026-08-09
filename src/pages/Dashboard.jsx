@@ -142,7 +142,7 @@ function buildSuggestions(student, avgActivity, pointsRows) {
   return { gap, allOptions: opts, combinations: buildCombinationSuggestions(opts, gap) };
 }
 
-export default function Dashboard({ search }) {
+export default function Dashboard({ search, setPage }) {
   const { auth } = useAuth();
 
   const [students, setStudents] = useState([]);
@@ -270,7 +270,7 @@ export default function Dashboard({ search }) {
         {isAdminView && (
           <div className="export-buttons" style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
             <button
-              onClick={() => setShowAddMember(true)}
+              onClick={() => (setPage ? setPage("manage-users") : setShowAddMember(true))}
               style={{
                 background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
                 color: "#fff",
@@ -279,7 +279,7 @@ export default function Dashboard({ search }) {
                 boxShadow: "0 4px 12px rgba(99, 102, 241, 0.25)",
               }}
             >
-              ➕ Add Member
+              👥 Manage Members
             </button>
 
             <button

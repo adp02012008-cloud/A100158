@@ -44,7 +44,7 @@ export default function App() {
         />
 
         <main className="page-content">
-          {visiblePage === "dashboard" && <Dashboard search={search} />}
+          {visiblePage === "dashboard" && <Dashboard search={search} setPage={changePage} />}
           {visiblePage === "leaderboard" && <Leaderboard search={search} />}
           {visiblePage === "profile" && <Profile />}
           {auth.role === "admin" && visiblePage === "manage-users" && (

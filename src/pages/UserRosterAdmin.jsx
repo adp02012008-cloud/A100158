@@ -128,7 +128,7 @@ export default function UserRosterAdmin({ search = "" }) {
       <div className="card" style={{ padding: "24px", marginBottom: "24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
           <div>
-            <h2 style={{ margin: "0 0 6px 0", fontSize: "24px" }}>👑 Role & Member Management Hub</h2>
+            <h2 style={{ margin: "0 0 6px 0", fontSize: "24px" }}>👥 Manage Members Hub</h2>
             <p style={{ margin: 0, color: "#94a3b8", fontSize: "14px" }}>
               Dedicated administrative control center for user roles, positions, permissions, and account statuses.
             </p>
