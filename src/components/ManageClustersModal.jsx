@@ -18,7 +18,7 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
       setError("");
       const res = await apiFetch("/clusters");
       if (res?.clusters) {
-        setClusters(res.clusters);
+        setClusters(res.clusters.filter((c) => c.status !== "INACTIVE"));
       } else {
         setError("Failed to load clusters.");
       }

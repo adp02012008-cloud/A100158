@@ -6,7 +6,7 @@ import { withTransaction } from "../utils/dbTransaction.js";
 
 export async function getClusters(req, res) {
   try {
-    const clusters = await Cluster.find({}).sort({ name: 1 }).exec();
+    const clusters = await Cluster.find({ status: { $ne: "INACTIVE" } }).sort({ name: 1 }).exec();
     return res.json({ success: true, clusters });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -57,7 +57,8 @@ export async function updateCluster(req, res) {
     const { id } = req.params;
     const { name, description, status } = req.body;
 
-    const cluster = await Cluster.findById(id);
+    let cluster = await Cluster.findById(id);
+    if (!cluster) cluster = await Cluster.findOne({ clusterId: id });
     if (!cluster) return res.status(404).json({ success: false, message: "Cluster not found" });
 
     if (name) cluster.name = name.trim();
@@ -88,22 +89,22 @@ export async function deleteCluster(req, res) {
     }
 
     const { id } = req.params;
-    const cluster = await Cluster.findById(id);
+    let cluster = await Cluster.findById(id);
+    if (!cluster) cluster = await Cluster.findOne({ clusterId: id });
     if (!cluster) return res.status(404).json({ success: false, message: "Cluster not found" });
 
-    cluster.status = "INACTIVE";
-    await cluster.save();
+    await Cluster.findByIdAndDelete(cluster._id);
 
     await AuditLog.create({
       auditId: `AUD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       actorUserId: req.user._id,
-      actionType: "DEACTIVATE_CLUSTER",
+      actionType: "DELETE_CLUSTER",
       targetEntity: "Cluster",
       targetId: String(cluster._id),
       details: { name: cluster.name },
     });
 
-    return res.json({ success: true, message: `Cluster '${cluster.name}' deactivated successfully` });
+    return res.json({ success: true, message: `Cluster '${cluster.name}' deleted successfully` });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
