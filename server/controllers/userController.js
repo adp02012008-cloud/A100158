@@ -365,16 +365,17 @@ export async function updateUserProfile(req, res) {
 
     if (COURSE_UPDATES && typeof COURSE_UPDATES === "object") {
       await withTransaction(async (session) => {
+        const opts = session ? { session } : {};
         for (const [courseName, level] of Object.entries(COURSE_UPDATES)) {
-          const course = await Course.findOne({ name: courseName.trim() }, null, { session });
+          const course = await Course.findOne({ name: courseName.trim() }, null, opts);
           if (course) {
             if (!level || ["NULL", "NIL", ""].includes(String(level).toUpperCase())) {
-              await UserCourseProgress.deleteOne({ userId: user._id, courseId: course._id }, { session });
+              await UserCourseProgress.deleteOne({ userId: user._id, courseId: course._id }, opts);
             } else {
               await UserCourseProgress.findOneAndUpdate(
                 { userId: user._id, courseId: course._id },
                 { currentLevel: String(level).trim().toUpperCase(), completedAt: new Date() },
-                { upsert: true, new: true, session }
+                { upsert: true, new: true, ...opts }
               );
             }
           }
