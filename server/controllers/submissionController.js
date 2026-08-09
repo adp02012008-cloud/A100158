@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Task } from "../models/Task.js";
 import { TaskAssignment } from "../models/TaskAssignment.js";
 import { TaskSubmission } from "../models/TaskSubmission.js";
+import { TaskReview } from "../models/TaskReview.js";
 import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
 import { User } from "../models/User.js";
@@ -140,6 +141,81 @@ export async function createSubmission(req, res) {
   }
 }
 
+/**
+ * POST /api/submissions/direct
+ * Admin directly publishes a project to the showcase without review procedures.
+ */
+export async function createDirectProject(req, res) {
+  try {
+    const user = req.user;
+    if (!isAdmin(user)) {
+      return res.status(403).json({ success: false, message: "Access denied. Only Admins can directly publish projects." });
+    }
+
+    const { title, domain, githubUrl, demoUrl, notes, submittedBy, submittedFor } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ success: false, message: "Project title is required." });
+    }
+
+    const taskIdStr = `TSK-PRJ-${Date.now().toString().slice(-6)}`;
+    const task = await Task.create({
+      taskId: taskIdStr,
+      title: title.trim(),
+      domain: domain || "Core",
+      description: notes || `Direct Published Project: ${title}`,
+      priority: "Medium",
+      status: "COMPLETED",
+      createdBy: user._id,
+    });
+
+    const submitterId = submittedBy || user._id;
+    const teamUserIds = Array.isArray(submittedFor) && submittedFor.length > 0 ? submittedFor : [submitterId];
+
+    const subId = `SUB-DIR-${Date.now().toString().slice(-6)}-V1`;
+    const submission = await TaskSubmission.create({
+      submissionId: subId,
+      taskId: task.taskId,
+      submissionGroupId: `GRP-${task.taskId}-${user.userId}`,
+      version: 1,
+      submissionType: teamUserIds.length > 1 ? "COLLABORATIVE" : "INDIVIDUAL",
+      submittedBy: submitterId,
+      submittedFor: teamUserIds,
+      githubUrl: (githubUrl || "").trim(),
+      demoUrl: (demoUrl || "").trim(),
+      notes: (notes || "").trim(),
+      status: "APPROVED",
+      submittedAt: new Date(),
+    });
+
+    // Automatically create APPROVED review record
+    await TaskReview.create({
+      reviewId: `REV-DIR-${Date.now().toString().slice(-6)}`,
+      submissionId: submission._id,
+      taskId: task.taskId,
+      reviewerId: user._id,
+      decision: "APPROVED",
+      feedback: "Directly published by Administrator.",
+      version: 1,
+      reviewedAt: new Date(),
+    });
+
+    await recalculateTaskState(task.taskId);
+
+    const populatedRaw = await TaskSubmission.findById(submission._id).populate("submittedBy submittedFor").exec();
+    const populated = populatedRaw.toObject();
+    populated.taskId = task;
+
+    return res.status(201).json({
+      success: true,
+      message: "Project published directly to showcase successfully!",
+      submission: populated,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
 export async function getSubmissions(req, res) {
   try {
     const user = req.user;
@@ -263,6 +339,39 @@ export async function updateSubmission(req, res) {
       message: "Submission updated successfully.",
       submission: updated,
     });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+/**
+ * DELETE /api/submissions/:id
+ * Admin permanently deletes a published project deliverable.
+ */
+export async function deleteSubmission(req, res) {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    if (!isAdmin(user)) {
+      return res.status(403).json({ success: false, message: "Access denied. Only Admins can delete published projects." });
+    }
+
+    const submission = await TaskSubmission.findById(id).exec();
+    if (!submission) {
+      return res.status(404).json({ success: false, message: "Project deliverable not found." });
+    }
+
+    const taskId = submission.taskId;
+
+    await TaskSubmission.deleteOne({ _id: submission._id }).exec();
+    await TaskReview.deleteMany({ submissionId: submission._id }).exec();
+
+    if (taskId) {
+      await recalculateTaskState(taskId);
+    }
+
+    return res.json({ success: true, message: "Project deliverable deleted successfully." });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }

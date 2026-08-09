@@ -9,10 +9,30 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
   const [loading, setLoading] = useState(true);
   const [domainFilter, setDomainFilter] = useState("All");
 
+  const isUserAdmin = auth?.role === "ADMIN" || currentUser?.role === "ADMIN";
+
   // Member Self-Edit Modal state
   const [editModalSub, setEditModalSub] = useState(null);
   const [editForm, setEditForm] = useState({ githubUrl: "", demoUrl: "", notes: "" });
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // Two-Step Verification Delete Modal State
+  const [deleteSub, setDeleteSub] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  // Direct Add Project Modal State
+  const [directAddOpen, setDirectAddOpen] = useState(false);
+  const [directForm, setDirectForm] = useState({
+    title: "",
+    domain: "Full-Stack Software Development",
+    githubUrl: "",
+    demoUrl: "",
+    notes: "",
+    submittedBy: "",
+    submittedFor: [],
+  });
+  const [savingDirect, setSavingDirect] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -22,7 +42,11 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
         apiFetch("/users"),
       ]);
       setApprovedSubmissions(subRes?.submissions || []);
-      setUsers(userRes?.users || []);
+      const uList = userRes?.users || [];
+      setUsers(uList);
+      if (uList.length > 0 && !directForm.submittedBy) {
+        setDirectForm((prev) => ({ ...prev, submittedBy: uList[0]._id }));
+      }
     } catch (err) {
       console.error("Failed to load approved projects:", err);
     } finally {
@@ -49,51 +73,39 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
     return userMap[str] || val;
   };
 
-  const getDisplayEmail = (val) => {
-    if (!val) return "";
-    if (typeof val === "object") return val.email || "";
-    return String(val).trim().toLowerCase();
-  };
-
   const availableDomains = useMemo(() => {
     const set = new Set();
     approvedSubmissions.forEach((s) => {
-      if (s.taskId?.domain) set.add(s.taskId.domain);
+      const d = s.taskId?.domain || "Core";
+      set.add(d);
     });
     return ["All", ...Array.from(set)];
   }, [approvedSubmissions]);
 
   const filteredProjects = useMemo(() => {
     return approvedSubmissions.filter((sub) => {
+      const title = sub.taskId?.title || "Untitled Project";
       const domain = sub.taskId?.domain || "Core";
-      if (domainFilter !== "All" && domain !== domainFilter) return false;
+      const notes = sub.notes || "";
+      const leadName = getDisplayName(sub.submittedBy);
 
-      if (search) {
-        const q = search.toLowerCase();
-        const title = sub.taskId?.title || sub.taskId?.domain || "";
-        const submitter = getDisplayName(sub.submittedBy);
-        const notes = sub.notes || "";
-        return title.toLowerCase().includes(q) || submitter.toLowerCase().includes(q) || notes.toLowerCase().includes(q);
-      }
+      const q = search.toLowerCase();
+      const matchSearch =
+        !search ||
+        title.toLowerCase().includes(q) ||
+        domain.toLowerCase().includes(q) ||
+        notes.toLowerCase().includes(q) ||
+        leadName.toLowerCase().includes(q);
 
-      return true;
+      const matchDomain = domainFilter === "All" || domain === domainFilter;
+
+      return matchSearch && matchDomain;
     });
-  }, [approvedSubmissions, domainFilter, search, userMap]);
+  }, [approvedSubmissions, search, domainFilter, userMap]);
 
-  // Check if current user is owner and edit window is active
   const isMemberEditAllowed = (sub) => {
-    if (!auth.isLoggedIn || !currentUser) return false;
-    if (auth.role === "admin") return true;
-
-    const userEmail = (auth.email || currentUser.email || "").toLowerCase().trim();
-    const submitterEmail = getDisplayEmail(sub.submittedBy);
-
-    const forEmails = (sub.submittedFor || []).map((m) => getDisplayEmail(m));
-    const isOwner = submitterEmail === userEmail || forEmails.includes(userEmail);
-
-    const isEditWindowActive = sub.memberEditUntil && new Date(sub.memberEditUntil) > new Date();
-
-    return isOwner && isEditWindowActive;
+    if (!sub.memberEditUntil) return false;
+    return new Date(sub.memberEditUntil) > new Date();
   };
 
   const handleOpenEditModal = (sub) => {
@@ -109,24 +121,66 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
     e.preventDefault();
     if (!editModalSub) return;
     setSavingEdit(true);
-
     try {
       await apiFetch(`/submissions/${editModalSub._id || editModalSub.id}`, {
         method: "PUT",
-        body: JSON.stringify({
-          githubUrl: editForm.githubUrl,
-          demoUrl: editForm.demoUrl,
-          notes: editForm.notes,
-        }),
+        body: JSON.stringify(editForm),
       });
-
-      alert("Your deliverable details have been updated successfully!");
+      alert("✅ Deliverable updated successfully!");
       setEditModalSub(null);
-      loadData();
+      await loadData();
     } catch (err) {
-      alert("Failed to update submission: " + err.message);
+      alert("Failed to update deliverable: " + (err?.message || "Unknown error"));
     } finally {
       setSavingEdit(false);
+    }
+  };
+
+  // 2-Step Verification Delete Handler
+  const handleConfirmDelete = async () => {
+    if (!deleteSub || deleteConfirmText !== "DELETE") return;
+    setDeleting(true);
+    try {
+      await apiFetch(`/submissions/${deleteSub._id || deleteSub.id}`, {
+        method: "DELETE",
+      });
+      alert("🗑️ Project deliverable deleted successfully!");
+      setDeleteSub(null);
+      setDeleteConfirmText("");
+      await loadData();
+    } catch (err) {
+      alert("Failed to delete project: " + (err?.message || "Unknown error"));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Direct Publish Handler
+  const handleDirectPublishSubmit = async (e) => {
+    e.preventDefault();
+    if (!directForm.title) return alert("Project title is required.");
+    setSavingDirect(true);
+    try {
+      await apiFetch("/submissions/direct", {
+        method: "POST",
+        body: JSON.stringify(directForm),
+      });
+      alert("🚀 Project directly published to showcase successfully!");
+      setDirectAddOpen(false);
+      setDirectForm({
+        title: "",
+        domain: "Full-Stack Software Development",
+        githubUrl: "",
+        demoUrl: "",
+        notes: "",
+        submittedBy: users[0]?._id || "",
+        submittedFor: [],
+      });
+      await loadData();
+    } catch (err) {
+      alert("Failed to direct publish project: " + (err?.message || "Unknown error"));
+    } finally {
+      setSavingDirect(false);
     }
   };
 
@@ -156,9 +210,42 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
           </p>
         </div>
 
-        <div style={{ background: "rgba(15, 23, 42, 0.6)", padding: "10px 18px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
-          <span style={{ fontSize: "20px", fontWeight: "800", color: "#34d399" }}>{approvedSubmissions.length}</span>
-          <span style={{ fontSize: "13px", color: "#94a3b8", marginLeft: "6px" }}>Published Projects</span>
+        <div style={{ display: "flex", gap: "14px", alignItems: "center", flexWrap: "wrap" }}>
+          {isUserAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setDirectForm({
+                  title: "",
+                  domain: "Full-Stack Software Development",
+                  githubUrl: "",
+                  demoUrl: "",
+                  notes: "",
+                  submittedBy: users[0]?._id || "",
+                  submittedFor: [],
+                });
+                setDirectAddOpen(true);
+              }}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                border: "none",
+                color: "#ffffff",
+                fontWeight: "700",
+                fontSize: "14px",
+                cursor: "pointer",
+                boxShadow: "0 4px 15px rgba(16, 185, 129, 0.4)",
+              }}
+            >
+              ⚡ Direct Publish Project
+            </button>
+          )}
+
+          <div style={{ background: "rgba(15, 23, 42, 0.6)", padding: "10px 18px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
+            <span style={{ fontSize: "20px", fontWeight: "800", color: "#34d399" }}>{approvedSubmissions.length}</span>
+            <span style={{ fontSize: "13px", color: "#94a3b8", marginLeft: "6px" }}>Published Projects</span>
+          </div>
         </div>
       </div>
 
@@ -316,29 +403,322 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                     )}
                   </div>
 
-                  {isEditAllowed && (
-                    <button
-                      onClick={() => handleOpenEditModal(sub)}
-                      style={{
-                        width: "100%",
-                        marginTop: "10px",
-                        padding: "8px 12px",
-                        borderRadius: "8px",
-                        background: "rgba(56, 189, 248, 0.15)",
-                        border: "1px solid rgba(56, 189, 248, 0.3)",
-                        color: "#38bdf8",
-                        fontWeight: "600",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      ✏️ Edit Deliverable (Edit Window Active)
-                    </button>
-                  )}
+                  <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+                    {isEditAllowed && (
+                      <button
+                        onClick={() => handleOpenEditModal(sub)}
+                        style={{
+                          flex: 1,
+                          padding: "8px 12px",
+                          borderRadius: "8px",
+                          background: "rgba(56, 189, 248, 0.15)",
+                          border: "1px solid rgba(56, 189, 248, 0.3)",
+                          color: "#38bdf8",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        ✏️ Edit Deliverable
+                      </button>
+                    )}
+
+                    {isUserAdmin && (
+                      <button
+                        onClick={() => {
+                          setDeleteSub(sub);
+                          setDeleteConfirmText("");
+                        }}
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: "8px",
+                          background: "rgba(239, 68, 68, 0.15)",
+                          border: "1px solid rgba(239, 68, 68, 0.35)",
+                          color: "#f87171",
+                          fontWeight: "700",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        🗑️ Delete Project
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* 2-Step Verification Delete Modal */}
+      {deleteSub && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1300,
+            padding: "20px",
+          }}
+          onClick={() => setDeleteSub(null)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              background: "rgba(24, 15, 38, 0.98)",
+              border: "1px solid rgba(239, 68, 68, 0.4)",
+              borderRadius: "16px",
+              padding: "28px",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: "0 0 10px 0", color: "#f87171", fontSize: "20px", display: "flex", alignItems: "center", gap: "8px" }}>
+              ⚠️ Confirm Permanent Project Deletion
+            </h3>
+
+            <p style={{ color: "#cbd5e1", fontSize: "14px", lineHeight: "1.5" }}>
+              Are you sure you want to permanently delete <strong>"{deleteSub.taskId?.title || "this project"}"</strong> from the showcase?
+            </p>
+
+            <div style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "10px", padding: "12px 16px", margin: "16px 0" }}>
+              <p style={{ margin: 0, color: "#fca5a5", fontSize: "13px", fontWeight: "600" }}>
+                🔒 Two-Step Verification Security Required:
+              </p>
+              <p style={{ margin: "4px 0 0 0", color: "#e2e8f0", fontSize: "12px" }}>
+                To confirm, please type <strong style={{ color: "#f87171", letterSpacing: "1px" }}>DELETE</strong> in the box below:
+              </p>
+            </div>
+
+            <input
+              type="text"
+              placeholder="Type DELETE to confirm"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                background: "rgba(15, 23, 42, 0.9)",
+                border: deleteConfirmText === "DELETE" ? "1px solid #ef4444" : "1px solid rgba(255, 255, 255, 0.15)",
+                color: "#f8fafc",
+                fontSize: "14px",
+                fontWeight: "700",
+                letterSpacing: "1px",
+                marginBottom: "20px",
+                outline: "none",
+              }}
+            />
+
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => setDeleteSub(null)}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "8px",
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  color: "#cbd5e1",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                disabled={deleteConfirmText !== "DELETE" || deleting}
+                onClick={handleConfirmDelete}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  background: deleteConfirmText === "DELETE" ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : "rgba(239, 68, 68, 0.2)",
+                  border: "none",
+                  color: "#ffffff",
+                  fontWeight: "700",
+                  cursor: deleteConfirmText === "DELETE" && !deleting ? "pointer" : "not-allowed",
+                  opacity: deleteConfirmText === "DELETE" && !deleting ? 1 : 0.4,
+                }}
+              >
+                {deleting ? "Deleting…" : "🗑️ Confirm Permanent Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Direct Add Project Modal */}
+      {directAddOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1300,
+            padding: "20px",
+          }}
+          onClick={() => setDirectAddOpen(false)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "580px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              background: "rgba(24, 15, 38, 0.98)",
+              border: "1px solid rgba(52, 211, 153, 0.3)",
+              borderRadius: "16px",
+              padding: "28px",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: "0 0 16px 0", color: "#34d399", fontSize: "20px" }}>
+              ⚡ Direct Add / Publish Project to Showcase
+            </h3>
+
+            <form onSubmit={handleDirectPublishSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  Project Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. AI-Powered Team Dashboard"
+                  value={directForm.title}
+                  onChange={(e) => setDirectForm({ ...directForm, title: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  Domain *
+                </label>
+                <select
+                  value={directForm.domain}
+                  onChange={(e) => setDirectForm({ ...directForm, domain: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                >
+                  <option value="Full-Stack Software Development">Full-Stack Software Development</option>
+                  <option value="UI/UX Design & Prototyping">UI/UX Design & Prototyping</option>
+                  <option value="AI / Machine Learning">AI / Machine Learning</option>
+                  <option value="Mobile App Development">Mobile App Development</option>
+                  <option value="Cloud & DevOps Engineering">Cloud & DevOps Engineering</option>
+                  <option value="Cyber Security">Cyber Security</option>
+                  <option value="Core">Core</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  Lead Submitter / Creator *
+                </label>
+                <select
+                  value={directForm.submittedBy}
+                  onChange={(e) => setDirectForm({ ...directForm, submittedBy: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                >
+                  {users.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} ({u.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  Team Contributors (Select multiple)
+                </label>
+                <select
+                  multiple
+                  value={directForm.submittedFor}
+                  onChange={(e) => {
+                    const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
+                    setDirectForm({ ...directForm, submittedFor: selected });
+                  }}
+                  style={{ width: "100%", height: "100px", padding: "10px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                >
+                  {users.map((u) => (
+                    <option key={u._id} value={u._id}>
+                      {u.name} ({u.email})
+                    </option>
+                  ))}
+                </select>
+                <small style={{ color: "#94a3b8", fontSize: "11px" }}>Hold Ctrl/Cmd to select multiple members</small>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  Live Demo URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://my-demo-app.vercel.app"
+                  value={directForm.demoUrl}
+                  onChange={(e) => setDirectForm({ ...directForm, demoUrl: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  GitHub Code Repository URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://github.com/my-org/my-repo"
+                  value={directForm.githubUrl}
+                  onChange={(e) => setDirectForm({ ...directForm, githubUrl: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  Project Overview / Notes
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Key features, tech stack, and achievements..."
+                  value={directForm.notes}
+                  onChange={(e) => setDirectForm({ ...directForm, notes: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: "10px" }}>
+                <button
+                  type="button"
+                  onClick={() => setDirectAddOpen(false)}
+                  style={{ padding: "10px 18px", borderRadius: "8px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#cbd5e1", fontWeight: "600", cursor: "pointer" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingDirect}
+                  style={{ padding: "10px 22px", borderRadius: "8px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none", color: "#fff", fontWeight: "700", cursor: "pointer" }}
+                >
+                  {savingDirect ? "Publishing…" : "🚀 Publish Directly Now"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -361,24 +741,25 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
           <div
             style={{
               width: "100%",
-              maxWidth: "500px",
+              maxWidth: "540px",
               background: "rgba(26, 15, 52, 0.98)",
-              border: "1px solid rgba(52, 211, 153, 0.3)",
+              border: "1px solid rgba(56, 189, 248, 0.3)",
               borderRadius: "16px",
               padding: "24px",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#f8fafc" }}>
-              ✏️ Update Deliverable Links & Notes
+              ✏️ Edit Deliverable — {editModalSub.taskId?.title}
             </h3>
 
             <form onSubmit={handleSaveMemberEdit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
                   Live Demo URL
                 </label>
                 <input
+                  type="text"
                   style={{
                     width: "100%",
                     padding: "10px",
@@ -387,19 +768,18 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                     border: "1px solid rgba(255, 255, 255, 0.15)",
                     color: "#f8fafc",
                     fontSize: "14px",
-                    boxSizing: "border-box",
                   }}
                   value={editForm.demoUrl}
-                  onChange={(e) => setEditForm((p) => ({ ...p, demoUrl: e.target.value }))}
-                  placeholder="https://my-demo.vercel.app"
+                  onChange={(e) => setEditForm({ ...editForm, demoUrl: e.target.value })}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
-                  GitHub Repository URL
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  GitHub Code Repo URL
                 </label>
                 <input
+                  type="text"
                   style={{
                     width: "100%",
                     padding: "10px",
@@ -408,46 +788,44 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                     border: "1px solid rgba(255, 255, 255, 0.15)",
                     color: "#f8fafc",
                     fontSize: "14px",
-                    boxSizing: "border-box",
                   }}
                   value={editForm.githubUrl}
-                  onChange={(e) => setEditForm((p) => ({ ...p, githubUrl: e.target.value }))}
-                  placeholder="https://github.com/org/repo"
+                  onChange={(e) => setEditForm({ ...editForm, githubUrl: e.target.value })}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
-                  Notes / Description
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  Notes / Overview
                 </label>
                 <textarea
+                  rows={4}
                   style={{
                     width: "100%",
-                    minHeight: "80px",
                     padding: "10px",
                     borderRadius: "8px",
                     background: "rgba(15, 23, 42, 0.8)",
                     border: "1px solid rgba(255, 255, 255, 0.15)",
                     color: "#f8fafc",
                     fontSize: "14px",
-                    boxSizing: "border-box",
                   }}
                   value={editForm.notes}
-                  onChange={(e) => setEditForm((p) => ({ ...p, notes: e.target.value }))}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "12px" }}>
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
                 <button
                   type="button"
                   onClick={() => setEditModalSub(null)}
                   style={{
-                    padding: "10px 18px",
+                    padding: "8px 16px",
                     borderRadius: "8px",
                     background: "rgba(255, 255, 255, 0.08)",
-                    color: "#94a3b8",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "#cbd5e1",
                     fontWeight: "600",
+                    fontSize: "13px",
                     cursor: "pointer",
                   }}
                 >
@@ -457,16 +835,17 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                   type="submit"
                   disabled={savingEdit}
                   style={{
-                    padding: "10px 22px",
+                    padding: "8px 20px",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                    color: "#ffffff",
+                    background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)",
                     border: "none",
-                    fontWeight: "600",
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: "13px",
                     cursor: "pointer",
                   }}
                 >
-                  {savingEdit ? "Updating…" : "Save Deliverable Edits"}
+                  {savingEdit ? "Saving…" : "Save Changes"}
                 </button>
               </div>
             </form>
