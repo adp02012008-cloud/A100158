@@ -228,6 +228,13 @@ export default function MyTasksMember({ search = "" }) {
             const isApproved =
               (latestSub && (latestSub.status || "").toUpperCase() === "APPROVED") ||
               (latestRev && latestRev.decision === "APPROVED");
+            const cardStatus = hasChangesRequested
+              ? "CHANGES_REQUESTED"
+              : isApproved
+              ? "APPROVED"
+              : latestSub
+              ? "UNDER_REVIEW"
+              : (t.status || "PENDING").toUpperCase();
 
             return (
               <div key={t.id} className="task-card">
@@ -246,17 +253,17 @@ export default function MyTasksMember({ search = "" }) {
                 <div className="task-meta-row">
                   <span>📅 Deadline: {t.dueDate || "Flexible"}</span>
                   <span
-                    className={`task-status-pill status-${(t.status || "Pending").toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-")}`}
+                    className={`task-status-pill status-${cardStatus.toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-")}`}
                   >
-                    {t.status === "UNDER_REVIEW"
+                    {cardStatus === "UNDER_REVIEW" || cardStatus === "SUBMITTED"
                       ? "⏳ Under Admin Review"
-                      : t.status === "CHANGES_REQUESTED"
+                      : cardStatus === "CHANGES_REQUESTED"
                       ? "⚠️ Changes Requested"
-                      : t.status === "COMPLETED" || t.status === "APPROVED"
+                      : cardStatus === "COMPLETED" || cardStatus === "APPROVED"
                       ? "✅ Approved"
-                      : t.status === "IN_PROGRESS"
+                      : cardStatus === "IN_PROGRESS"
                       ? "⚡ In Progress"
-                      : t.status || "Pending"}
+                      : cardStatus}
                   </span>
                 </div>
 

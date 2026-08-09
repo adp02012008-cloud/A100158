@@ -88,6 +88,7 @@ export async function recalculateTaskState(taskId, session = null) {
   // Calculate covered active assignees
   const coveredActiveUserSet = new Set();
   let hasPendingReview = false;
+  let hasChangesRequested = false;
 
   groupMap.forEach((latestSub) => {
     const subReviews = reviews.filter((r) => String(r.submissionId) === String(latestSub._id));
@@ -102,6 +103,8 @@ export async function recalculateTaskState(taskId, session = null) {
       });
     } else if (versionState === "SUBMITTED") {
       hasPendingReview = true;
+    } else if (versionState === "CHANGES_REQUESTED") {
+      hasChangesRequested = true;
     }
   });
 
@@ -117,6 +120,9 @@ export async function recalculateTaskState(taskId, session = null) {
     completedAt = task.completedAt || new Date();
   } else if (hasPendingReview) {
     newStatus = "UNDER_REVIEW";
+    completedAt = null;
+  } else if (hasChangesRequested) {
+    newStatus = "CHANGES_REQUESTED";
     completedAt = null;
   } else if (submissions.length > 0) {
     newStatus = "IN_PROGRESS";
