@@ -69,11 +69,29 @@ export default function MyTasksMember({ search = "" }) {
         (t.title || "").toLowerCase().includes(search.toLowerCase()) ||
         (t.domain || "").toLowerCase().includes(search.toLowerCase());
 
-      if (filterTab === "pending") return matchSearch && t.status !== "Completed";
-      if (filterTab === "completed") return matchSearch && t.status === "Completed";
-      return matchSearch;
+      if (!matchSearch) return false;
+
+      const taskIdStr = String(t.taskId || t.id || t._id);
+      const isApprovedSub = submissions.some((s) => {
+        const sTaskId = typeof s.taskId === "object" ? s.taskId?.taskId || s.taskId?._id : s.taskId;
+        return String(sTaskId) === taskIdStr && (s.status || "").toUpperCase() === "APPROVED";
+      });
+      const isApprovedRev = reviews.some((r) => {
+        const rTaskId = typeof r.taskId === "object" ? r.taskId?.taskId || r.taskId?._id : r.taskId;
+        return String(rTaskId) === taskIdStr && r.decision === "APPROVED";
+      });
+
+      const isTaskDone =
+        isApprovedSub ||
+        isApprovedRev ||
+        (t.status || "").toUpperCase() === "COMPLETED" ||
+        (t.status || "").toUpperCase() === "APPROVED";
+
+      if (filterTab === "pending") return !isTaskDone;
+      if (filterTab === "completed") return isTaskDone;
+      return true;
     });
-  }, [tasks, userEmail, students, auth.role, search, filterTab]);
+  }, [tasks, submissions, reviews, userEmail, students, auth.role, search, filterTab]);
 
   const openSubmitModal = (task, existingSub = null) => {
     setActiveTask(task);
