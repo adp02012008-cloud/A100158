@@ -10,9 +10,9 @@ const taskEventSchema = new mongoose.Schema(
       index: true,
     },
     taskId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
+      type: String,
       required: [true, "Task reference is required"],
+      trim: true,
       index: true,
     },
     submissionId: {
@@ -23,8 +23,13 @@ const taskEventSchema = new mongoose.Schema(
     actorUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
       index: true,
+    },
+    actorEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
     },
     eventType: {
       type: String,

@@ -60,7 +60,7 @@ export async function createSubmission(req, res) {
         [
           {
             submissionId: subId,
-            taskId: task._id,
+            taskId: task.taskId,
             submissionGroupId: groupId,
             parentSubmissionId: parentSubId,
             version: nextVersion,
@@ -79,14 +79,14 @@ export async function createSubmission(req, res) {
       );
 
       // Recalculate task state
-      await recalculateTaskState(task._id, session);
+      await recalculateTaskState(task.taskId, session);
 
       // Log TaskEvent
       await TaskEvent.create(
         [
           {
             eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-            taskId: task._id,
+            taskId: task.taskId,
             submissionId: newSubmission._id,
             actorUserId: user._id,
             eventType: nextVersion > 1 ? "RESUBMISSION_CREATED" : "SUBMISSION_CREATED",

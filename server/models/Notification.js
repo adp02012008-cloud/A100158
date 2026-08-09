@@ -12,8 +12,13 @@ const notificationSchema = new mongoose.Schema(
     targetUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Target user reference is required"],
+      default: null,
       index: true,
+    },
+    targetEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
     },
     type: {
       type: String,
@@ -21,9 +26,9 @@ const notificationSchema = new mongoose.Schema(
       trim: true,
     },
     taskId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
+      type: String,
       default: null,
+      trim: true,
     },
     submissionId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -56,8 +61,5 @@ const notificationSchema = new mongoose.Schema(
     collection: "notifications",
   }
 );
-
-// Compound Unique Index: (targetUserId, eventKey)
-notificationSchema.index({ targetUserId: 1, eventKey: 1 }, { unique: true });
 
 export const Notification = mongoose.model("Notification", notificationSchema);
