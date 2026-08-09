@@ -124,47 +124,107 @@ export default function UserRosterAdmin({ search = "" }) {
 
   return (
     <div className="page-container" style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
-      {/* Page Header */}
-      <div className="card" style={{ padding: "24px", marginBottom: "24px" }}>
+      {/* Header Container */}
+      <div
+        style={{
+          padding: "24px",
+          marginBottom: "24px",
+          background: "rgba(30, 27, 75, 0.4)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "16px",
+          backdropFilter: "blur(12px)",
+        }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
           <div>
-            <h2 style={{ margin: "0 0 6px 0", fontSize: "24px" }}>👥 Manage Members Hub</h2>
+            <h2 style={{ margin: "0 0 6px 0", fontSize: "22px", color: "#f8fafc", fontWeight: "700" }}>
+              👥 Manage Members Hub
+            </h2>
             <p style={{ margin: 0, color: "#94a3b8", fontSize: "14px" }}>
-              Dedicated administrative control center for user roles, positions, permissions, and account statuses.
+              Control member access, manage roles, positions, clusters, and account statuses.
             </p>
           </div>
-          <button className="btn primary" onClick={() => setShowAddMember(true)}>
+
+          <button
+            onClick={() => setShowAddMember(true)}
+            style={{
+              fontSize: "13px",
+              padding: "9px 18px",
+              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              fontWeight: "600",
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.25)",
+              cursor: "pointer",
+            }}
+          >
             ➕ Add New Member
           </button>
         </div>
 
         {/* Filter Pills */}
-        <div style={{ display: "flex", gap: "10px", marginTop: "20px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "8px", marginTop: "20px", flexWrap: "wrap" }}>
           <button
-            className={`btn ${roleFilter === "ALL" ? "primary" : "secondary"}`}
             onClick={() => setRoleFilter("ALL")}
-            style={{ fontSize: "13px", padding: "6px 14px" }}
+            style={{
+              fontSize: "12px",
+              padding: "6px 14px",
+              borderRadius: "20px",
+              border: roleFilter === "ALL" ? "none" : "1px solid rgba(255,255,255,0.1)",
+              background: roleFilter === "ALL" ? "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)" : "rgba(255,255,255,0.05)",
+              color: roleFilter === "ALL" ? "#fff" : "#94a3b8",
+              fontWeight: roleFilter === "ALL" ? "600" : "500",
+              cursor: "pointer",
+            }}
           >
             👥 All Users ({users.length})
           </button>
+
           <button
-            className={`btn ${roleFilter === "ADMIN" ? "primary" : "secondary"}`}
             onClick={() => setRoleFilter("ADMIN")}
-            style={{ fontSize: "13px", padding: "6px 14px", background: roleFilter === "ADMIN" ? "#eab308" : undefined, color: roleFilter === "ADMIN" ? "#000" : undefined }}
+            style={{
+              fontSize: "12px",
+              padding: "6px 14px",
+              borderRadius: "20px",
+              border: roleFilter === "ADMIN" ? "none" : "1px solid rgba(255,255,255,0.1)",
+              background: roleFilter === "ADMIN" ? "linear-gradient(135deg, #eab308 0%, #ca8a04 100%)" : "rgba(255,255,255,0.05)",
+              color: roleFilter === "ADMIN" ? "#fff" : "#94a3b8",
+              fontWeight: roleFilter === "ADMIN" ? "600" : "500",
+              cursor: "pointer",
+            }}
           >
             👑 System Admins ({adminCount})
           </button>
+
           <button
-            className={`btn ${roleFilter === "MEMBER" ? "primary" : "secondary"}`}
             onClick={() => setRoleFilter("MEMBER")}
-            style={{ fontSize: "13px", padding: "6px 14px" }}
+            style={{
+              fontSize: "12px",
+              padding: "6px 14px",
+              borderRadius: "20px",
+              border: roleFilter === "MEMBER" ? "none" : "1px solid rgba(255,255,255,0.1)",
+              background: roleFilter === "MEMBER" ? "linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)" : "rgba(255,255,255,0.05)",
+              color: roleFilter === "MEMBER" ? "#fff" : "#94a3b8",
+              fontWeight: roleFilter === "MEMBER" ? "600" : "500",
+              cursor: "pointer",
+            }}
           >
             🎓 Team Members ({memberCount})
           </button>
+
           <button
-            className={`btn ${roleFilter === "INACTIVE" ? "primary" : "secondary"}`}
             onClick={() => setRoleFilter("INACTIVE")}
-            style={{ fontSize: "13px", padding: "6px 14px", background: roleFilter === "INACTIVE" ? "#ef4444" : undefined }}
+            style={{
+              fontSize: "12px",
+              padding: "6px 14px",
+              borderRadius: "20px",
+              border: roleFilter === "INACTIVE" ? "none" : "1px solid rgba(255,255,255,0.1)",
+              background: roleFilter === "INACTIVE" ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : "rgba(255,255,255,0.05)",
+              color: roleFilter === "INACTIVE" ? "#fff" : "#94a3b8",
+              fontWeight: roleFilter === "INACTIVE" ? "600" : "500",
+              cursor: "pointer",
+            }}
           >
             ⛔ Deactivated ({inactiveCount})
           </button>
@@ -172,7 +232,7 @@ export default function UserRosterAdmin({ search = "" }) {
       </div>
 
       {error && (
-        <div className="card" style={{ padding: "16px", marginBottom: "20px", border: "1px solid #ef4444", color: "#f87171" }}>
+        <div style={{ padding: "16px", marginBottom: "20px", borderRadius: "10px", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", color: "#f87171" }}>
           ⚠️ {error}
         </div>
       )}
@@ -183,13 +243,13 @@ export default function UserRosterAdmin({ search = "" }) {
           <p style={{ color: "#94a3b8" }}>Loading system user records from MongoDB Atlas...</p>
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="card" style={{ padding: "40px", textAlign: "center" }}>
-          <div style={{ fontSize: "40px", marginBottom: "12px" }}>🔍</div>
-          <h3>No users found</h3>
-          <p style={{ color: "#94a3b8" }}>Try adjusting your search query or filter selection.</p>
+        <div style={{ padding: "40px", textAlign: "center", background: "rgba(30, 27, 75, 0.4)", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ fontSize: "36px", marginBottom: "12px" }}>🔍</div>
+          <h3 style={{ color: "#f8fafc", margin: "0 0 6px 0" }}>No matching members found</h3>
+          <p style={{ color: "#94a3b8", margin: 0 }}>Try adjusting your search query or filter selection.</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {filteredUsers.map((user) => {
             const isTargetAdmin = user.role === "ADMIN";
             const isTargetActive = user.status === "ACTIVE";
@@ -198,24 +258,25 @@ export default function UserRosterAdmin({ search = "" }) {
             return (
               <div
                 key={user._id}
-                className="card"
                 style={{
-                  padding: "20px",
+                  padding: "16px 20px",
+                  background: "rgba(30, 27, 75, 0.35)",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                   flexWrap: "wrap",
-                  gap: "16px",
-                  borderLeft: isTargetAdmin ? "4px solid #eab308" : "4px solid #6366f1",
-                  opacity: isTargetActive ? 1 : 0.6,
+                  gap: "14px",
+                  opacity: isTargetActive ? 1 : 0.65,
                 }}
               >
-                {/* Left Metadata */}
-                <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 300px" }}>
+                {/* Left Metadata Block */}
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", flex: "1 1 320px" }}>
                   <div
                     style={{
-                      width: "48px",
-                      height: "48px",
+                      width: "44px",
+                      height: "44px",
                       borderRadius: "50%",
                       background: isTargetAdmin ? "linear-gradient(135deg, #eab308 0%, #ca8a04 100%)" : "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
                       color: "#fff",
@@ -223,7 +284,7 @@ export default function UserRosterAdmin({ search = "" }) {
                       alignItems: "center",
                       justifyContent: "center",
                       fontWeight: "700",
-                      fontSize: "18px",
+                      fontSize: "16px",
                       flexShrink: 0,
                     }}
                   >
@@ -232,7 +293,7 @@ export default function UserRosterAdmin({ search = "" }) {
 
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      <strong style={{ fontSize: "16px" }}>{user.name}</strong>
+                      <strong style={{ fontSize: "15px", color: "#f8fafc" }}>{user.name}</strong>
                       <span
                         style={{
                           fontSize: "11px",
@@ -252,6 +313,7 @@ export default function UserRosterAdmin({ search = "" }) {
                           borderRadius: "12px",
                           background: isTargetActive ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)",
                           color: isTargetActive ? "#4ade80" : "#f87171",
+                          fontWeight: "500",
                         }}
                       >
                         {isTargetActive ? "ACTIVE" : "INACTIVE"}
@@ -261,8 +323,8 @@ export default function UserRosterAdmin({ search = "" }) {
                     <div style={{ fontSize: "13px", color: "#94a3b8", marginTop: "4px" }}>
                       ✉️ {user.email} {user.enrolmentNumber && `• 🆔 ${user.enrolmentNumber}`}
                     </div>
-                    <div style={{ fontSize: "12px", color: "#cbd5e1", marginTop: "4px" }}>
-                      💼 Position: <strong>{user.position || "Member"}</strong> • 🚀 Cluster: <strong>{user.clusterName || "Core"}</strong>
+                    <div style={{ fontSize: "12px", color: "#cbd5e1", marginTop: "3px" }}>
+                      💼 Position: <strong style={{ color: "#f1f5f9" }}>{user.position || "Member"}</strong> • 🚀 Cluster: <strong style={{ color: "#f1f5f9" }}>{user.clusterName || "Core"}</strong>
                     </div>
                   </div>
                 </div>
@@ -272,13 +334,16 @@ export default function UserRosterAdmin({ search = "" }) {
                   {/* Role Switch Button */}
                   <button
                     type="button"
-                    className="btn secondary"
                     disabled={isProcessing}
                     style={{
                       fontSize: "12px",
-                      padding: "8px 12px",
-                      borderColor: isTargetAdmin ? "rgba(99, 102, 241, 0.4)" : "rgba(234, 179, 8, 0.4)",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      background: isTargetAdmin ? "rgba(99, 102, 241, 0.15)" : "rgba(234, 179, 8, 0.15)",
                       color: isTargetAdmin ? "#818cf8" : "#eab308",
+                      border: isTargetAdmin ? "1px solid rgba(99, 102, 241, 0.3)" : "1px solid rgba(234, 179, 8, 0.3)",
+                      fontWeight: "600",
+                      cursor: "pointer",
                     }}
                     onClick={() => handleRoleToggle(user)}
                     title={isTargetAdmin ? "Demote Admin to Member" : "Promote Member to Admin"}
@@ -289,13 +354,16 @@ export default function UserRosterAdmin({ search = "" }) {
                   {/* Status Toggle Button */}
                   <button
                     type="button"
-                    className="btn secondary"
                     disabled={isProcessing}
                     style={{
                       fontSize: "12px",
-                      padding: "8px 12px",
-                      borderColor: isTargetActive ? "rgba(239, 68, 68, 0.4)" : "rgba(34, 197, 94, 0.4)",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      background: isTargetActive ? "rgba(239, 68, 68, 0.15)" : "rgba(34, 197, 94, 0.15)",
                       color: isTargetActive ? "#f87171" : "#4ade80",
+                      border: isTargetActive ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid rgba(34, 197, 94, 0.3)",
+                      fontWeight: "600",
+                      cursor: "pointer",
                     }}
                     onClick={() => handleStatusToggle(user)}
                   >
@@ -305,9 +373,17 @@ export default function UserRosterAdmin({ search = "" }) {
                   {/* Edit Full Profile */}
                   <button
                     type="button"
-                    className="btn primary"
                     disabled={isProcessing}
-                    style={{ fontSize: "12px", padding: "8px 12px" }}
+                    style={{
+                      fontSize: "12px",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      background: "rgba(255, 255, 255, 0.08)",
+                      color: "#f8fafc",
+                      border: "1px solid rgba(255, 255, 255, 0.15)",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                    }}
                     onClick={() => setEditingUser(user)}
                   >
                     ✏️ Edit
@@ -316,14 +392,16 @@ export default function UserRosterAdmin({ search = "" }) {
                   {/* Delete User */}
                   <button
                     type="button"
-                    className="btn secondary"
                     disabled={isProcessing}
                     style={{
                       fontSize: "12px",
-                      padding: "8px 12px",
-                      backgroundColor: "rgba(239, 68, 68, 0.15)",
+                      padding: "6px 12px",
+                      borderRadius: "6px",
+                      backgroundColor: "rgba(239, 68, 68, 0.12)",
                       color: "#f87171",
-                      borderColor: "rgba(239, 68, 68, 0.3)",
+                      border: "1px solid rgba(239, 68, 68, 0.25)",
+                      fontWeight: "600",
+                      cursor: "pointer",
                     }}
                     onClick={() => handleDeleteUser(user)}
                   >
