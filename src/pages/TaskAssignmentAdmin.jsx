@@ -568,15 +568,17 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 </div>
               ) : (
                 taskSubmissions.map((sub) => {
-                  const isSelfSubmission = normalizeEmail(sub.submittedBy) === normalizeEmail(auth.email);
-                  const subReviews = taskReviews.filter((r) => r.submissionId === sub.id);
+                  const submitterEmail = typeof sub.submittedBy === "object" ? sub.submittedBy?.email || sub.submittedBy?.name : sub.submittedBy;
+                  const submitterName = typeof sub.submittedBy === "object" ? sub.submittedBy?.name || sub.submittedBy?.email : (userMap[normalizeEmail(sub.submittedBy)] || sub.submittedBy);
+                  const isSelfSubmission = normalizeEmail(submitterEmail) === normalizeEmail(auth.email);
+                  const subReviews = taskReviews.filter((r) => r.submissionId === sub.id || r.submissionId === sub._id);
 
                   return (
-                    <div key={sub.id} className="submission-card" style={{ marginBottom: "20px", border: "1px solid #334155", padding: "16px", borderRadius: "10px" }}>
+                    <div key={sub.id || sub._id} className="submission-card" style={{ marginBottom: "20px", border: "1px solid #334155", padding: "16px", borderRadius: "10px" }}>
                       <div className="submission-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div>
                           <strong style={{ fontSize: "1.1rem", color: "#f8fafc" }}>
-                            {sub.submittedBy}
+                            {submitterName}
                           </strong>
                           {sub.version && (
                             <span style={{ marginLeft: "10px", padding: "2px 8px", borderRadius: "12px", background: "#0284c7", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
@@ -601,11 +603,14 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                         <div style={{ marginTop: "10px", background: "#1e293b", padding: "8px 12px", borderRadius: "6px" }}>
                           <small style={{ color: "#94a3b8", display: "block" }}>Represented Members Covered:</small>
                           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
-                            {sub.submittedFor.map((mEmail) => (
-                              <span key={mEmail} style={{ background: "#334155", color: "#e2e8f0", padding: "2px 8px", borderRadius: "4px", fontSize: "0.8rem" }}>
-                                ✓ {userMap[normalizeEmail(mEmail)] || mEmail}
-                              </span>
-                            ))}
+                            {sub.submittedFor.map((mItem, idx) => {
+                              const mName = typeof mItem === "object" ? mItem.name || mItem.email : (userMap[normalizeEmail(mItem)] || mItem);
+                              return (
+                                <span key={typeof mItem === "object" ? mItem._id || idx : mItem} style={{ background: "#334155", color: "#e2e8f0", padding: "2px 8px", borderRadius: "4px", fontSize: "0.8rem" }}>
+                                  ✓ {mName}
+                                </span>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

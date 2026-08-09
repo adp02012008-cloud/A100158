@@ -288,10 +288,17 @@ export default function MyTasksMember({ search = "" }) {
                       <div key={sub.id || sub.submissionId} style={{ background: "#1e293b", padding: "10px", borderRadius: "6px", marginBottom: "8px", fontSize: "0.85rem" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div>
-                            <strong style={{ color: "#f8fafc" }}>Version V{sub.version || 1}</strong>
-                            <span style={{ marginLeft: "8px", color: "#94a3b8", fontSize: "0.75rem" }}>
-                              by {sub.submittedBy || sub.studentEmail} on {new Date(sub.submittedAt).toLocaleDateString()}
-                            </span>
+                            {(() => {
+                              const submitterName = typeof sub.submittedBy === "object" ? sub.submittedBy?.name || sub.submittedBy?.email : (sub.submittedBy || sub.studentEmail);
+                              return (
+                                <>
+                                  <strong style={{ color: "#f8fafc" }}>Version V{sub.version || 1}</strong>
+                                  <span style={{ marginLeft: "8px", color: "#94a3b8", fontSize: "0.75rem" }}>
+                                    by {submitterName} on {new Date(sub.submittedAt).toLocaleDateString()}
+                                  </span>
+                                </>
+                              );
+                            })()}
                           </div>
                           <span className={`task-status-pill status-${(sub.status || "Submitted").toLowerCase().replace(/ /g, "-")}`}>
                             {sub.status || "SUBMITTED"}
