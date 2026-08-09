@@ -8,6 +8,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
     enrolmentNumber: "",
     position: "Member",
     clusterName: "Core",
+    joinedDate: new Date().toISOString().split("T")[0],
     role: "MEMBER",
   });
   const [existingClusters, setExistingClusters] = useState([]);
@@ -88,6 +89,16 @@ export default function AddMemberModal({ onClose, onCreated }) {
               value={form.enrolmentNumber}
               onChange={(e) => handleChange("enrolmentNumber", e.target.value)}
               placeholder="e.g. 7376231CS199"
+            />
+          </div>
+
+          <div>
+            <label className="edit-label">Joined Date</label>
+            <input
+              className="edit-input"
+              type="date"
+              value={form.joinedDate}
+              onChange={(e) => handleChange("joinedDate", e.target.value)}
             />
           </div>
 

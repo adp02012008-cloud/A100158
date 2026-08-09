@@ -150,7 +150,7 @@ export default function EditModal({ student, onClose, onSaved }) {
               <EditField label="Name" value={adminForm.Name} onChange={(v) => setAdmin("Name", v)} />
               <EditField label="Position (e.g. Member 1, Team Lead, Admin)" value={adminForm.POSITION} onChange={(v) => setAdmin("POSITION", v)} />
               <EditField label="Cluster" value={adminForm.CLUSTER} onChange={(v) => setAdmin("CLUSTER", v)} />
-              <EditField label="Joined Date" value={adminForm.JOINED} onChange={(v) => setAdmin("JOINED", v)} />
+              <EditField label="Joined Date" type="date" value={adminForm.JOINED} onChange={(v) => setAdmin("JOINED", v)} />
               
               <div className="edit-field">
                 <label className="edit-label">Role (Permission)</label>

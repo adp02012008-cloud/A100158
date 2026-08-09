@@ -247,7 +247,7 @@ export async function createUser(req, res) {
       return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
     }
 
-    const { email, name, role, position, clusterName, enrolmentNumber } = req.body;
+    const { email, name, role, position, clusterName, enrolmentNumber, joinedDate } = req.body;
     if (!email || !name) {
       return res.status(400).json({ success: false, message: "Email and name are required." });
     }
@@ -264,6 +264,7 @@ export async function createUser(req, res) {
       role: (role || "MEMBER").toUpperCase(),
       position: position || "Member",
       clusterName: clusterName || "Core",
+      joinedDate: (joinedDate || new Date().toISOString().split("T")[0]).trim(),
       enrolmentNumber: enrolmentNumber || undefined,
       status: "ACTIVE",
     });
@@ -321,7 +322,7 @@ export async function updateUserProfile(req, res) {
     if (POSITION || position) user.position = (POSITION || position).trim();
     if (LINKEDIN || linkedin) user.linkedin = (LINKEDIN || linkedin).trim();
     if (GITHUB || github) user.github = (GITHUB || github).trim();
-    if (JOINED) user.joinedDate = JOINED.trim();
+    if (JOINED !== undefined || joinedDate !== undefined) user.joinedDate = String(JOINED !== undefined ? JOINED : joinedDate).trim();
     if (CLUSTER) user.clusterName = CLUSTER.trim();
 
     if (isAdmin(req.user)) {
