@@ -11,16 +11,51 @@ export default function AddMemberModal({ onClose, onCreated }) {
     joinedDate: new Date().toISOString().split("T")[0],
     role: "MEMBER",
   });
-  const [existingClusters, setExistingClusters] = useState([]);
+  const [existingClusters, setExistingClusters] = useState(["Core", "Computer Cluster"]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    apiFetch("/clusters")
-      .then((res) => {
-        if (res?.clusters) setExistingClusters(res.clusters);
-      })
-      .catch(() => {});
+    let isMounted = true;
+
+    Promise.allSettled([
+      apiFetch("/clusters"),
+      apiFetch("/courses"),
+      apiFetch("/users/dashboard"),
+    ]).then(([clustersRes, coursesRes, dashRes]) => {
+      if (!isMounted) return;
+
+      const clusterSet = new Set(["Core", "Computer Cluster"]);
+
+      if (clustersRes.status === "fulfilled" && Array.isArray(clustersRes.value?.clusters)) {
+        clustersRes.value.clusters.forEach((c) => {
+          if (c?.name) clusterSet.add(c.name.trim());
+        });
+      }
+
+      if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
+        coursesRes.value.courses.forEach((c) => {
+          if (c?.name) clusterSet.add(c.name.trim());
+        });
+      }
+
+      if (dashRes.status === "fulfilled" && Array.isArray(dashRes.value?.users)) {
+        dashRes.value.users.forEach((u) => {
+          const cName = u.CLUSTER || u.clusterName;
+          if (cName) clusterSet.add(cName.trim());
+        });
+      }
+
+      const sortedList = Array.from(clusterSet).filter(Boolean).sort();
+      setExistingClusters(sortedList);
+      if (sortedList.length > 0 && !sortedList.includes(form.clusterName)) {
+        setForm((prev) => ({ ...prev, clusterName: sortedList[0] }));
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleChange = (key, value) => {
@@ -178,21 +213,23 @@ export default function AddMemberModal({ onClose, onCreated }) {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <label style={labelStyle}>Cluster (Type or Select)</label>
-            <input
-              style={inputStyle}
-              list="clusters-list"
+            <label style={labelStyle}>Cluster Assignment</label>
+            <select
+              style={{
+                ...inputStyle,
+                background: "#0f172a",
+                color: "#f8fafc",
+                cursor: "pointer",
+              }}
               value={form.clusterName}
               onChange={(e) => handleChange("clusterName", e.target.value)}
-              placeholder="e.g. Core, Computer Cluster"
-            />
-            <datalist id="clusters-list">
-              <option value="Core" />
-              <option value="Computer Cluster" />
-              {existingClusters.map((c) => (
-                <option key={c._id || c.name} value={c.name} />
+            >
+              {existingClusters.map((cName) => (
+                <option key={cName} value={cName} style={{ background: "#0f172a", color: "#f8fafc" }}>
+                  {cName}
+                </option>
               ))}
-            </datalist>
+            </select>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column" }}>

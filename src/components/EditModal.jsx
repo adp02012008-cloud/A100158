@@ -37,6 +37,49 @@ export default function EditModal({ student, onClose, onSaved }) {
   const [pointsRows, setPointsRows] = useState([]);
   const [pointsLoading, setPointsLoading] = useState(true);
 
+  const [clusterOptions, setClusterOptions] = useState(["Core", "Computer Cluster"]);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.allSettled([
+      apiFetch("/clusters"),
+      apiFetch("/courses"),
+      apiFetch("/users/dashboard"),
+    ]).then(([clustersRes, coursesRes, dashRes]) => {
+      if (!isMounted) return;
+      const set = new Set(["Core", "Computer Cluster"]);
+
+      if (clustersRes.status === "fulfilled" && Array.isArray(clustersRes.value?.clusters)) {
+        clustersRes.value.clusters.forEach((c) => {
+          if (c?.name) set.add(c.name.trim());
+        });
+      }
+
+      if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
+        coursesRes.value.courses.forEach((c) => {
+          if (c?.name) set.add(c.name.trim());
+        });
+      }
+
+      if (dashRes.status === "fulfilled" && Array.isArray(dashRes.value?.users)) {
+        dashRes.value.users.forEach((u) => {
+          const cName = u.CLUSTER || u.clusterName;
+          if (cName) set.add(cName.trim());
+        });
+      }
+
+      if (student.CLUSTER || student.clusterName) {
+        set.add((student.CLUSTER || student.clusterName).trim());
+      }
+
+      setClusterOptions(Array.from(set).filter(Boolean).sort());
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [student]);
+
   useEffect(() => {
     apiFetch("/points/rules")
       .then((res) => {
@@ -149,7 +192,21 @@ export default function EditModal({ student, onClose, onSaved }) {
             <div className="edit-grid">
               <EditField label="Name" value={adminForm.Name} onChange={(v) => setAdmin("Name", v)} />
               <EditField label="Position (e.g. Member 1, Team Lead, Admin)" value={adminForm.POSITION} onChange={(v) => setAdmin("POSITION", v)} />
-              <EditField label="Cluster" value={adminForm.CLUSTER} onChange={(v) => setAdmin("CLUSTER", v)} />
+              <div className="edit-field">
+                <label className="edit-label">Cluster</label>
+                <select
+                  className="edit-input"
+                  style={{ background: "#0f172a", color: "#f8fafc" }}
+                  value={adminForm.CLUSTER}
+                  onChange={(e) => setAdmin("CLUSTER", e.target.value)}
+                >
+                  {clusterOptions.map((cName) => (
+                    <option key={cName} value={cName}>
+                      {cName}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <EditField label="Joined Date" type="date" value={adminForm.JOINED} onChange={(v) => setAdmin("JOINED", v)} />
               
               <div className="edit-field">
