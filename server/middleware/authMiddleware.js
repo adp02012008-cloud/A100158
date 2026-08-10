@@ -87,11 +87,17 @@ export async function verifyAuthToken(req, res, next) {
     const firebaseUid = decodedToken.uid;
     const cleanEmail = decodedToken.email;
 
-    // Resolve user by firebaseUid first, then email fallback
+    // Resolve user by firebaseUid first, then email alias fallback
     let dbUser = await User.findOne({ firebaseUid }).exec();
 
     if (!dbUser && cleanEmail) {
-      dbUser = await User.findOne({ email: cleanEmail }).exec();
+      dbUser = await User.findOne({
+        $or: [
+          { email: cleanEmail },
+          { personalEmail: cleanEmail },
+          { bitEmail: cleanEmail },
+        ],
+      }).exec();
       if (dbUser) {
         // Link firebaseUid to existing user record
         dbUser.firebaseUid = firebaseUid;
@@ -111,9 +117,14 @@ export async function verifyAuthToken(req, res, next) {
       });
     }
 
-    if (dbUser && cleanEmail && isAdminEmail(cleanEmail) && dbUser.role !== "ADMIN") {
-      dbUser.role = "ADMIN";
-      await dbUser.save();
+    if (dbUser && cleanEmail) {
+      const allUserEmails = [dbUser.email, dbUser.personalEmail, dbUser.bitEmail]
+        .filter(Boolean)
+        .map((e) => String(e).trim().toLowerCase());
+      if (allUserEmails.some(isAdminEmail) && dbUser.role !== "ADMIN") {
+        dbUser.role = "ADMIN";
+        await dbUser.save();
+      }
     }
 
     if (!dbUser) {

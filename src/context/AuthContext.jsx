@@ -45,13 +45,29 @@ export function AuthProvider({ children }) {
     if (auth.isLoggedIn && auth.role !== "public") {
       fetchMyProfile()
         .then((res) => {
-          if (res?.user) setCurrentUser(res.user);
+          if (res?.user) {
+            setCurrentUser(res.user);
+            const serverRole = String(res.user.role || "").toUpperCase() === "ADMIN" ? "admin" : "student";
+            setAuth((prev) => {
+              if (
+                prev.role === serverRole &&
+                prev.viewMode === (serverRole === "admin" ? (prev.viewMode || "admin") : serverRole)
+              ) {
+                return prev;
+              }
+              return {
+                ...prev,
+                role: serverRole,
+                viewMode: serverRole === "admin" ? (prev.viewMode || "admin") : serverRole,
+              };
+            });
+          }
         })
         .catch(() => setCurrentUser(null));
     } else {
       setCurrentUser(null);
     }
-  }, [auth.isLoggedIn, auth.role, auth.email]);
+  }, [auth.isLoggedIn, auth.email]);
 
   useEffect(() => {
     if (auth.isLoggedIn && auth.role === "public") {
