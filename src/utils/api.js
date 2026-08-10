@@ -4,7 +4,25 @@ import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "https://a100158.onrender.com/api";
+export function getApiBaseUrl() {
+  const envUrl = (import.meta.env.VITE_API_URL || "").trim();
+  const isLocalhost =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.startsWith("192.168.") ||
+      window.location.hostname.endsWith(".local"));
+
+  if (!isLocalhost) {
+    if (!envUrl || envUrl.includes("localhost")) {
+      return "https://a100158.onrender.com/api";
+    }
+  }
+
+  return envUrl || "https://a100158.onrender.com/api";
+}
+
+export const API_BASE_URL = getApiBaseUrl();
 
 async function waitForFirebaseUser(timeoutMs = 8000) {
   if (firebaseAuth.currentUser) return firebaseAuth.currentUser;
@@ -73,7 +91,8 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const baseUrl = getApiBaseUrl();
+  const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
 
   let response = await fetch(url, {
     ...options,
@@ -116,20 +135,39 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
  * MongoDB Roster Helper: fetches active user roster from MongoDB backend
  */
 export async function fetchSheetData(sheetName = "Sheet1") {
-  if (!firebaseAuth.currentUser) return [];
+  try {
+    const data = await apiFetch("/users/dashboard");
+    if (Array.isArray(data?.users) && data.users.length > 0) {
+      return data.users.map((u) => ({
+        "EMAIL ID": u.email,
+        "NAME": u.Name || u.name,
+        "ROLE": u.ROLE || u.role || "MEMBER",
+        "GITHUB URL": u.GITHUB || u.github || u.githubUrl || "",
+        "ENROLMENT NUMBER": u["ENROLMENT NUMBER"] || u.enrolmentNumber || "",
+        "POSITION": u.POSITION || u.position || "Member",
+        "CLUSTER": u.CLUSTER || u.clusterName || "Core",
+      }));
+    }
+  } catch (err) {
+    console.warn("Failed to fetch user dashboard roster from MongoDB:", err?.message);
+  }
+
   try {
     const data = await apiFetch("/users/assignable");
     if (Array.isArray(data?.users)) {
       return data.users.map((u) => ({
         "EMAIL ID": u.email,
         "NAME": u.name,
-        "ROLE": u.role,
+        "ROLE": u.rawRole || u.role || "MEMBER",
         "GITHUB URL": u.githubUrl || "",
+        "ENROLMENT NUMBER": u.enrolmentNumber || "",
+        "POSITION": u.position || "Member",
       }));
     }
-  } catch (err) {
-    console.warn("Failed to fetch assignable user roster from MongoDB:", err?.message);
+  } catch (assignableErr) {
+    console.warn("Failed to fetch assignable user roster from MongoDB:", assignableErr?.message);
   }
+
   return [];
 }
 

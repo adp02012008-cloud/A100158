@@ -98,8 +98,23 @@ export default function LoginGate({ children }) {
         return false;
       }
 
-      const role = getUserRole(cleaned, students);
-      const ownedStudent = findStudentByEmail(cleaned, students);
+      let currentRoster = students;
+      let role = getUserRole(cleaned, currentRoster);
+
+      if (role === "public") {
+        try {
+          const freshData = await fetchSheetData("Sheet1");
+          if (Array.isArray(freshData) && freshData.length > 0) {
+            currentRoster = freshData;
+            setStudents(freshData);
+            role = getUserRole(cleaned, freshData);
+          }
+        } catch {
+          // Ignore fetch error
+        }
+      }
+
+      const ownedStudent = findStudentByEmail(cleaned, currentRoster);
       const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
 
       if (role === "public") {

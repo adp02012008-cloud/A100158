@@ -218,6 +218,8 @@ export async function getDashboardUsers(req, res) {
         userId: u.userId,
         Name: u.name,
         email: u.email,
+        role: u.role,
+        ROLE: u.role,
         "ENROLMENT NUMBER": u.enrolmentNumber || u.userId || "",
         POSITION: u.position || "Member",
         CLUSTER: u.clusterName || "Core",

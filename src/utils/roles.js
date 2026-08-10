@@ -4,6 +4,7 @@ export const ADMIN_EMAILS = [
   "dhashaprakasha.cs25@bitsathy.ac.in",
   "harishkarthikkbs.ad25@bitsathy.ac.in",
   "adp02012008@gmail.com",
+  "mithunnb.cs25@bitsathy.ac.in",
 ];
 
 export function normalizeEmail(email = "") {
@@ -45,9 +46,19 @@ export function extractStudentEmails(student) {
 export function getUserRole(email, students = []) {
   const clean = normalizeEmail(email);
   if (!clean) return "public";
+
+  const found = students.find((s) => extractStudentEmails(s).includes(clean));
+  if (found) {
+    const r = String(found.ROLE || found.role || "").toUpperCase();
+    if (r === "ADMIN" || r === "SYSTEM ADMIN") {
+      return "admin";
+    }
+    return "student";
+  }
+
   if (isAdminEmail(clean)) return "admin";
-  const found = students.some((s) => extractStudentEmails(s).includes(clean));
-  return found ? "student" : "public";
+
+  return "public";
 }
 
 // Given an email and a students array, find the student record that owns the email
@@ -127,10 +138,13 @@ export function getAllAssignableUsers(students = []) {
     const primaryEmail = emails[0] || "";
     if (!primaryEmail) return;
 
+    const stRole = String(st.ROLE || st.role || "").toUpperCase();
+    const isAdm = isAdminEmail(primaryEmail) || stRole === "ADMIN" || stRole === "SYSTEM ADMIN";
+
     map.set(primaryEmail, {
       email: primaryEmail,
-      name: st.Name || primaryEmail.split("@")[0],
-      role: isAdminEmail(primaryEmail) ? "Admin" : (st.POSITION || "Team Member"),
+      name: st.Name || st.name || primaryEmail.split("@")[0],
+      role: isAdm ? "Admin" : (st.POSITION || st.position || "Team Member"),
       studentObj: st,
     });
   });
