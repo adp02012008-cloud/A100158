@@ -43,20 +43,13 @@ export default function EditModal({ student, onClose, onSaved }) {
     let isMounted = true;
     Promise.allSettled([
       apiFetch("/clusters"),
-      apiFetch("/courses"),
       apiFetch("/users/dashboard"),
-    ]).then(([clustersRes, coursesRes, dashRes]) => {
+    ]).then(([clustersRes, dashRes]) => {
       if (!isMounted) return;
       const set = new Set(["Core", "Computer Cluster"]);
 
       if (clustersRes.status === "fulfilled" && Array.isArray(clustersRes.value?.clusters)) {
         clustersRes.value.clusters.forEach((c) => {
-          if (c?.name) set.add(c.name.trim());
-        });
-      }
-
-      if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
-        coursesRes.value.courses.forEach((c) => {
           if (c?.name) set.add(c.name.trim());
         });
       }

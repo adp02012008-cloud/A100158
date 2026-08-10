@@ -20,21 +20,14 @@ export default function AddMemberModal({ onClose, onCreated }) {
 
     Promise.allSettled([
       apiFetch("/clusters"),
-      apiFetch("/courses"),
       apiFetch("/users/dashboard"),
-    ]).then(([clustersRes, coursesRes, dashRes]) => {
+    ]).then(([clustersRes, dashRes]) => {
       if (!isMounted) return;
 
       const clusterSet = new Set(["Core", "Computer Cluster"]);
 
       if (clustersRes.status === "fulfilled" && Array.isArray(clustersRes.value?.clusters)) {
         clustersRes.value.clusters.forEach((c) => {
-          if (c?.name) clusterSet.add(c.name.trim());
-        });
-      }
-
-      if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
-        coursesRes.value.courses.forEach((c) => {
           if (c?.name) clusterSet.add(c.name.trim());
         });
       }
