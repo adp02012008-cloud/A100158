@@ -278,99 +278,307 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   }
 
   return (
-    <div className="section-container">
-      {/* Header */}
-      <div className="section-header-row">
-        <div>
-          <h2 className="section-title">📋 Task & Domain Assignments</h2>
-          <p className="section-subtitle">
-            Assign project domains and tasks to single members or team squads.
-          </p>
-        </div>
-        <button type="button" className="btn-primary" onClick={openCreateModal}>
-          ➕ Assign New Task
-        </button>
-      </div>
+    <div className="page-container" style={{ maxWidth: "1240px", margin: "0 auto", padding: "24px 20px" }}>
+      {/* Header Hub Card */}
+      <div
+        style={{
+          padding: "28px 32px",
+          marginBottom: "28px",
+          background: "linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(15, 23, 42, 0.75) 100%)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          borderRadius: "20px",
+          backdropFilter: "blur(16px)",
+          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.3)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+              <span style={{ fontSize: "24px" }}>📋</span>
+              <h2 style={{ margin: 0, fontSize: "24px", color: "#f8fafc", fontWeight: "800", letterSpacing: "-0.3px" }}>
+                Task & Domain Assignments
+              </h2>
+            </div>
+            <p style={{ margin: 0, color: "#94a3b8", fontSize: "14px", lineHeight: "1.5" }}>
+              Assign project domains and tasks to single members or team squads, track progress, and review deliverables.
+            </p>
+          </div>
 
-      {/* Filter Bar */}
-      <div className="filter-bar-row" style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginBottom: "20px", alignItems: "center" }}>
-        <div className="filter-group">
-          <label style={{ fontSize: "12px", fontWeight: "700", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Filter by Domain:</label>
-          <select
-            className="select-input"
-            style={{ padding: "8px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#f8fafc" }}
-            value={domainFilter}
-            onChange={(e) => setDomainFilter(e.target.value)}
+          <button
+            type="button"
+            onClick={openCreateModal}
+            style={{
+              fontSize: "13.5px",
+              padding: "10px 22px",
+              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              fontWeight: "600",
+              boxShadow: "0 4px 16px rgba(99, 102, 241, 0.35)",
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "transform 0.15s ease",
+            }}
           >
-            <option value="All">🌐 All Domains</option>
-            {availableDomains.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </select>
+            <span>➕</span> Assign New Task
+          </button>
         </div>
 
-        <div className="filter-group">
-          <label style={{ fontSize: "12px", fontWeight: "700", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Filter by Status:</label>
-          <select
-            className="select-input"
-            style={{ padding: "8px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#f8fafc" }}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="All">📁 All Statuses</option>
-            <option value="Pending">📌 Pending</option>
-            <option value="In Progress">⚡ In Progress</option>
-            <option value="Under Review">⏳ Under Review</option>
-            <option value="Changes Requested">⚠️ Changes Requested</option>
-            <option value="Completed">✅ Completed & Approved</option>
-          </select>
-        </div>
+        {/* Filter Toolbar Inside Header Hub */}
+        <div style={{ display: "flex", gap: "16px", marginTop: "24px", flexWrap: "wrap", alignItems: "center", paddingTop: "20px", borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#94a3b8", whiteSpace: "nowrap" }}>Filter by Domain:</label>
+            <select
+              style={{
+                padding: "8px 14px",
+                borderRadius: "10px",
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                color: "#f8fafc",
+                fontSize: "13px",
+                outline: "none",
+                cursor: "pointer",
+              }}
+              value={domainFilter}
+              onChange={(e) => setDomainFilter(e.target.value)}
+            >
+              <option value="All" style={{ background: "#0f172a" }}>🌐 All Domains</option>
+              {availableDomains.map((d) => (
+                <option key={d} value={d} style={{ background: "#0f172a" }}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="filter-group">
-          <label style={{ fontSize: "12px", fontWeight: "700", color: "#94a3b8", display: "block", marginBottom: "4px" }}>Filter by Priority:</label>
-          <select
-            className="select-input"
-            style={{ padding: "8px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#f8fafc" }}
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-          >
-            <option value="All">🔥 All Priorities</option>
-            <option value="High">🔴 High Priority</option>
-            <option value="Medium">🟡 Medium Priority</option>
-            <option value="Low">🟢 Low Priority</option>
-          </select>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#94a3b8", whiteSpace: "nowrap" }}>Filter by Status:</label>
+            <select
+              style={{
+                padding: "8px 14px",
+                borderRadius: "10px",
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                color: "#f8fafc",
+                fontSize: "13px",
+                outline: "none",
+                cursor: "pointer",
+              }}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All" style={{ background: "#0f172a" }}>📁 All Statuses</option>
+              <option value="Pending" style={{ background: "#0f172a" }}>📌 Pending</option>
+              <option value="In Progress" style={{ background: "#0f172a" }}>⚡ In Progress</option>
+              <option value="Under Review" style={{ background: "#0f172a" }}>⏳ Under Review</option>
+              <option value="Changes Requested" style={{ background: "#0f172a" }}>⚠️ Changes Requested</option>
+              <option value="Completed" style={{ background: "#0f172a" }}>✅ Completed & Approved</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#94a3b8", whiteSpace: "nowrap" }}>Filter by Priority:</label>
+            <select
+              style={{
+                padding: "8px 14px",
+                borderRadius: "10px",
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                color: "#f8fafc",
+                fontSize: "13px",
+                outline: "none",
+                cursor: "pointer",
+              }}
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+            >
+              <option value="All" style={{ background: "#0f172a" }}>🔥 All Priorities</option>
+              <option value="High" style={{ background: "#0f172a" }}>🔴 High Priority</option>
+              <option value="Medium" style={{ background: "#0f172a" }}>🟡 Medium Priority</option>
+              <option value="Low" style={{ background: "#0f172a" }}>🟢 Low Priority</option>
+            </select>
+          </div>
+
+          <div style={{ marginLeft: "auto", fontSize: "12.5px", color: "#94a3b8" }}>
+            Showing <strong style={{ color: "#a5b4fc" }}>{filteredTasks.length}</strong> of {tasks.length} tasks
+          </div>
         </div>
       </div>
 
       {/* Task Cards Grid */}
-      <div className="task-grid">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
+          gap: "22px",
+        }}
+      >
         {filteredTasks.length === 0 ? (
-          <div className="empty-card">
-            No tasks found. Click <strong>"➕ Assign New Task"</strong> to assign work to members!
+          <div
+            style={{
+              padding: "50px 20px",
+              textAlign: "center",
+              background: "rgba(30, 27, 75, 0.35)",
+              borderRadius: "20px",
+              border: "1px dashed rgba(255,255,255,0.12)",
+              gridColumn: "1 / -1",
+            }}
+          >
+            <div style={{ fontSize: "42px", marginBottom: "14px" }}>📋</div>
+            <h3 style={{ color: "#f8fafc", margin: "0 0 8px 0", fontSize: "18px" }}>No matching tasks found</h3>
+            <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>
+              Click <strong style={{ color: "#a5b4fc" }}>"➕ Assign New Task"</strong> above to assign work to members!
+            </p>
           </div>
         ) : (
           filteredTasks.map((t) => {
             const effStatus = getTaskEffectiveStatus(t);
 
             return (
-              <div key={t.id} className="task-card">
-                <div className="task-card-header">
-                  <span className="task-domain-badge">{t.domain}</span>
+              <div
+                key={t.id}
+                style={{
+                  padding: "22px 24px",
+                  background: "linear-gradient(135deg, rgba(30, 27, 75, 0.45) 0%, rgba(15, 23, 42, 0.6) 100%)",
+                  borderRadius: "18px",
+                  border: "1px solid rgba(255, 255, 255, 0.09)",
+                  boxShadow: "0 8px 28px rgba(0, 0, 0, 0.25)",
+                  backdropFilter: "blur(16px)",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {/* Domain Pill & Priority Badge Row */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "10px", flexWrap: "wrap" }}>
                   <span
-                    className={`task-priority-badge priority-${(t.priority || "Medium").toLowerCase()}`}
+                    style={{
+                      fontSize: "11.5px",
+                      padding: "4px 12px",
+                      borderRadius: "20px",
+                      background: "rgba(99, 102, 241, 0.18)",
+                      color: "#a5b4fc",
+                      border: "1px solid rgba(99, 102, 241, 0.35)",
+                      fontWeight: "600",
+                      letterSpacing: "0.2px",
+                    }}
+                  >
+                    🌐 {t.domain}
+                  </span>
+
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      padding: "3px 10px",
+                      borderRadius: "20px",
+                      fontWeight: "700",
+                      background:
+                        (t.priority || "Medium").toLowerCase() === "high"
+                          ? "rgba(239, 68, 68, 0.18)"
+                          : (t.priority || "Medium").toLowerCase() === "low"
+                          ? "rgba(34, 197, 94, 0.18)"
+                          : "rgba(245, 158, 11, 0.18)",
+                      color:
+                        (t.priority || "Medium").toLowerCase() === "high"
+                          ? "#f87171"
+                          : (t.priority || "Medium").toLowerCase() === "low"
+                          ? "#4ade80"
+                          : "#fbbf24",
+                      border:
+                        (t.priority || "Medium").toLowerCase() === "high"
+                          ? "1px solid rgba(239, 68, 68, 0.35)"
+                          : (t.priority || "Medium").toLowerCase() === "low"
+                          ? "1px solid rgba(34, 197, 94, 0.35)"
+                          : "1px solid rgba(245, 158, 11, 0.35)",
+                    }}
                   >
                     {t.priority} Priority
                   </span>
                 </div>
 
-                <h3 className="task-title">{t.title}</h3>
-                <p className="task-desc">{t.description}</p>
+                {/* Task Title */}
+                <h3
+                  style={{
+                    margin: "0 0 8px 0",
+                    fontSize: "18px",
+                    fontWeight: "700",
+                    color: "#f8fafc",
+                    lineHeight: "1.35",
+                    letterSpacing: "-0.2px",
+                  }}
+                >
+                  {t.title}
+                </h3>
 
-                <div className="task-meta-row">
-                  <span>📅 Due: {t.dueDate || "No deadline"}</span>
-                  <span className={`task-status-pill status-${effStatus.toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-")}`}>
+                {/* Task Description */}
+                <p
+                  style={{
+                    fontSize: "13.5px",
+                    color: "#94a3b8",
+                    lineHeight: "1.55",
+                    marginBottom: "16px",
+                    flexGrow: 1,
+                  }}
+                >
+                  {t.description || "No description provided."}
+                </p>
+
+                {/* Status & Due Date Meta Container */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "10px 14px",
+                    background: "rgba(255, 255, 255, 0.03)",
+                    border: "1px solid rgba(255, 255, 255, 0.07)",
+                    borderRadius: "12px",
+                    marginBottom: "14px",
+                    fontSize: "12.5px",
+                    color: "#cbd5e1",
+                    gap: "10px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <span>🗓️</span> <strong>Due:</strong> {t.dueDate || "No deadline"}
+                  </span>
+
+                  <span
+                    style={{
+                      padding: "3px 10px",
+                      borderRadius: "10px",
+                      fontWeight: "600",
+                      fontSize: "11px",
+                      background:
+                        effStatus === "Completed"
+                          ? "rgba(34, 197, 94, 0.18)"
+                          : effStatus === "Under Review"
+                          ? "rgba(192, 132, 252, 0.18)"
+                          : effStatus === "Changes Requested"
+                          ? "rgba(239, 68, 68, 0.18)"
+                          : "rgba(56, 189, 248, 0.18)",
+                      color:
+                        effStatus === "Completed"
+                          ? "#4ade80"
+                          : effStatus === "Under Review"
+                          ? "#c084fc"
+                          : effStatus === "Changes Requested"
+                          ? "#f87171"
+                          : "#38bdf8",
+                      border:
+                        effStatus === "Completed"
+                          ? "1px solid rgba(34, 197, 94, 0.3)"
+                          : effStatus === "Under Review"
+                          ? "1px solid rgba(192, 132, 252, 0.3)"
+                          : effStatus === "Changes Requested"
+                          ? "1px solid rgba(239, 68, 68, 0.3)"
+                          : "1px solid rgba(56, 189, 248, 0.3)",
+                    }}
+                  >
                     {effStatus === "Completed"
                       ? "✅ Completed & Approved"
                       : effStatus === "Under Review"
@@ -383,43 +591,106 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   </span>
                 </div>
 
-              <div className="task-assigned-section">
-                <div className="task-assigned-title">Assigned Squad / Members:</div>
-                <div className="task-members-chips">
-                  {(t.assignedEmails || []).map((item, idx) => {
-                    const itemEmail = typeof item === "object" ? item?.email || item?.name : item;
-                    const displayName = typeof item === "object" ? item?.name || item?.email : (userMap[normalizeEmail(itemEmail)] || itemEmail);
-                    const safeDisplay = typeof displayName === "object" ? displayName?.name || displayName?.email || "" : String(displayName);
-                    return (
-                      <span key={typeof item === "object" ? item._id || idx : item} className="member-chip">
-                        👤 {safeDisplay}
-                      </span>
-                    );
-                  })}
+                {/* Assigned Squad / Members Section */}
+                <div style={{ marginBottom: "18px" }}>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "8px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span>👥</span> Assigned Squad / Members:
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {(t.assignedEmails || []).map((item, idx) => {
+                      const itemEmail = typeof item === "object" ? item?.email || item?.name : item;
+                      const displayName = typeof item === "object" ? item?.name || item?.email : (userMap[normalizeEmail(itemEmail)] || itemEmail);
+                      const safeDisplay = typeof displayName === "object" ? displayName?.name || displayName?.email || "" : String(displayName);
+                      return (
+                        <span
+                          key={typeof item === "object" ? item._id || idx : item}
+                          style={{
+                            background: "rgba(255, 255, 255, 0.05)",
+                            border: "1px solid rgba(255, 255, 255, 0.09)",
+                            padding: "4px 10px",
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                            color: "#e2e8f0",
+                            fontWeight: "500",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "5px",
+                          }}
+                        >
+                          <span>👤</span> {safeDisplay}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Action Buttons Row Pinned at Bottom */}
+                <div style={{ display: "flex", gap: "8px", marginTop: "auto", flexWrap: "wrap", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
+                  <button
+                    type="button"
+                    style={{
+                      fontSize: "12px",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      background: "rgba(99, 102, 241, 0.15)",
+                      color: "#818cf8",
+                      border: "1px solid rgba(99, 102, 241, 0.3)",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                    onClick={() => openEditModal(t)}
+                  >
+                    <span>✏️</span> Edit Task
+                  </button>
+
+                  <button
+                    type="button"
+                    style={{
+                      fontSize: "12px",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      background: "rgba(16, 185, 129, 0.15)",
+                      color: "#34d399",
+                      border: "1px solid rgba(16, 185, 129, 0.3)",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                    onClick={() => openSubmissionsModal(t)}
+                  >
+                    <span>📥</span> Deliverables
+                  </button>
+
+                  <button
+                    type="button"
+                    style={{
+                      fontSize: "12px",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      backgroundColor: "rgba(239, 68, 68, 0.12)",
+                      color: "#f87171",
+                      border: "1px solid rgba(239, 68, 68, 0.25)",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                    }}
+                    onClick={() => handleDeleteTask(t.id)}
+                  >
+                    <span>🗑️</span> Delete Task
+                  </button>
                 </div>
               </div>
-
-              <div className="task-actions-row">
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => openEditModal(t)}
-                >
-                  ✏️ Edit Task
-                </button>
-                <button
-                  type="button"
-                  className="btn-danger"
-                  onClick={() => handleDeleteTask(t.id)}
-                >
-                  🗑️ Delete Task
-                </button>
-              </div>
-            </div>
-          );
-        })
-      )}
-    </div>
+            );
+          })
+        )}
+      </div>
 
       {/* Create / Edit Task Modal */}
       {modalOpen && (
