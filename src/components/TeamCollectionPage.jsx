@@ -59,23 +59,24 @@ function getRecordValue(record, key) {
 }
 
 function MemberSelectionSelector({ value = "", onChange, readOnly }) {
-  const [groupMembers, setGroupMembers] = useState([]);
+  const [groupUsers, setGroupUsers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [showOther, setShowOther] = useState(false);
   const [otherText, setOtherText] = useState("");
 
-  const DEFAULT_MEMBERS = useMemo(
+  const DEFAULT_USERS = useMemo(
     () => [
-      "DHASHAPRAKASH A",
-      "HARISH KARTHIK K B S",
-      "MITHUN N B",
-      "SWETHA K",
-      "NITHISH KUMAR S",
-      "SUDARSAN K",
-      "SRINATH T S",
-      "SRIVARSHINI R",
-      "DEEPIKA K",
-      "DHANUSSH R S",
+      { name: "dhashaprakasha.cs25", role: "Admin" },
+      { name: "harishkarthikkbs.ad25", role: "Admin" },
+      { name: "indhumathig.al25", role: "Team Member 5" },
+      { name: "kaviyadharshinir.al25", role: "Team Member 4" },
+      { name: "kishorer.ei25", role: "Team Strategist" },
+      { name: "kowshickts.ad25", role: "Team Member 8" },
+      { name: "lathikas.it25", role: "Team Member 6" },
+      { name: "mithunnb.cs25", role: "Team Member 1" },
+      { name: "sriranganaathsks.cs25", role: "Team Member 2" },
+      { name: "swethak.cs25", role: "Team Member 3" },
+      { name: "nithishkumars.cs25", role: "Team Member 7" },
     ],
     []
   );
@@ -85,12 +86,16 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     apiFetch("/users/assignable")
       .then((res) => {
         if (!isMounted) return;
-        const users = (res.users || []).map((u) => u.name || u.NAME).filter(Boolean);
-        setGroupMembers(users.length > 0 ? users : DEFAULT_MEMBERS);
+        const users = (res.users || []).map((u) => ({
+          name: u.name || u.NAME || u.email || "",
+          role: u.role || u.ROLE || "Team Member",
+        })).filter((u) => u.name);
+
+        setGroupUsers(users.length > 0 ? users : DEFAULT_USERS);
       })
       .catch(() => {
         if (!isMounted) return;
-        setGroupMembers(DEFAULT_MEMBERS);
+        setGroupUsers(DEFAULT_USERS);
       })
       .finally(() => {
         if (isMounted) setLoadingMembers(false);
@@ -98,7 +103,7 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     return () => {
       isMounted = false;
     };
-  }, [DEFAULT_MEMBERS]);
+  }, [DEFAULT_USERS]);
 
   // Current tokens array
   const currentTokens = useMemo(() => {
@@ -108,22 +113,22 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
       .filter(Boolean);
   }, [value]);
 
-  // Active list of group members (fallback to DEFAULT_MEMBERS if loading)
-  const activeMembersList = groupMembers.length > 0 ? groupMembers : DEFAULT_MEMBERS;
+  // Active list of group users
+  const activeUsersList = groupUsers.length > 0 ? groupUsers : DEFAULT_USERS;
 
   // External (non-group) member tokens
   const externalTokens = useMemo(() => {
     return currentTokens.filter(
-      (t) => !activeMembersList.some((g) => g.toLowerCase() === t.toLowerCase())
+      (t) => !activeUsersList.some((g) => g.name.toLowerCase() === t.toLowerCase())
     );
-  }, [currentTokens, activeMembersList]);
+  }, [currentTokens, activeUsersList]);
 
   // Count selected group members
   const selectedCount = useMemo(() => {
-    return activeMembersList.filter((g) =>
-      currentTokens.some((t) => t.toLowerCase() === g.toLowerCase())
+    return activeUsersList.filter((g) =>
+      currentTokens.some((t) => t.toLowerCase() === g.name.toLowerCase())
     ).length;
-  }, [activeMembersList, currentTokens]);
+  }, [activeUsersList, currentTokens]);
 
   const toggleMember = (mName) => {
     if (readOnly) return;
@@ -141,7 +146,8 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
 
   const handleSelectAll = () => {
     if (readOnly) return;
-    const combined = Array.from(new Set([...activeMembersList, ...externalTokens])).join(", ");
+    const allGroupNames = activeUsersList.map((u) => u.name);
+    const combined = Array.from(new Set([...allGroupNames, ...externalTokens])).join(", ");
     onChange(combined);
   };
 
@@ -156,9 +162,8 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     setShowOther(nextShowOther);
     if (!nextShowOther) {
       setOtherText("");
-      // Keep only group members
       const groupTokens = currentTokens.filter((t) =>
-        activeMembersList.some((g) => g.toLowerCase() === t.toLowerCase())
+        activeUsersList.some((g) => g.name.toLowerCase() === t.toLowerCase())
       );
       onChange(groupTokens.join(", "));
     }
@@ -169,7 +174,7 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     setOtherText(val);
     const newExtTokens = val.split(",").map((s) => s.trim()).filter(Boolean);
     const groupTokens = currentTokens.filter((t) =>
-      activeMembersList.some((g) => g.toLowerCase() === t.toLowerCase())
+      activeUsersList.some((g) => g.name.toLowerCase() === t.toLowerCase())
     );
     const combined = Array.from(new Set([...groupTokens, ...newExtTokens])).join(", ");
     onChange(combined);
@@ -179,7 +184,7 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(167, 139, 250, 0.25)", borderRadius: "16px", padding: "18px", marginTop: "6px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
         <span style={{ fontSize: "13px", fontWeight: "700", color: "#a78bfa" }}>
-          Group Members Selection ({selectedCount} selected)
+          Assign to Members / Group Squad ({selectedCount} selected)
         </span>
         {!readOnly && (
           <div style={{ display: "flex", gap: "8px" }}>
@@ -204,61 +209,59 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
       {loadingMembers ? (
         <div style={{ fontSize: "13px", color: "#94a3b8", padding: "8px 0" }}>Loading group members…</div>
       ) : (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "10px" }}>
-          {activeMembersList.map((mName) => {
+        <div className="member-select-grid">
+          {activeUsersList.map((user) => {
             const isChecked = currentTokens.some(
-              (t) => t.toLowerCase() === mName.toLowerCase()
+              (t) => t.toLowerCase() === user.name.toLowerCase()
             );
+
             return (
-              <div
-                key={mName}
-                onClick={() => toggleMember(mName)}
-                style={{
-                  padding: "8px 18px",
-                  borderRadius: "20px",
-                  fontSize: "13px",
-                  fontWeight: "700",
-                  cursor: readOnly ? "default" : "pointer",
-                  userSelect: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                  background: isChecked ? "rgba(16, 185, 129, 0.25)" : "rgba(30, 41, 59, 0.6)",
-                  border: isChecked ? "1.5px solid #10b981" : "1px solid rgba(255, 255, 255, 0.12)",
-                  color: isChecked ? "#34d399" : "#94a3b8",
-                  boxShadow: isChecked ? "0 0 14px rgba(16, 185, 129, 0.3)" : "none",
-                  transform: isChecked ? "scale(1.02)" : "scale(1)",
+              <label
+                key={user.name}
+                className={`member-select-card ${isChecked ? "selected" : ""}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleMember(user.name);
                 }}
               >
-                <span>{mName}</span>
-              </div>
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => {}}
+                />
+                <div className="member-select-info">
+                  <strong>{user.name}</strong>
+                  <small>{user.role}</small>
+                </div>
+              </label>
             );
           })}
 
-          {/* OTHER OPTION TOGGLE */}
-          <div
-            onClick={toggleOther}
+          {/* OTHER OPTION TOGGLE CARD */}
+          <label
+            className={`member-select-card ${showOther || externalTokens.length > 0 ? "selected" : ""}`}
             style={{
-              padding: "8px 18px",
-              borderRadius: "20px",
-              fontSize: "13px",
-              fontWeight: "700",
-              cursor: readOnly ? "default" : "pointer",
-              userSelect: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-              background: showOther || externalTokens.length > 0 ? "rgba(168, 85, 247, 0.3)" : "rgba(30, 41, 59, 0.6)",
-              border: showOther || externalTokens.length > 0 ? "1.5px solid #a855f7" : "1px solid rgba(168, 85, 247, 0.35)",
-              color: showOther || externalTokens.length > 0 ? "#c084fc" : "#a78bfa",
-              boxShadow: showOther || externalTokens.length > 0 ? "0 0 14px rgba(168, 85, 247, 0.3)" : "none",
-              transform: showOther || externalTokens.length > 0 ? "scale(1.02)" : "scale(1)",
+              borderColor: showOther || externalTokens.length > 0 ? "#a855f7" : "rgba(168, 85, 247, 0.35)",
+              background: showOther || externalTokens.length > 0 ? "rgba(168, 85, 247, 0.2)" : "rgba(30, 41, 59, 0.6)",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleOther();
             }}
           >
-            <span>+ Others (Non-Group Member)</span>
-          </div>
+            <input
+              type="checkbox"
+              checked={showOther || externalTokens.length > 0}
+              onChange={() => {}}
+              style={{ accentColor: "#a855f7" }}
+            />
+            <div className="member-select-info">
+              <strong style={{ color: showOther || externalTokens.length > 0 ? "#c084fc" : "#a78bfa" }}>
+                + Others (Non-Group Member)
+              </strong>
+              <small>Type external member names</small>
+            </div>
+          </label>
         </div>
       )}
 
