@@ -20,13 +20,27 @@ function parseCsvLine(line) {
   return result;
 }
 
-function parseCsvToObjects(csvText) {
-  const lines = csvText.split(/\r?\n/).filter((line) => line.trim().length > 0);
+function parseTextToObjects(rawText) {
+  const lines = rawText.split(/\r?\n/).filter((line) => line.trim().length > 0);
   if (lines.length === 0) return [];
-  const headers = parseCsvLine(lines[0]);
+
+  // Auto-detect tab-separated vs comma-separated
+  const firstLine = lines[0];
+  const isTabSeparated = firstLine.includes("\t");
+
+  const parseLine = (line) => {
+    if (isTabSeparated) {
+      return line.split("\t").map((cell) => cell.trim().replace(/^"(.*)"$/, "$1"));
+    } else {
+      return parseCsvLine(line);
+    }
+  };
+
+  const headers = parseLine(lines[0]);
   const results = [];
+
   for (let i = 1; i < lines.length; i++) {
-    const values = parseCsvLine(lines[i]);
+    const values = parseLine(lines[i]);
     const obj = {};
     headers.forEach((h, idx) => {
       const cleanHeader = h.trim();
@@ -40,7 +54,8 @@ function parseCsvToObjects(csvText) {
 }
 
 /**
- * Fetches Google Sheet data and updates ONLY rewardPoints for team members and admins.
+ * Fetches or parses Sheet data and updates ONLY rewardPoints for members and admins.
+ * Matches primarily by Roll Number / Enrolment Number.
  * Does NOT touch name, position, cluster, activityPoints, courses, or any other field.
  */
 export async function syncRewardPointsFromGoogleSheet(
@@ -51,9 +66,14 @@ export async function syncRewardPointsFromGoogleSheet(
   let rows = [];
 
   if (rawCsvData && typeof rawCsvData === "string" && rawCsvData.trim().length > 0) {
-    rows = parseCsvToObjects(rawCsvData);
+    rows = parseTextToObjects(rawCsvData);
   } else {
-    const cleanId = String(spreadsheetId).trim();
+    let cleanId = String(spreadsheetId).trim();
+    if (cleanId.includes("spreadsheets/d/")) {
+      const match = cleanId.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (match) cleanId = match[1];
+    }
+
     const endpoints = [
       `https://opensheet.elk.sh/${cleanId}/${encodeURIComponent(tabName)}`,
       `https://opensheet.elk.sh/${cleanId}/Sheet1`,
@@ -80,7 +100,7 @@ export async function syncRewardPointsFromGoogleSheet(
           } else {
             const text = await res.text();
             if (text && !text.includes("<!DOCTYPE html>") && text.length > 10) {
-              const parsed = parseCsvToObjects(text);
+              const parsed = parseTextToObjects(text);
               if (parsed.length > 0) {
                 rows = parsed;
                 fetched = true;
@@ -89,7 +109,7 @@ export async function syncRewardPointsFromGoogleSheet(
             }
           }
         } else if (res.status === 401 || res.status === 403) {
-          fetchError = `Google Sheet access restricted (HTTP ${res.status}). Please set sharing permission to "Anyone with the link can view" or use File -> Share -> Publish to Web.`;
+          fetchError = `Google Sheet access restricted (HTTP ${res.status}). You can paste copied sheet cells directly in the Sync Modal!`;
         }
       } catch (e) {
         fetchError = e.message;
@@ -97,7 +117,7 @@ export async function syncRewardPointsFromGoogleSheet(
     }
 
     if (!fetched && rows.length === 0) {
-      throw new Error(fetchError || `Unable to fetch Google Sheet (${cleanId}). Please verify sheet sharing permissions.`);
+      throw new Error(fetchError || `Unable to fetch Google Sheet (${cleanId}).`);
     }
   }
 
@@ -105,40 +125,74 @@ export async function syncRewardPointsFromGoogleSheet(
   const updatedResults = [];
 
   for (const row of rows) {
-    // Determine user identifier candidates from row
+    // 1. Identify Roll Number / Enrolment Number candidates from row
+    const rollCandidate = (
+      row["Roll No"] ||
+      row["ROLL NO"] ||
+      row["Roll Number"] ||
+      row["ROLL NUMBER"] ||
+      row["Roll"] ||
+      row["ROLL"] ||
+      row["Reg No"] ||
+      row["REG NO"] ||
+      row["Register No"] ||
+      row["REGISTER NO"] ||
+      row["ENROLMENT NUMBER"] ||
+      row["ENROLMENT NO"] ||
+      row["Enrolment Number"] ||
+      row["enrolmentNumber"] ||
+      row["Rollno"] ||
+      row["rollno"] ||
+      row["RollNo"] ||
+      ""
+    ).trim().toLowerCase();
+
     const emailCandidate = (row["EMAIL ID"] || row["EMAIL"] || row["Email"] || row["email"] || "").trim().toLowerCase();
     const bitEmailCandidate = (row["BIT EMAIL"] || row["BIT Email"] || "").trim().toLowerCase();
-    const enrolmentCandidate = (row["ENROLMENT NUMBER"] || row["ENROLMENT NO"] || row["Enrolment Number"] || row["enrolmentNumber"] || "").trim().toLowerCase();
     const nameCandidate = (row["NAME"] || row["Name"] || row["name"] || "").trim().toLowerCase();
 
-    // Find ONLY Reward Points column from row
+    // 2. Extract ONLY Reward Points column from row
     const rawRewardVal =
       row["REWARD POINT"] ??
       row["REWARD"] ??
       row["Reward Points"] ??
       row["Reward Point"] ??
       row["rewardPoints"] ??
-      row["Reward"];
+      row["Reward"] ??
+      row["Points"] ??
+      row["PTS"];
 
     if (rawRewardVal === undefined || rawRewardVal === null || String(rawRewardVal).trim() === "") {
       continue;
     }
 
-    const newRewardPoints = Number(rawRewardVal);
+    const newRewardPoints = Number(String(rawRewardVal).replace(/[^0-9.-]/g, ""));
     if (isNaN(newRewardPoints)) continue;
 
-    // Find matching member/admin in MongoDB
+    // 3. Find matching member/admin in MongoDB strictly matching Roll Number / Enrolment Number first
     const targetUser = activeUsers.find((u) => {
       if (isSuperAdminEmail(u.email)) return false; // Skip super admin
-      const uEmail = (u.email || "").toLowerCase();
-      const uBit = (u.bitEmail || "").toLowerCase();
-      const uPersonal = (u.personalEmail || "").toLowerCase();
-      const uEnrol = (u.enrolmentNumber || u.userId || "").toLowerCase();
-      const uName = (u.name || "").toLowerCase();
 
+      const uEnrol = (u.enrolmentNumber || "").trim().toLowerCase();
+      const uUserId = (u.userId || "").trim().toLowerCase();
+      const uEmail = (u.email || "").trim().toLowerCase();
+      const uBit = (u.bitEmail || "").trim().toLowerCase();
+      const uPersonal = (u.personalEmail || "").trim().toLowerCase();
+      const uName = (u.name || "").trim().toLowerCase();
+
+      // Priority 1: Match Roll Number / Enrolment Number
+      if (rollCandidate) {
+        if (uEnrol && (uEnrol === rollCandidate || uEnrol.includes(rollCandidate) || rollCandidate.includes(uEnrol))) return true;
+        if (uUserId && (uUserId === rollCandidate || uUserId.includes(rollCandidate) || rollCandidate.includes(uUserId))) return true;
+        if (uEmail && uEmail.startsWith(rollCandidate)) return true;
+        if (uBit && uBit.startsWith(rollCandidate)) return true;
+      }
+
+      // Priority 2: Match Email ID
       if (emailCandidate && (uEmail === emailCandidate || uBit === emailCandidate || uPersonal === emailCandidate)) return true;
       if (bitEmailCandidate && (uEmail === bitEmailCandidate || uBit === bitEmailCandidate)) return true;
-      if (enrolmentCandidate && uEnrol === enrolmentCandidate) return true;
+
+      // Priority 3: Match Name
       if (nameCandidate && uName === nameCandidate) return true;
 
       return false;
@@ -151,6 +205,7 @@ export async function syncRewardPointsFromGoogleSheet(
       updatedResults.push({
         userId: targetUser._id,
         name: targetUser.name,
+        enrolmentNumber: targetUser.enrolmentNumber || targetUser.userId || "",
         email: targetUser.email,
         rewardPoints: newRewardPoints,
       });

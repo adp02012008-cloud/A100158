@@ -12,6 +12,7 @@ import AddCourseModal from "../components/AddCourseModal";
 import AddClusterModal from "../components/AddClusterModal";
 import ManageCoursesModal from "../components/ManageCoursesModal";
 import ManageClustersModal from "../components/ManageClustersModal";
+import SyncRewardsModal from "../components/SyncRewardsModal";
 
 const normalize = (str) => String(str || "").toLowerCase().replace(/\s+/g, "").trim();
 
@@ -157,30 +158,10 @@ export default function Dashboard({ search, setPage }) {
   const [showAddCluster, setShowAddCluster] = useState(false);
   const [showManageCourses, setShowManageCourses] = useState(false);
   const [showManageClusters, setShowManageClusters] = useState(false);
+  const [showSyncRewardsModal, setShowSyncRewardsModal] = useState(false);
 
   const [clusterFilter, setClusterFilter] = useState("All");
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [syncingSheet, setSyncingSheet] = useState(false);
-
-  const handleSyncSheetRewards = async () => {
-    setSyncingSheet(true);
-    try {
-      const res = await apiFetch("/points/sync-sheet-rewards", {
-        method: "POST",
-        body: JSON.stringify({ spreadsheetId: "1t5uHtrRMSXQkxrFRUudDpwuN23A6K61PhdrjDNZFaV8" }),
-      });
-      if (res?.success) {
-        alert(`✅ ${res.message || "Reward Points updated successfully!"}`);
-        loadData();
-      } else {
-        alert("Sync Warning: " + (res?.message || "Failed to sync reward points."));
-      }
-    } catch (err) {
-      alert("Failed to sync reward points from Google Sheet: " + err.message);
-    } finally {
-      setSyncingSheet(false);
-    }
-  };
 
   const loadData = useCallback(async () => {
     try {
@@ -320,18 +301,16 @@ export default function Dashboard({ search, setPage }) {
             </button>
 
             <button
-              onClick={handleSyncSheetRewards}
-              disabled={syncingSheet}
+              onClick={() => setShowSyncRewardsModal(true)}
               style={{
                 background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
                 color: "#fff",
                 border: "none",
                 fontWeight: "600",
                 boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
-                opacity: syncingSheet ? 0.7 : 1,
               }}
             >
-              {syncingSheet ? "⏳ Syncing Rewards..." : "🔄 Sync Sheet Reward Points"}
+              🔄 Sync Sheet Reward Points
             </button>
 
             <button onClick={() => exportToExcel(filtered)}>📊 Export Excel</button>
@@ -416,6 +395,7 @@ export default function Dashboard({ search, setPage }) {
       {showAddCluster && <AddClusterModal onClose={() => setShowAddCluster(false)} onCreated={loadData} />}
       {showManageCourses && <ManageCoursesModal onClose={() => { setShowManageCourses(false); loadData(); }} />}
       {showManageClusters && <ManageClustersModal onClose={() => { setShowManageClusters(false); loadData(); }} onClustersUpdated={loadData} />}
+      {showSyncRewardsModal && <SyncRewardsModal onClose={() => setShowSyncRewardsModal(false)} onSaved={loadData} />}
     </div>
   );
 }
