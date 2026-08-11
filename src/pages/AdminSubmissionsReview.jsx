@@ -38,6 +38,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
       const rawSubs = subRes?.submissions || [];
       const validSubs = rawSubs.filter((sub) => {
+        if (sub.status === "APPROVED") return true;
         if (!sub.taskId) return false;
         const tObj = typeof sub.taskId === "object" ? sub.taskId : null;
         if (tObj && tObj.title && tObj.title.startsWith("Task TSK-")) return false;

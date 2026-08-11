@@ -48,6 +48,7 @@ export default function MyTasksMember({ search = "" }) {
       );
 
       const validSubmissions = (sList || []).filter((s) => {
+        if (s.status === "APPROVED") return true;
         if (!s.taskId) return false;
         const tObj = typeof s.taskId === "object" ? s.taskId : null;
         if (tObj && tObj.title && tObj.title.startsWith("Task TSK-")) return false;

@@ -258,10 +258,15 @@ export async function getSubmissions(req, res) {
     });
 
     const submissions = rawSubmissions
-      .filter((s) => taskMap.has(s.taskId) || taskMap.has(String(s.taskId)))
+      .filter((s) => s.status === "APPROVED" || taskMap.has(s.taskId) || taskMap.has(String(s.taskId)))
       .map((s) => {
         const doc = s.toObject();
-        doc.taskId = taskMap.get(s.taskId) || taskMap.get(String(s.taskId));
+        const foundTask = taskMap.get(s.taskId) || taskMap.get(String(s.taskId));
+        doc.taskId = foundTask || {
+          taskId: s.taskId,
+          title: s.notes ? s.notes.split("\n")[0] : "Approved Showcase Project",
+          domain: "Full-Stack Software Development",
+        };
         return doc;
       });
 

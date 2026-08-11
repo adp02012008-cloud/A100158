@@ -443,8 +443,17 @@ export async function deleteTask(req, res) {
 
     await Task.deleteOne({ _id: task._id }).exec();
     await TaskAssignment.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
-    await TaskSubmission.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
-    await TaskReview.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
+
+    // Delete ONLY non-approved submissions & reviews (APPROVED showcase projects are preserved for Projects page!)
+    await TaskSubmission.deleteMany({
+      taskId: { $in: [task.taskId, String(task._id)] },
+      status: { $ne: "APPROVED" },
+    }).exec();
+
+    await TaskReview.deleteMany({
+      taskId: { $in: [task.taskId, String(task._id)] },
+      decision: { $ne: "APPROVED" },
+    }).exec();
     await Notification.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
 
     await TaskEvent.create({
