@@ -275,31 +275,29 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         <div className="login-loading">Loading Task Assignments…</div>
       </div>
     );
-  }
-
-  return (
-    <div className="page-container" style={{ maxWidth: "1240px", margin: "0 auto", padding: "24px 20px" }}>
+  }  return (
+    <div className="page-container" style={{ maxWidth: "1280px", margin: "0 auto", padding: "12px 20px 40px" }}>
       {/* Header Hub Card */}
       <div
         style={{
-          padding: "28px 32px",
-          marginBottom: "28px",
-          background: "linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(15, 23, 42, 0.75) 100%)",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
+          padding: "26px 30px",
+          marginBottom: "24px",
+          background: "linear-gradient(135deg, rgba(26, 15, 52, 0.85) 0%, rgba(35, 18, 68, 0.95) 100%)",
+          border: "1px solid rgba(167, 139, 250, 0.25)",
           borderRadius: "20px",
-          backdropFilter: "blur(16px)",
-          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.3)",
+          backdropFilter: "blur(18px)",
+          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.45)",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "18px" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
               <span style={{ fontSize: "24px" }}>📋</span>
-              <h2 style={{ margin: 0, fontSize: "24px", color: "#f8fafc", fontWeight: "800", letterSpacing: "-0.3px" }}>
+              <h2 style={{ margin: 0, fontSize: "23px", color: "#ffffff", fontWeight: "800", letterSpacing: "-0.3px", fontFamily: "var(--font-heading)" }}>
                 Task & Domain Assignments
               </h2>
             </div>
-            <p style={{ margin: 0, color: "#94a3b8", fontSize: "14px", lineHeight: "1.5" }}>
+            <p style={{ margin: 0, color: "#a78bfa", fontSize: "13.5px", lineHeight: "1.5" }}>
               Assign project domains and tasks to single members or team squads, track progress, and review deliverables.
             </p>
           </div>
@@ -310,12 +308,12 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             style={{
               fontSize: "13.5px",
               padding: "10px 22px",
-              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+              background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
               color: "#fff",
               border: "none",
-              borderRadius: "10px",
+              borderRadius: "12px",
               fontWeight: "600",
-              boxShadow: "0 4px 16px rgba(99, 102, 241, 0.35)",
+              boxShadow: "0 4px 16px rgba(37, 99, 235, 0.4)",
               cursor: "pointer",
               display: "inline-flex",
               alignItems: "center",
@@ -328,15 +326,15 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         </div>
 
         {/* Filter Toolbar Inside Header Hub */}
-        <div style={{ display: "flex", gap: "16px", marginTop: "24px", flexWrap: "wrap", alignItems: "center", paddingTop: "20px", borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
+        <div style={{ display: "flex", gap: "16px", marginTop: "20px", flexWrap: "wrap", alignItems: "center", paddingTop: "18px", borderTop: "1px solid rgba(167, 139, 250, 0.15)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#94a3b8", whiteSpace: "nowrap" }}>Filter by Domain:</label>
+            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#cbd5e1", whiteSpace: "nowrap" }}>Filter by Domain:</label>
             <select
               style={{
                 padding: "8px 14px",
                 borderRadius: "10px",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
+                background: "rgba(26, 15, 52, 0.9)",
+                border: "1px solid rgba(167, 139, 250, 0.25)",
                 color: "#f8fafc",
                 fontSize: "13px",
                 outline: "none",
@@ -345,9 +343,9 @@ export default function TaskAssignmentAdmin({ search = "" }) {
               value={domainFilter}
               onChange={(e) => setDomainFilter(e.target.value)}
             >
-              <option value="All" style={{ background: "#0f172a" }}>🌐 All Domains</option>
+              <option value="All">🌐 All Domains</option>
               {availableDomains.map((d) => (
-                <option key={d} value={d} style={{ background: "#0f172a" }}>
+                <option key={d} value={d}>
                   {d}
                 </option>
               ))}
@@ -355,13 +353,13 @@ export default function TaskAssignmentAdmin({ search = "" }) {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#94a3b8", whiteSpace: "nowrap" }}>Filter by Status:</label>
+            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#cbd5e1", whiteSpace: "nowrap" }}>Filter by Status:</label>
             <select
               style={{
                 padding: "8px 14px",
                 borderRadius: "10px",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
+                background: "rgba(26, 15, 52, 0.9)",
+                border: "1px solid rgba(167, 139, 250, 0.25)",
                 color: "#f8fafc",
                 fontSize: "13px",
                 outline: "none",
@@ -370,23 +368,23 @@ export default function TaskAssignmentAdmin({ search = "" }) {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="All" style={{ background: "#0f172a" }}>📁 All Statuses</option>
-              <option value="Pending" style={{ background: "#0f172a" }}>📌 Pending</option>
-              <option value="In Progress" style={{ background: "#0f172a" }}>⚡ In Progress</option>
-              <option value="Under Review" style={{ background: "#0f172a" }}>⏳ Under Review</option>
-              <option value="Changes Requested" style={{ background: "#0f172a" }}>⚠️ Changes Requested</option>
-              <option value="Completed" style={{ background: "#0f172a" }}>✅ Completed & Approved</option>
+              <option value="All">📁 All Statuses</option>
+              <option value="Pending">📌 Pending</option>
+              <option value="In Progress">⚡ In Progress</option>
+              <option value="Under Review">⏳ Under Review</option>
+              <option value="Changes Requested">⚠️ Changes Requested</option>
+              <option value="Completed">✅ Completed & Approved</option>
             </select>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#94a3b8", whiteSpace: "nowrap" }}>Filter by Priority:</label>
+            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#cbd5e1", whiteSpace: "nowrap" }}>Filter by Priority:</label>
             <select
               style={{
                 padding: "8px 14px",
                 borderRadius: "10px",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
+                background: "rgba(26, 15, 52, 0.9)",
+                border: "1px solid rgba(167, 139, 250, 0.25)",
                 color: "#f8fafc",
                 fontSize: "13px",
                 outline: "none",
@@ -395,15 +393,15 @@ export default function TaskAssignmentAdmin({ search = "" }) {
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
-              <option value="All" style={{ background: "#0f172a" }}>🔥 All Priorities</option>
-              <option value="High" style={{ background: "#0f172a" }}>🔴 High Priority</option>
-              <option value="Medium" style={{ background: "#0f172a" }}>🟡 Medium Priority</option>
-              <option value="Low" style={{ background: "#0f172a" }}>🟢 Low Priority</option>
+              <option value="All">🔥 All Priorities</option>
+              <option value="High">🔴 High Priority</option>
+              <option value="Medium">🟡 Medium Priority</option>
+              <option value="Low">🟢 Low Priority</option>
             </select>
           </div>
 
-          <div style={{ marginLeft: "auto", fontSize: "12.5px", color: "#94a3b8" }}>
-            Showing <strong style={{ color: "#a5b4fc" }}>{filteredTasks.length}</strong> of {tasks.length} tasks
+          <div style={{ marginLeft: "auto", fontSize: "12.5px", color: "#a78bfa" }}>
+            Showing <strong style={{ color: "#ffffff" }}>{filteredTasks.length}</strong> of {tasks.length} tasks
           </div>
         </div>
       </div>
@@ -421,16 +419,16 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             style={{
               padding: "50px 20px",
               textAlign: "center",
-              background: "rgba(30, 27, 75, 0.35)",
+              background: "rgba(35, 18, 68, 0.4)",
               borderRadius: "20px",
-              border: "1px dashed rgba(255,255,255,0.12)",
+              border: "1px dashed rgba(167, 139, 250, 0.2)",
               gridColumn: "1 / -1",
             }}
           >
             <div style={{ fontSize: "42px", marginBottom: "14px" }}>📋</div>
-            <h3 style={{ color: "#f8fafc", margin: "0 0 8px 0", fontSize: "18px" }}>No matching tasks found</h3>
-            <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>
-              Click <strong style={{ color: "#a5b4fc" }}>"➕ Assign New Task"</strong> above to assign work to members!
+            <h3 style={{ color: "#ffffff", margin: "0 0 8px 0", fontSize: "18px" }}>No matching tasks found</h3>
+            <p style={{ color: "#a78bfa", margin: 0, fontSize: "14px" }}>
+              Click <strong style={{ color: "#3b82f6" }}>"➕ Assign New Task"</strong> above to assign work to members!
             </p>
           </div>
         ) : (
@@ -442,29 +440,34 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 key={t.id}
                 style={{
                   padding: "22px 24px",
-                  background: "linear-gradient(135deg, rgba(30, 27, 75, 0.45) 0%, rgba(15, 23, 42, 0.6) 100%)",
+                  background: "linear-gradient(135deg, rgba(35, 18, 68, 0.7) 0%, rgba(26, 15, 52, 0.85) 100%)",
                   borderRadius: "18px",
-                  border: "1px solid rgba(255, 255, 255, 0.09)",
-                  boxShadow: "0 8px 28px rgba(0, 0, 0, 0.25)",
+                  border: "1px solid rgba(167, 139, 250, 0.2)",
+                  boxShadow: "0 8px 28px rgba(0, 0, 0, 0.35)",
                   backdropFilter: "blur(16px)",
                   display: "flex",
                   flexDirection: "column",
                   transition: "all 0.2s ease",
                 }}
               >
-                {/* Domain Pill & Priority Badge Row */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "10px", flexWrap: "wrap" }}>
+                {/* Domain Pill & Priority Badge Row (No-wrap guaranteed) */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "10px" }}>
                   <span
                     style={{
                       fontSize: "11.5px",
                       padding: "4px 12px",
                       borderRadius: "20px",
-                      background: "rgba(99, 102, 241, 0.18)",
-                      color: "#a5b4fc",
-                      border: "1px solid rgba(99, 102, 241, 0.35)",
+                      background: "rgba(59, 130, 246, 0.18)",
+                      color: "#60a5fa",
+                      border: "1px solid rgba(59, 130, 246, 0.35)",
                       fontWeight: "600",
                       letterSpacing: "0.2px",
+                      maxWidth: "70%",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
                     }}
+                    title={t.domain}
                   >
                     🌐 {t.domain}
                   </span>
@@ -475,12 +478,14 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                       padding: "3px 10px",
                       borderRadius: "20px",
                       fontWeight: "700",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
                       background:
                         (t.priority || "Medium").toLowerCase() === "high"
-                          ? "rgba(239, 68, 68, 0.18)"
+                          ? "rgba(239, 68, 68, 0.2)"
                           : (t.priority || "Medium").toLowerCase() === "low"
-                          ? "rgba(34, 197, 94, 0.18)"
-                          : "rgba(245, 158, 11, 0.18)",
+                          ? "rgba(34, 197, 94, 0.2)"
+                          : "rgba(245, 158, 11, 0.2)",
                       color:
                         (t.priority || "Medium").toLowerCase() === "high"
                           ? "#f87171"
@@ -489,10 +494,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                           : "#fbbf24",
                       border:
                         (t.priority || "Medium").toLowerCase() === "high"
-                          ? "1px solid rgba(239, 68, 68, 0.35)"
+                          ? "1px solid rgba(239, 68, 68, 0.4)"
                           : (t.priority || "Medium").toLowerCase() === "low"
-                          ? "1px solid rgba(34, 197, 94, 0.35)"
-                          : "1px solid rgba(245, 158, 11, 0.35)",
+                          ? "1px solid rgba(34, 197, 94, 0.4)"
+                          : "1px solid rgba(245, 158, 11, 0.4)",
                     }}
                   >
                     {t.priority} Priority
@@ -505,7 +510,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                     margin: "0 0 8px 0",
                     fontSize: "18px",
                     fontWeight: "700",
-                    color: "#f8fafc",
+                    color: "#ffffff",
                     lineHeight: "1.35",
                     letterSpacing: "-0.2px",
                   }}
@@ -517,7 +522,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 <p
                   style={{
                     fontSize: "13.5px",
-                    color: "#94a3b8",
+                    color: "#cbd5e1",
                     lineHeight: "1.55",
                     marginBottom: "16px",
                     flexGrow: 1,
@@ -530,11 +535,11 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 <div
                   style={{
                     display: "flex",
-                    justifyContent: "space-between",
+                    justify: "space-between",
                     alignItems: "center",
                     padding: "10px 14px",
-                    background: "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid rgba(255, 255, 255, 0.07)",
+                    background: "rgba(26, 15, 52, 0.6)",
+                    border: "1px solid rgba(167, 139, 250, 0.15)",
                     borderRadius: "12px",
                     marginBottom: "14px",
                     fontSize: "12.5px",
@@ -555,12 +560,12 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                       fontSize: "11px",
                       background:
                         effStatus === "Completed"
-                          ? "rgba(34, 197, 94, 0.18)"
+                          ? "rgba(34, 197, 94, 0.2)"
                           : effStatus === "Under Review"
-                          ? "rgba(192, 132, 252, 0.18)"
+                          ? "rgba(192, 132, 252, 0.2)"
                           : effStatus === "Changes Requested"
-                          ? "rgba(239, 68, 68, 0.18)"
-                          : "rgba(56, 189, 248, 0.18)",
+                          ? "rgba(239, 68, 68, 0.2)"
+                          : "rgba(56, 189, 248, 0.2)",
                       color:
                         effStatus === "Completed"
                           ? "#4ade80"
@@ -571,12 +576,12 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                           : "#38bdf8",
                       border:
                         effStatus === "Completed"
-                          ? "1px solid rgba(34, 197, 94, 0.3)"
+                          ? "1px solid rgba(34, 197, 94, 0.35)"
                           : effStatus === "Under Review"
-                          ? "1px solid rgba(192, 132, 252, 0.3)"
+                          ? "1px solid rgba(192, 132, 252, 0.35)"
                           : effStatus === "Changes Requested"
-                          ? "1px solid rgba(239, 68, 68, 0.3)"
-                          : "1px solid rgba(56, 189, 248, 0.3)",
+                          ? "1px solid rgba(239, 68, 68, 0.35)"
+                          : "1px solid rgba(56, 189, 248, 0.35)",
                     }}
                   >
                     {effStatus === "Completed"
@@ -593,7 +598,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
                 {/* Assigned Squad / Members Section */}
                 <div style={{ marginBottom: "18px" }}>
-                  <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "8px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div style={{ fontSize: "12px", color: "#a78bfa", marginBottom: "8px", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" }}>
                     <span>👥</span> Assigned Squad / Members:
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -605,10 +610,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                         <span
                           key={typeof item === "object" ? item._id || idx : item}
                           style={{
-                            background: "rgba(255, 255, 255, 0.05)",
-                            border: "1px solid rgba(255, 255, 255, 0.09)",
+                            background: "rgba(139, 92, 246, 0.15)",
+                            border: "1px solid rgba(167, 139, 250, 0.25)",
                             padding: "4px 10px",
-                            borderRadius: "8px",
+                            borderRadius: "14px",
                             fontSize: "12px",
                             color: "#e2e8f0",
                             fontWeight: "500",
@@ -624,66 +629,81 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   </div>
                 </div>
 
-                {/* Action Buttons Row Pinned at Bottom */}
-                <div style={{ display: "flex", gap: "8px", marginTop: "auto", flexWrap: "wrap", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
+                {/* Equal 3-Column Action Buttons Grid Pinned at Bottom */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "8px",
+                    marginTop: "auto",
+                    paddingTop: "14px",
+                    borderTop: "1px solid rgba(167, 139, 250, 0.15)",
+                  }}
+                >
                   <button
                     type="button"
                     style={{
-                      fontSize: "12px",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      background: "rgba(99, 102, 241, 0.15)",
-                      color: "#818cf8",
-                      border: "1px solid rgba(99, 102, 241, 0.3)",
+                      fontSize: "11.5px",
+                      padding: "8px 4px",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0.15) 100%)",
+                      color: "#a5b4fc",
+                      border: "1px solid rgba(99, 102, 241, 0.4)",
                       fontWeight: "600",
                       cursor: "pointer",
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: "5px",
+                      justifyContent: "center",
+                      gap: "4px",
+                      whiteSpace: "nowrap",
                     }}
                     onClick={() => openEditModal(t)}
                   >
-                    <span>✏️</span> Edit Task
+                    <span>✏️</span> Edit
                   </button>
 
                   <button
                     type="button"
                     style={{
-                      fontSize: "12px",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      background: "rgba(16, 185, 129, 0.15)",
-                      color: "#34d399",
-                      border: "1px solid rgba(16, 185, 129, 0.3)",
+                      fontSize: "11.5px",
+                      padding: "8px 4px",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.15) 100%)",
+                      color: "#6ee7b7",
+                      border: "1px solid rgba(16, 185, 129, 0.4)",
                       fontWeight: "600",
                       cursor: "pointer",
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: "5px",
+                      justifyContent: "center",
+                      gap: "4px",
+                      whiteSpace: "nowrap",
                     }}
                     onClick={() => openSubmissionsModal(t)}
                   >
-                    <span>📥</span> Deliverables
+                    <span>📥</span> Reviews
                   </button>
 
                   <button
                     type="button"
                     style={{
-                      fontSize: "12px",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      backgroundColor: "rgba(239, 68, 68, 0.12)",
-                      color: "#f87171",
-                      border: "1px solid rgba(239, 68, 68, 0.25)",
+                      fontSize: "11.5px",
+                      padding: "8px 4px",
+                      borderRadius: "10px",
+                      background: "linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.15) 100%)",
+                      color: "#fca5a5",
+                      border: "1px solid rgba(239, 68, 68, 0.4)",
                       fontWeight: "600",
                       cursor: "pointer",
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: "5px",
+                      justifyContent: "center",
+                      gap: "4px",
+                      whiteSpace: "nowrap",
                     }}
                     onClick={() => handleDeleteTask(t.id)}
                   >
-                    <span>🗑️</span> Delete Task
+                    <span>🗑️</span> Delete
                   </button>
                 </div>
               </div>
