@@ -61,7 +61,6 @@ function getRecordValue(record, key) {
 function MemberSelectionSelector({ value = "", onChange, readOnly }) {
   const [groupMembers, setGroupMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
-  const [selectedNames, setSelectedNames] = useState([]);
   const [showOther, setShowOther] = useState(false);
   const [otherText, setOtherText] = useState("");
 
@@ -105,81 +104,87 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     return () => { isMounted = false; };
   }, []);
 
-  useEffect(() => {
-    if (!value) {
-      setSelectedNames([]);
-      setOtherText("");
-      setShowOther(false);
-      return;
-    }
+  // Parse current tokens from parent prop `value` directly
+  const currentTokens = useMemo(() => {
+    return String(value || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }, [value]);
 
-    const tokens = String(value).split(",").map((s) => s.trim()).filter(Boolean);
-    const inGroup = [];
-    const external = [];
+  // Determine selected group members derived from `currentTokens`
+  const selectedGroupMembers = useMemo(() => {
+    return groupMembers.filter((g) =>
+      currentTokens.some((t) => t.toLowerCase() === g.toLowerCase())
+    );
+  }, [groupMembers, currentTokens]);
 
-    tokens.forEach((token) => {
-      const match = groupMembers.find((g) => g.toLowerCase() === token.toLowerCase());
-      if (match) {
-        if (!inGroup.includes(match)) inGroup.push(match);
-      } else {
-        external.push(token);
-      }
-    });
-
-    setSelectedNames(inGroup);
-    if (external.length > 0) {
-      setShowOther(true);
-      setOtherText(external.join(", "));
-    }
-  }, [value, groupMembers]);
-
-  const updateParent = (nextSelected, isOtherActive, nextOtherText) => {
-    const extTokens = isOtherActive
-      ? nextOtherText.split(",").map((s) => s.trim()).filter(Boolean)
-      : [];
-    const combined = Array.from(new Set([...nextSelected, ...extTokens])).join(", ");
-    onChange(combined);
-  };
+  // Determine external member tokens
+  const externalTokens = useMemo(() => {
+    return currentTokens.filter((t) =>
+      !groupMembers.some((g) => g.toLowerCase() === t.toLowerCase())
+    );
+  }, [groupMembers, currentTokens]);
 
   const toggleMember = (memberName) => {
     if (readOnly) return;
-    const next = selectedNames.includes(memberName)
-      ? selectedNames.filter((n) => n !== memberName)
-      : [...selectedNames, memberName];
-    setSelectedNames(next);
-    updateParent(next, showOther, otherText);
+    const isCurrentlySelected = selectedGroupMembers.some(
+      (m) => m.toLowerCase() === memberName.toLowerCase()
+    );
+
+    let nextGroup;
+    if (isCurrentlySelected) {
+      nextGroup = selectedGroupMembers.filter(
+        (m) => m.toLowerCase() !== memberName.toLowerCase()
+      );
+    } else {
+      nextGroup = [...selectedGroupMembers, memberName];
+    }
+
+    const extTextToUse = showOther ? otherText : externalTokens.join(", ");
+    const extTokens = extTextToUse.split(",").map((s) => s.trim()).filter(Boolean);
+    const combined = Array.from(new Set([...nextGroup, ...extTokens])).join(", ");
+    onChange(combined);
   };
 
   const handleSelectAll = () => {
     if (readOnly) return;
-    setSelectedNames([...groupMembers]);
-    updateParent(groupMembers, showOther, otherText);
+    const extTextToUse = showOther ? otherText : externalTokens.join(", ");
+    const extTokens = extTextToUse.split(",").map((s) => s.trim()).filter(Boolean);
+    const combined = Array.from(new Set([...groupMembers, ...extTokens])).join(", ");
+    onChange(combined);
   };
 
   const handleClearAll = () => {
     if (readOnly) return;
-    setSelectedNames([]);
-    updateParent([], showOther, otherText);
+    const extTextToUse = showOther ? otherText : externalTokens.join(", ");
+    const extTokens = extTextToUse.split(",").map((s) => s.trim()).filter(Boolean);
+    onChange(extTokens.join(", "));
   };
 
   const toggleOther = () => {
     if (readOnly) return;
-    const nextOther = !showOther;
-    setShowOther(nextOther);
-    updateParent(selectedNames, nextOther, otherText);
+    const nextShowOther = !showOther;
+    setShowOther(nextShowOther);
+    if (!nextShowOther) {
+      setOtherText("");
+      onChange(selectedGroupMembers.join(", "));
+    }
   };
 
   const handleOtherTextChange = (e) => {
     const val = e.target.value;
     setOtherText(val);
-    updateParent(selectedNames, showOther, val);
+    const extTokens = val.split(",").map((s) => s.trim()).filter(Boolean);
+    const combined = Array.from(new Set([...selectedGroupMembers, ...extTokens])).join(", ");
+    onChange(combined);
   };
 
   return (
-    <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(167, 139, 250, 0.25)", borderRadius: "14px", padding: "16px", marginTop: "6px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+    <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(167, 139, 250, 0.25)", borderRadius: "16px", padding: "18px", marginTop: "6px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
         <span style={{ fontSize: "13px", fontWeight: "700", color: "#a78bfa" }}>
-          Group Members Selection ({selectedNames.length} selected)
+          Group Members Selection ({selectedGroupMembers.length} selected)
         </span>
         {!readOnly && (
           <div style={{ display: "flex", gap: "8px" }}>
@@ -206,7 +211,9 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
       ) : (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "10px" }}>
           {groupMembers.map((mName) => {
-            const isChecked = selectedNames.includes(mName);
+            const isChecked = selectedGroupMembers.some(
+              (m) => m.toLowerCase() === mName.toLowerCase()
+            );
             return (
               <div
                 key={mName}
@@ -228,16 +235,9 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
                   boxShadow: isChecked ? "0 0 14px rgba(52, 211, 153, 0.25)" : "none",
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    toggleMember(mName);
-                  }}
-                  readOnly
-                  style={{ accentColor: "#10b981", cursor: "pointer", width: "16px", height: "16px" }}
-                />
+                <span style={{ fontSize: "14px", fontWeight: "800", color: isChecked ? "#34d399" : "#94a3b8" }}>
+                  {isChecked ? "☑" : "☐"}
+                </span>
                 <span>{mName}</span>
               </div>
             );
@@ -257,36 +257,29 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
               alignItems: "center",
               gap: "8px",
               transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-              background: showOther ? "rgba(168, 85, 247, 0.3)" : "rgba(30, 41, 59, 0.8)",
-              border: showOther ? "1.5px solid rgba(192, 132, 252, 0.8)" : "1px solid rgba(168, 85, 247, 0.4)",
-              color: showOther ? "#c084fc" : "#a78bfa",
-              boxShadow: showOther ? "0 0 14px rgba(168, 85, 247, 0.25)" : "none",
+              background: showOther || externalTokens.length > 0 ? "rgba(168, 85, 247, 0.3)" : "rgba(30, 41, 59, 0.8)",
+              border: showOther || externalTokens.length > 0 ? "1.5px solid rgba(192, 132, 252, 0.8)" : "1px solid rgba(168, 85, 247, 0.4)",
+              color: showOther || externalTokens.length > 0 ? "#c084fc" : "#a78bfa",
+              boxShadow: showOther || externalTokens.length > 0 ? "0 0 14px rgba(168, 85, 247, 0.25)" : "none",
             }}
           >
-            <input
-              type="checkbox"
-              checked={showOther}
-              onChange={(e) => {
-                e.stopPropagation();
-                toggleOther();
-              }}
-              readOnly
-              style={{ accentColor: "#a855f7", cursor: "pointer", width: "16px", height: "16px" }}
-            />
+            <span style={{ fontSize: "14px", fontWeight: "800" }}>
+              {showOther || externalTokens.length > 0 ? "☑" : "☐"}
+            </span>
             <span>+ Others (Non-Group Member)</span>
           </div>
         </div>
       )}
 
       {/* EXTERNAL MEMBER TEXTINPUT IF OTHER IS CHECKED */}
-      {showOther && (
+      {(showOther || externalTokens.length > 0) && (
         <div style={{ marginTop: "14px", paddingTop: "14px", borderTop: "1px dashed rgba(168, 85, 247, 0.35)" }}>
           <label style={{ fontSize: "12px", color: "#c084fc", fontWeight: "700", display: "block", marginBottom: "6px" }}>
             Type External / Non-Group Member Names (separated by commas)
           </label>
           <input
             type="text"
-            value={otherText}
+            value={otherText || externalTokens.join(", ")}
             placeholder="e.g. John Doe, Sarah Connor..."
             readOnly={readOnly}
             onChange={handleOtherTextChange}
@@ -830,6 +823,15 @@ export default function TeamCollectionPage({ config, search = "" }) {
         <div className="team-modal-overlay" onMouseDown={closeForm}>
           <div
             className="team-modal-box team-form-modal"
+            style={{
+              position: "relative",
+              background: "#0f172a",
+              border: "1px solid rgba(167, 139, 250, 0.35)",
+              borderRadius: "24px",
+              padding: "32px",
+              maxWidth: "800px",
+              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
+            }}
             onMouseDown={(event) => event.stopPropagation()}
           >
             <button
@@ -837,18 +839,37 @@ export default function TeamCollectionPage({ config, search = "" }) {
               type="button"
               onClick={closeForm}
               disabled={saving}
+              style={{
+                position: "absolute",
+                top: "24px",
+                right: "24px",
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.08)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                color: "#cbd5e1",
+                fontSize: "16px",
+                fontWeight: "700",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                zIndex: 10,
+              }}
             >
               ✕
             </button>
 
-            <div className="team-modal-title-row">
-              <span>{config.icon}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px", paddingRight: "44px" }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "rgba(167, 139, 250, 0.18)", border: "1px solid rgba(167, 139, 250, 0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>
+                {config.icon}
+              </div>
               <div>
-                <h2>
-                  {formMode === "edit" ? "Edit" : "Add"}{" "}
-                  {config.pageTitle.replace(/s$/, "")}
+                <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: "800", color: "#f8fafc" }}>
+                  {formMode === "edit" ? "Edit" : "Add"} {config.pageTitle.replace(/s$/, "")}
                 </h2>
-                <p>
+                <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>
                   {formMode === "edit"
                     ? "Changes are saved directly to database."
                     : "The record is added directly. There is no approval step."}
@@ -927,10 +948,30 @@ export default function TeamCollectionPage({ config, search = "" }) {
                 );
               })}
 
-              <div className="team-form-actions full">
+              <div
+                className="team-form-actions full"
+                style={{
+                  display: "flex",
+                  justify: "flex-end",
+                  gap: "12px",
+                  marginTop: "24px",
+                  paddingTop: "20px",
+                  borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+                }}
+              >
                 <button
                   className="team-secondary-btn"
                   type="button"
+                  style={{
+                    padding: "10px 22px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    color: "#cbd5e1",
+                    cursor: "pointer",
+                  }}
                   disabled={saving}
                   onClick={closeForm}
                 >
@@ -939,6 +980,17 @@ export default function TeamCollectionPage({ config, search = "" }) {
                 <button
                   className="team-primary-btn"
                   type="submit"
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: "12px",
+                    fontSize: "14px",
+                    fontWeight: "700",
+                    background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                    border: "none",
+                    color: "#ffffff",
+                    boxShadow: "0 4px 15px rgba(99, 102, 241, 0.4)",
+                    cursor: "pointer",
+                  }}
                   disabled={saving}
                 >
                   {saving
@@ -962,28 +1014,67 @@ export default function TeamCollectionPage({ config, search = "" }) {
         >
           <div
             className="team-modal-box team-detail-modal"
-            style={{ maxWidth: "680px", borderRadius: "24px", border: "1px solid rgba(167, 139, 250, 0.35)", padding: "28px" }}
+            style={{
+              position: "relative",
+              maxWidth: "680px",
+              borderRadius: "24px",
+              border: "1px solid rgba(167, 139, 250, 0.35)",
+              padding: "32px",
+              background: "#0f172a",
+              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
+            }}
             onMouseDown={(event) => event.stopPropagation()}
           >
             <button
               className="team-modal-close"
               type="button"
               onClick={() => setSelected(null)}
+              style={{
+                position: "absolute",
+                top: "24px",
+                right: "24px",
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                background: "rgba(255, 255, 255, 0.08)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                color: "#cbd5e1",
+                fontSize: "16px",
+                fontWeight: "700",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                zIndex: 10,
+              }}
             >
               ✕
             </button>
 
-            {config.imageField && getRecordValue(selected, config.imageField) && (
-              <img
-                className="team-detail-image"
-                src={fixDriveImageUrl(getRecordValue(selected, config.imageField))}
-                alt={getRecordValue(selected, config.titleField) || config.pageTitle}
-                style={{ borderRadius: "16px", marginBottom: "20px", maxHeight: "280px", objectFit: "cover", width: "100%" }}
-              />
-            )}
+            {config.imageField &&
+              getRecordValue(selected, config.imageField) &&
+              String(getRecordValue(selected, config.imageField)).match(/\.(png|jpg|jpeg|gif|webp)|uc\?export=view/i) && (
+                <img
+                  className="team-detail-image"
+                  src={fixDriveImageUrl(getRecordValue(selected, config.imageField))}
+                  alt=""
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                  style={{
+                    borderRadius: "16px",
+                    marginBottom: "20px",
+                    maxHeight: "260px",
+                    objectFit: "cover",
+                    width: "100%",
+                  }}
+                />
+              )}
 
-            <div className="team-modal-title-row" style={{ marginBottom: "20px" }}>
-              <span style={{ fontSize: "32px" }}>{config.icon}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px", paddingRight: "44px" }}>
+              <div style={{ width: "50px", height: "50px", borderRadius: "16px", background: "rgba(167, 139, 250, 0.18)", border: "1px solid rgba(167, 139, 250, 0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0 }}>
+                {config.icon}
+              </div>
               <div>
                 <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#f8fafc", margin: "0 0 4px 0" }}>
                   {getRecordValue(selected, config.titleField) || getRecordValue(selected, "TITLE") || "Record Details"}
