@@ -123,43 +123,46 @@ export default function Profile() {
       });
       setUserCertificates(matchedCerts);
 
-      // 4. Fetch Completed Courses
-      const [coursesList, sheetStudents] = await Promise.all([
-        apiFetch("/courses").catch(() => ({ courses: [] })),
-        fetchSheetData("Sheet1").catch(() => []),
-      ]);
-      const allCourses = coursesList?.courses || [];
+      // 4. Fetch Completed Courses for this specific individual
+      const dashRes = await apiFetch("/users/dashboard").catch(() => ({ users: [] }));
+      const allDashUsers = dashRes?.users || [];
+      const meDash = allDashUsers.find((u) => {
+        const uEmail = normalizeEmail(u.email || u["EMAIL ID"] || "");
+        const uEnrol = (u["ENROLMENT NUMBER"] || u.enrolmentNumber || "").toLowerCase().trim();
+        const uName = (u.Name || u.name || "").toLowerCase().trim();
 
-      const studentRow = (Array.isArray(sheetStudents) ? sheetStudents : []).find((s) => {
-        const sEmail = normalizeEmail(s.email || s.EMAIL || s["Institutional Email"] || "");
-        const sEnrol = (s.enrolmentNumber || s.ENROLMENT_NUMBER || s["Roll No"] || "").toLowerCase().trim();
-        return sEmail === cleanEmail || (cleanEnrolment && sEnrol === cleanEnrolment);
+        return (
+          uEmail === cleanEmail ||
+          (cleanEnrolment && uEnrol === cleanEnrolment) ||
+          (cleanName && uName === cleanName)
+        );
       });
 
-      if (studentRow) {
-        const completedNames = [];
-        Object.keys(studentRow).forEach((key) => {
-          const val = String(studentRow[key] || "").toLowerCase();
-          if (key.toLowerCase().includes("course") || key.toLowerCase().includes("c1") || key.toLowerCase().includes("c2")) {
-            if (val === "completed" || val === "yes" || val === "true" || val === "1") {
-              completedNames.push(key);
-            }
-          }
-        });
-
-        const completedCourses = allCourses.filter((c) => {
-          const titleLower = (c.title || "").toLowerCase();
-          const clusterAccess = (c.clusterAccess || "").toLowerCase();
-          const userCluster = (userProfile.clusterName || "").toLowerCase();
-
-          return (
-            completedNames.some((n) => titleLower.includes(n) || n.includes(titleLower)) ||
-            (userCluster && clusterAccess.includes(userCluster))
+      if (meDash) {
+        if (Array.isArray(meDash.COURSE_DETAILS) && meDash.COURSE_DETAILS.length > 0) {
+          setUserCourses(
+            meDash.COURSE_DETAILS.map((cd) => ({
+              title: cd.courseName || cd.display,
+              level: cd.currentLevel || "Completed",
+              display: cd.display,
+            }))
           );
-        });
-        setUserCourses(completedCourses.length > 0 ? completedCourses : allCourses.slice(0, 3));
+        } else if (Array.isArray(meDash.COURSES) && meDash.COURSES.length > 0) {
+          setUserCourses(
+            meDash.COURSES.map((cStr) => {
+              const parts = String(cStr).split(" - ");
+              return {
+                title: parts[0] || cStr,
+                level: parts[1] || "Completed",
+                display: String(cStr),
+              };
+            })
+          );
+        } else {
+          setUserCourses([]);
+        }
       } else {
-        setUserCourses(allCourses.slice(0, 3));
+        setUserCourses([]);
       }
     } catch (err) {
       console.error("Error loading profile showcase data:", err);
@@ -1005,47 +1008,65 @@ export default function Profile() {
                   <small style={{ color: "#64748b" }}>Complete assigned courses on the Dashboard to earn completion badges!</small>
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px" }}>
                   {userCourses.map((c, idx) => (
                     <div
-                      key={c._id || idx}
+                      key={idx}
                       style={{
                         background: "rgba(15, 23, 42, 0.9)",
                         border: "1px solid rgba(99, 102, 241, 0.3)",
                         borderRadius: "14px",
-                        padding: "20px",
+                        padding: "18px 20px",
                         display: "flex",
-                        flexDirection: "column",
-                        justify: "space-between",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "12px",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
                       }}
                     >
-                      <div>
-                        <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "8px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#818cf8", background: "rgba(99, 102, 241, 0.15)", padding: "2px 8px", borderRadius: "6px" }}>
-                            {c.category || "Course"}
-                          </span>
-                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#4ade80", background: "rgba(34, 197, 94, 0.15)", padding: "2px 8px", borderRadius: "6px" }}>
-                            ✓ Completed
+                      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        <div
+                          style={{
+                            width: "42px",
+                            height: "42px",
+                            borderRadius: "12px",
+                            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)",
+                            border: "1px solid rgba(99, 102, 241, 0.4)",
+                            color: "#a5b4fc",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: "800",
+                            fontSize: "18px",
+                            flexShrink: 0,
+                          }}
+                        >
+                          🎓
+                        </div>
+                        <div>
+                          <h4 style={{ margin: "0 0 4px 0", color: "#f8fafc", fontSize: "15px", fontWeight: "700" }}>
+                            {c.title || c.courseName || c.display || c}
+                          </h4>
+                          <span style={{ fontSize: "12px", color: "#94a3b8" }}>
+                            Level: <strong style={{ color: "#c084fc", fontWeight: "700" }}>{c.level || c.currentLevel || "Completed"}</strong>
                           </span>
                         </div>
-                        <h4 style={{ margin: "4px 0 8px 0", color: "#f8fafc", fontSize: "16px", fontWeight: "700" }}>
-                          {c.title}
-                        </h4>
-                        <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px", lineHeight: "1.4" }}>
-                          {c.description ? c.description.substring(0, 80) + "…" : "Cluster skill course track."}
-                        </p>
                       </div>
 
-                      <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: "11px", color: "#cbd5e1" }}>
-                          Level: <strong style={{ color: "#a855f7" }}>{c.level || "Intermediate"}</strong>
-                        </span>
-                        {c.driveLink && (
-                          <a href={c.driveLink} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "#38bdf8", fontWeight: "700", textDecoration: "none" }}>
-                            📂 Resources →
-                          </a>
-                        )}
-                      </div>
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          color: "#4ade80",
+                          background: "rgba(34, 197, 94, 0.15)",
+                          border: "1px solid rgba(34, 197, 94, 0.3)",
+                          padding: "4px 12px",
+                          borderRadius: "20px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        ✓ Completed
+                      </span>
                     </div>
                   ))}
                 </div>
