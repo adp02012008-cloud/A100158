@@ -12,7 +12,6 @@ import AddCourseModal from "../components/AddCourseModal";
 import AddClusterModal from "../components/AddClusterModal";
 import ManageCoursesModal from "../components/ManageCoursesModal";
 import ManageClustersModal from "../components/ManageClustersModal";
-import SyncRewardsModal from "../components/SyncRewardsModal";
 
 const normalize = (str) => String(str || "").toLowerCase().replace(/\s+/g, "").trim();
 
@@ -158,7 +157,6 @@ export default function Dashboard({ search, setPage }) {
   const [showAddCluster, setShowAddCluster] = useState(false);
   const [showManageCourses, setShowManageCourses] = useState(false);
   const [showManageClusters, setShowManageClusters] = useState(false);
-  const [showSyncRewardsModal, setShowSyncRewardsModal] = useState(false);
 
   const [clusterFilter, setClusterFilter] = useState("All");
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -300,19 +298,6 @@ export default function Dashboard({ search, setPage }) {
               🏛️ Manage Clusters
             </button>
 
-            <button
-              onClick={() => setShowSyncRewardsModal(true)}
-              style={{
-                background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
-                color: "#fff",
-                border: "none",
-                fontWeight: "600",
-                boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
-              }}
-            >
-              🔄 Sync Sheet Reward Points
-            </button>
-
             <button onClick={() => exportToExcel(filtered)}>📊 Export Excel</button>
             <button onClick={() => exportToPDF(filtered)}>📄 Export PDF</button>
           </div>
@@ -395,7 +380,6 @@ export default function Dashboard({ search, setPage }) {
       {showAddCluster && <AddClusterModal onClose={() => setShowAddCluster(false)} onCreated={loadData} />}
       {showManageCourses && <ManageCoursesModal onClose={() => { setShowManageCourses(false); loadData(); }} />}
       {showManageClusters && <ManageClustersModal onClose={() => { setShowManageClusters(false); loadData(); }} onClustersUpdated={loadData} />}
-      {showSyncRewardsModal && <SyncRewardsModal onClose={() => setShowSyncRewardsModal(false)} onSaved={loadData} />}
     </div>
   );
 }
