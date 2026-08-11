@@ -9,12 +9,14 @@ function getInitials(name = "") {
 
 export default function Leaderboard({ search }) {
   const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("activity");
   const [open, setOpen] = useState(false);
   const [rankChanges, setRankChanges] = useState({});
   const previousRanksRef = useRef({});
 
   useEffect(() => {
+    setLoading(true);
     apiFetch("/users/dashboard")
       .then((res) => {
         const cleaned = (res.users || [])
@@ -28,7 +30,8 @@ export default function Leaderboard({ search }) {
           }));
         setStudents(cleaned);
       })
-      .catch((err) => console.error("Leaderboard load error from MongoDB:", err));
+      .catch((err) => console.error("Leaderboard load error from MongoDB:", err))
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = useMemo(() =>
@@ -87,58 +90,72 @@ export default function Leaderboard({ search }) {
         </div>
       </div>
 
-      {/* Top 3 podium */}
-      {sorted.length > 0 && (
-        <div className="top-three-section">
-          {topThree.map((s, i) => (
-            <div key={i}
-              className={`top-card rank-animate ${i === 0 ? "top-first" : i === 1 ? "top-second" : "top-third"}`}
-              style={{ animationDelay: `${i * 0.12}s` }}>
-              <div className="top-card-head">
-                <div className="top-rank-badge">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</div>
-                {i === 0 && <div className="crown-badge">👑</div>}
-              </div>
-              <div className="leader-avatar large">{getInitials(s.Name)}</div>
-              <div className="top-rank-number">#{i + 1}</div>
-              <h2>{s.Name}</h2>
-              {s.POSITION && <p className="top-position">{s.POSITION}</p>}
-              <div className="rank-change-chip">{getMovement(s.Name)} positions</div>
-              <div className="top-points-box">
-                <div><span>Activity</span><strong>{s.ACTIVITY}</strong></div>
-                <div><span>Reward</span><strong>{s.REWARD}</strong></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Remaining */}
-      {sorted.length > 0 ? (
-        <div className="leaderboard-grid modern-leaderboard-grid">
-          {others.map((s, i) => (
-            <div key={i} className="leader-row-card rank-animate" style={{ animationDelay: `${i * 0.05}s` }}>
-              <div className="leader-row-left">
-                <div className="leader-row-rank">#{i + 4}</div>
-                <div className="leader-avatar">{getInitials(s.Name)}</div>
-                <div className="leader-row-info">
-                  <h2>{s.Name}</h2>
-                  {s.POSITION && <p>{s.POSITION}</p>}
-                  <div className="rank-change-text">{getMovement(s.Name)} positions</div>
-                </div>
-              </div>
-              <div className="leader-row-right">
-                <div className="leader-pill"><span>Activity</span><b>{s.ACTIVITY}</b></div>
-                <div className="leader-pill"><span>Reward</span><b>{s.REWARD}</b></div>
-              </div>
-            </div>
-          ))}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "80px 20px", background: "rgba(15, 23, 42, 0.4)", borderRadius: "20px", border: "1px solid rgba(255, 255, 255, 0.08)", margin: "20px 0" }}>
+          <div style={{ fontSize: "40px", marginBottom: "16px", animation: "spin 1.5s linear infinite" }}>⚡</div>
+          <h3 style={{ color: "#f8fafc", fontSize: "18px", fontWeight: "800", margin: "0 0 8px 0" }}>
+            Loading Leaderboard Rankings…
+          </h3>
+          <p style={{ color: "#94a3b8", fontSize: "14px", margin: 0 }}>
+            Calculating activity and reward points performance data. Please wait a moment.
+          </p>
         </div>
       ) : (
-        <div className="empty-state">
-          <div className="empty-icon">🔍</div>
-          <h3>No matching students</h3>
-          <p>Try a different search</p>
-        </div>
+        <>
+          {/* Top 3 podium */}
+          {sorted.length > 0 && (
+            <div className="top-three-section">
+              {topThree.map((s, i) => (
+                <div key={i}
+                  className={`top-card rank-animate ${i === 0 ? "top-first" : i === 1 ? "top-second" : "top-third"}`}
+                  style={{ animationDelay: `${i * 0.12}s` }}>
+                  <div className="top-card-head">
+                    <div className="top-rank-badge">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</div>
+                    {i === 0 && <div className="crown-badge">👑</div>}
+                  </div>
+                  <div className="leader-avatar large">{getInitials(s.Name)}</div>
+                  <div className="top-rank-number">#{i + 1}</div>
+                  <h2>{s.Name}</h2>
+                  {s.POSITION && <p className="top-position">{s.POSITION}</p>}
+                  <div className="rank-change-chip">{getMovement(s.Name)} positions</div>
+                  <div className="top-points-box">
+                    <div><span>Activity</span><strong>{s.ACTIVITY}</strong></div>
+                    <div><span>Reward</span><strong>{s.REWARD}</strong></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Remaining */}
+          {sorted.length > 0 ? (
+            <div className="leaderboard-grid modern-leaderboard-grid">
+              {others.map((s, i) => (
+                <div key={i} className="leader-row-card rank-animate" style={{ animationDelay: `${i * 0.05}s` }}>
+                  <div className="leader-row-left">
+                    <div className="leader-row-rank">#{i + 4}</div>
+                    <div className="leader-avatar">{getInitials(s.Name)}</div>
+                    <div className="leader-row-info">
+                      <h2>{s.Name}</h2>
+                      {s.POSITION && <p>{s.POSITION}</p>}
+                      <div className="rank-change-text">{getMovement(s.Name)} positions</div>
+                    </div>
+                  </div>
+                  <div className="leader-row-right">
+                    <div className="leader-pill"><span>Activity</span><b>{s.ACTIVITY}</b></div>
+                    <div className="leader-pill"><span>Reward</span><b>{s.REWARD}</b></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-icon">🔍</div>
+              <h3>No matching students</h3>
+              <p>Try a different search</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
