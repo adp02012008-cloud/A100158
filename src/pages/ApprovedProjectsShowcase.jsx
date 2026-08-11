@@ -23,6 +23,7 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
 
   // Direct Add Project Modal State
   const [directAddOpen, setDirectAddOpen] = useState(false);
+  const [customDomain, setCustomDomain] = useState("");
   const [directForm, setDirectForm] = useState({
     title: "",
     domain: "Full-Stack Software Development",
@@ -160,14 +161,21 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
   const handleDirectPublishSubmit = async (e) => {
     e.preventDefault();
     if (!directForm.title) return alert("Project title is required.");
+
+    const finalDomain = directForm.domain === "Other" ? (customDomain.trim() || "Other") : directForm.domain;
+
     setSavingDirect(true);
     try {
       await apiFetch("/submissions/direct", {
         method: "POST",
-        body: JSON.stringify(directForm),
+        body: JSON.stringify({
+          ...directForm,
+          domain: finalDomain,
+        }),
       });
       alert("🚀 Project directly published to showcase successfully!");
       setDirectAddOpen(false);
+      setCustomDomain("");
       setDirectForm({
         title: "",
         domain: "Full-Stack Software Development",
@@ -631,7 +639,24 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
                   <option value="Cloud & DevOps Engineering">Cloud & DevOps Engineering</option>
                   <option value="Cyber Security">Cyber Security</option>
                   <option value="Core">Core</option>
+                  <option value="Other">Other (Custom Domain)</option>
                 </select>
+
+                {directForm.domain === "Other" && (
+                  <div style={{ marginTop: "10px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "700", color: "#34d399", display: "block", marginBottom: "4px" }}>
+                      Type Custom Domain Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Blockchain & Web3, Game Development, Data Science..."
+                      value={customDomain}
+                      onChange={(e) => setCustomDomain(e.target.value)}
+                      style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid #34d399", color: "#fff" }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
