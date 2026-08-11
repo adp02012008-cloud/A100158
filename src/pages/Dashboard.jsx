@@ -50,13 +50,36 @@ function getFirstAvailableLevel(pointRow, levelColumns) {
 }
 
 function canTakeCourseByCluster(student, pointRow) {
-  const sc = normalize(student.CLUSTER);
-  const ac = normalize(pointRow["Cluster Access"] || pointRow.clusterAccess || "");
-  if (!ac || ac === "") return true;
-  if (ac === normalize("Both")) return true;
-  if (ac === normalize("Core") && sc === normalize("Core")) return true;
-  if (ac === normalize("Computer Cluster") && sc === normalize("Computer Cluster")) return true;
-  return false;
+  const sc = normalize(student.CLUSTER || student.clusterName || "");
+  const acRaw = pointRow["Cluster Access"] || pointRow.clusterAccess || "";
+  if (!acRaw || acRaw === "") return true;
+
+  let allowedClusters = [];
+  if (Array.isArray(acRaw)) {
+    allowedClusters = acRaw.map(normalize);
+  } else {
+    allowedClusters = String(acRaw)
+      .split(",")
+      .map((c) => normalize(c))
+      .filter(Boolean);
+  }
+
+  if (
+    allowedClusters.length === 0 ||
+    allowedClusters.includes(normalize("Both")) ||
+    allowedClusters.includes(normalize("All"))
+  ) {
+    return true;
+  }
+
+  if (!sc) return true;
+
+  return allowedClusters.some((ac) => {
+    if (ac === sc) return true;
+    const cleanAc = ac.replace(/only$/, "");
+    const cleanSc = sc.replace(/only$/, "");
+    return cleanAc === cleanSc || cleanAc.includes(cleanSc) || cleanSc.includes(cleanAc);
+  });
 }
 
 function canTakeCourseByPrerequisite(courseName, studentCourses) {

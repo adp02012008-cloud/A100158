@@ -33,8 +33,8 @@ const courseSchema = new mongoose.Schema(
     ],
     clusterAccess: {
       type: String,
-      enum: ["Both", "Core", "Computer Cluster"],
       default: "Both",
+      trim: true,
     },
     status: {
       type: String,

@@ -6,9 +6,11 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
   const [name, setName] = useState(course?.name || "");
   const [description, setDescription] = useState(course?.description || "");
   const [category, setCategory] = useState(course?.category || "Development");
-  const [clusterAccess, setClusterAccess] = useState(course?.clusterAccess || "Both");
-  const [customCluster, setCustomCluster] = useState("");
-  const [existingClusters, setExistingClusters] = useState([]);
+  // Cluster access handling
+  const [availableClusters, setAvailableClusters] = useState(["Core", "Computer Cluster"]);
+  const [selectedClusters, setSelectedClusters] = useState([]);
+  const [newCustomCluster, setNewCustomCluster] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
 
   // Initialize dynamic level rows from pointRule.levelPoints or default
   const [levelRows, setLevelRows] = useState(() => {
@@ -34,12 +36,82 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
   const [error, setError] = useState("");
 
   useEffect(() => {
-    apiFetch("/clusters")
-      .then((res) => {
-        if (res?.clusters) setExistingClusters(res.clusters);
-      })
-      .catch(() => {});
-  }, []);
+    let isMounted = true;
+    Promise.allSettled([
+      apiFetch("/clusters"),
+      apiFetch("/users/dashboard"),
+    ]).then(([clustersRes, dashRes]) => {
+      if (!isMounted) return;
+      const clusterSet = new Set(["Core", "Computer Cluster"]);
+
+      if (clustersRes.status === "fulfilled" && Array.isArray(clustersRes.value?.clusters)) {
+        clustersRes.value.clusters.forEach((c) => {
+          if (c?.name) clusterSet.add(c.name.trim());
+        });
+      }
+
+      if (dashRes.status === "fulfilled" && Array.isArray(dashRes.value?.users)) {
+        dashRes.value.users.forEach((u) => {
+          const cName = u.CLUSTER || u.clusterName;
+          if (cName) clusterSet.add(cName.trim());
+        });
+      }
+
+      const rawAccess = course?.clusterAccess;
+      if (rawAccess && rawAccess !== "Both" && rawAccess !== "All") {
+        String(rawAccess).split(",").forEach((p) => {
+          if (p.trim()) clusterSet.add(p.trim());
+        });
+      }
+
+      const uniqueList = Array.from(clusterSet).filter(Boolean).sort();
+      setAvailableClusters(uniqueList);
+
+      if (!rawAccess || rawAccess === "Both" || rawAccess === "All") {
+        setSelectedClusters(uniqueList);
+      } else {
+        const parts = String(rawAccess).split(",").map((s) => s.trim()).filter(Boolean);
+        setSelectedClusters(parts);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [course]);
+
+  const isAllSelected =
+    availableClusters.length > 0 &&
+    availableClusters.every((c) => selectedClusters.includes(c));
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedClusters([]);
+    } else {
+      setSelectedClusters([...availableClusters]);
+    }
+  };
+
+  const handleToggleCluster = (clusterName) => {
+    setSelectedClusters((prev) =>
+      prev.includes(clusterName)
+        ? prev.filter((c) => c !== clusterName)
+        : [...prev, clusterName]
+    );
+  };
+
+  const handleAddCustomCluster = () => {
+    const trimmed = newCustomCluster.trim();
+    if (!trimmed) return;
+    if (!availableClusters.includes(trimmed)) {
+      setAvailableClusters((prev) => [...prev, trimmed].sort());
+    }
+    if (!selectedClusters.includes(trimmed)) {
+      setSelectedClusters((prev) => [...prev, trimmed]);
+    }
+    setNewCustomCluster("");
+    setShowCustomInput(false);
+  };
 
   const handleAddLevelRow = () => {
     const nextIdx = levelRows.length;
@@ -91,10 +163,15 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
       return;
     }
 
+    if (selectedClusters.length === 0) {
+      setError("Please select at least one cluster for which this course is applicable.");
+      return;
+    }
+
     const finalClusterAccess =
-      clusterAccess === "CUSTOM"
-        ? customCluster.trim() || "Both"
-        : clusterAccess.trim();
+      isAllSelected || selectedClusters.length === availableClusters.length
+        ? "Both"
+        : selectedClusters.join(", ");
 
     // Build levelPoints map from rows
     const levelPoints = {};
@@ -177,33 +254,111 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
           </div>
 
           <div>
-            <label className="edit-label">Cluster Access</label>
-            <select
-              className="course-edit-select"
-              value={clusterAccess}
-              onChange={(e) => setClusterAccess(e.target.value)}
-              style={{ width: "100%", padding: "10px", marginBottom: clusterAccess === "CUSTOM" ? "8px" : "0" }}
-            >
-              <option value="Both">Both (Core & Computer Cluster)</option>
-              <option value="Core">Core Only</option>
-              <option value="Computer Cluster">Computer Cluster Only</option>
-              {existingClusters.map((c) => (
-                <option key={c._id || c.name} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-              <option value="CUSTOM">➕ Type Custom Cluster Name...</option>
-            </select>
+            <label className="edit-label" style={{ marginBottom: "8px", display: "block" }}>
+              Cluster Access (Select applicable clusters) *
+            </label>
 
-            {clusterAccess === "CUSTOM" && (
-              <input
-                className="edit-input"
-                required
-                value={customCluster}
-                onChange={(e) => setCustomCluster(e.target.value)}
-                placeholder="Type cluster name (e.g. Electronics, All Clusters)"
-              />
-            )}
+            <div style={{
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "10px",
+              padding: "12px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px"
+            }}>
+              {/* Select All Checkbox */}
+              <label style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "600", color: "#f8fafc", cursor: "pointer", paddingBottom: "6px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={handleToggleSelectAll}
+                  style={{ width: "16px", height: "16px", accentColor: "#6366f1", cursor: "pointer" }}
+                />
+                <span>🌟 Select All Clusters (Both / Universal Access)</span>
+              </label>
+
+              {/* Individual Cluster Checkboxes */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "8px", marginTop: "4px" }}>
+                {availableClusters.map((clusterName) => {
+                  const isChecked = selectedClusters.includes(clusterName);
+                  return (
+                    <label
+                      key={clusterName}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "6px 10px",
+                        background: isChecked ? "rgba(99, 102, 241, 0.18)" : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${isChecked ? "rgba(99, 102, 241, 0.5)" : "rgba(255,255,255,0.08)"}`,
+                        borderRadius: "6px",
+                        color: isChecked ? "#a5b4fc" : "#cbd5e1",
+                        cursor: "pointer",
+                        fontSize: "13px",
+                        transition: "all 0.2s"
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggleCluster(clusterName)}
+                        style={{ width: "15px", height: "15px", accentColor: "#6366f1", cursor: "pointer" }}
+                      />
+                      <span>{clusterName}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* Add Custom Cluster */}
+              {showCustomInput ? (
+                <div style={{ display: "flex", gap: "8px", marginTop: "6px" }}>
+                  <input
+                    className="edit-input"
+                    style={{ flex: 1, padding: "6px 10px", fontSize: "13px" }}
+                    value={newCustomCluster}
+                    onChange={(e) => setNewCustomCluster(e.target.value)}
+                    placeholder="Type new cluster name..."
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddCustomCluster(); } }}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    className="btn primary"
+                    style={{ fontSize: "12px", padding: "6px 12px" }}
+                    onClick={handleAddCustomCluster}
+                  >
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    style={{ fontSize: "12px", padding: "6px 10px" }}
+                    onClick={() => setShowCustomInput(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#818cf8",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    textAlign: "left",
+                    padding: "4px 0",
+                    width: "fit-content"
+                  }}
+                  onClick={() => setShowCustomInput(true)}
+                >
+                  ➕ Add Custom Cluster Name...
+                </button>
+              )}
+            </div>
           </div>
 
           <div style={{ marginTop: "10px", padding: "14px", background: "rgba(255,255,255,0.03)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
