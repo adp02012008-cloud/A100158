@@ -41,9 +41,30 @@ export default function MyTasksMember({ search = "" }) {
         getReviews(userEmail).catch(() => []),
         fetchSheetData("Sheet1").catch(() => []),
       ]);
-      setTasks(tList || []);
-      setSubmissions(sList || []);
-      setReviews(rList || []);
+
+      const activeTasks = tList || [];
+      const activeTaskIds = new Set(
+        activeTasks.flatMap((t) => [t.taskId, String(t._id), String(t.id)].filter(Boolean))
+      );
+
+      const validSubmissions = (sList || []).filter((s) => {
+        if (!s.taskId) return false;
+        const tObj = typeof s.taskId === "object" ? s.taskId : null;
+        if (tObj && tObj.title && tObj.title.startsWith("Task TSK-")) return false;
+        const key = tObj ? (tObj.taskId || String(tObj._id)) : String(s.taskId);
+        return activeTaskIds.has(key);
+      });
+
+      const validReviews = (rList || []).filter((r) => {
+        if (!r.taskId) return false;
+        const tObj = typeof r.taskId === "object" ? r.taskId : null;
+        const key = tObj ? (tObj.taskId || String(tObj._id)) : String(r.taskId);
+        return activeTaskIds.has(key);
+      });
+
+      setTasks(activeTasks);
+      setSubmissions(validSubmissions);
+      setReviews(validReviews);
       setStudents(Array.isArray(sheetStudents) ? sheetStudents : []);
     } catch (err) {
       console.error("Error loading member tasks:", err);

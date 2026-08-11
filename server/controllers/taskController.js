@@ -1,5 +1,7 @@
 import { Task } from "../models/Task.js";
 import { TaskAssignment } from "../models/TaskAssignment.js";
+import { TaskSubmission } from "../models/TaskSubmission.js";
+import { TaskReview } from "../models/TaskReview.js";
 import { Notification } from "../models/Notification.js";
 import { TaskEvent } from "../models/TaskEvent.js";
 import { User } from "../models/User.js";
@@ -441,6 +443,9 @@ export async function deleteTask(req, res) {
 
     await Task.deleteOne({ _id: task._id }).exec();
     await TaskAssignment.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
+    await TaskSubmission.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
+    await TaskReview.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
+    await Notification.deleteMany({ taskId: { $in: [task.taskId, String(task._id)] } }).exec();
 
     await TaskEvent.create({
       eventId: `EVT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,

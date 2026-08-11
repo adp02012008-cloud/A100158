@@ -136,7 +136,8 @@ export async function getReviews(req, res) {
     if (taskId) filter.taskId = taskId;
     if (submissionId) filter.submissionId = submissionId;
 
-    const reviews = await TaskReview.find(filter).sort({ createdAt: -1 }).populate("taskId submissionId reviewerId").exec();
+    const rawReviews = await TaskReview.find(filter).sort({ createdAt: -1 }).populate("taskId submissionId reviewerId").exec();
+    const reviews = rawReviews.filter((r) => r.taskId && r.submissionId);
     return res.json({ success: true, reviews });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });

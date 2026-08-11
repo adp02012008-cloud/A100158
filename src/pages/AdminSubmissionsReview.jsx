@@ -24,13 +24,29 @@ export default function AdminSubmissionsReview({ search = "" }) {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [subRes, revRes, userRes] = await Promise.all([
+      const [taskRes, subRes, revRes, userRes] = await Promise.all([
+        apiFetch("/tasks").catch(() => ({ tasks: [] })),
         apiFetch("/submissions"),
         apiFetch("/reviews"),
         apiFetch("/users"),
       ]);
 
-      setSubmissions(subRes?.submissions || []);
+      const activeTasks = taskRes?.tasks || [];
+      const activeTaskIds = new Set(
+        activeTasks.flatMap((t) => [t.taskId, String(t._id), String(t.id)].filter(Boolean))
+      );
+
+      const rawSubs = subRes?.submissions || [];
+      const validSubs = rawSubs.filter((sub) => {
+        if (!sub.taskId) return false;
+        const tObj = typeof sub.taskId === "object" ? sub.taskId : null;
+        if (tObj && tObj.title && tObj.title.startsWith("Task TSK-")) return false;
+        
+        const key = tObj ? (tObj.taskId || String(tObj._id)) : String(sub.taskId);
+        return activeTaskIds.has(key);
+      });
+
+      setSubmissions(validSubs);
       setReviews(revRes?.reviews || []);
       setUsers(userRes?.users || []);
     } catch (err) {

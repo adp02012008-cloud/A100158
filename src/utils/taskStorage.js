@@ -193,7 +193,17 @@ export async function saveTask(taskData, userEmail = "") {
 }
 
 export async function deleteTask(taskId, userEmail = "") {
+  const clean = normalizeEmail(userEmail);
   await apiFetch(`/tasks/${taskId}`, { method: "DELETE" });
+
+  try {
+    const localSubs = getLocalSubmissions(clean);
+    const filteredSubs = localSubs.filter((s) => String(s.taskId) !== String(taskId));
+    saveLocalSubmissions(filteredSubs, clean);
+  } catch {
+    // ignore
+  }
+
   return getTasks(userEmail);
 }
 

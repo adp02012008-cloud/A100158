@@ -257,11 +257,13 @@ export async function getSubmissions(req, res) {
       taskMap.set(String(t._id), t);
     });
 
-    const submissions = rawSubmissions.map((s) => {
-      const doc = s.toObject();
-      doc.taskId = taskMap.get(s.taskId) || { taskId: s.taskId, title: `Task ${s.taskId}`, domain: "Core" };
-      return doc;
-    });
+    const submissions = rawSubmissions
+      .filter((s) => taskMap.has(s.taskId) || taskMap.has(String(s.taskId)))
+      .map((s) => {
+        const doc = s.toObject();
+        doc.taskId = taskMap.get(s.taskId) || taskMap.get(String(s.taskId));
+        return doc;
+      });
 
     const authorized = submissions.filter((sub) => {
       if (isAdmin(user) || publicView === "true" || sub.status === "APPROVED") return true;
