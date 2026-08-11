@@ -43,6 +43,9 @@ export async function createHackathon(req, res) {
 export async function updateHackathon(req, res) {
   try {
     const { id } = req.params;
+    if (!id || id === "undefined") {
+      return res.status(400).json({ success: false, message: "Invalid Hackathon ID" });
+    }
     const b = req.body || {};
     const updateData = {};
     if (b.title || b.TITLE) updateData.title = (b.title || b.TITLE).trim();
@@ -62,7 +65,13 @@ export async function updateHackathon(req, res) {
     if (b.driveFolder || b.DRIVE_FOLDER !== undefined) updateData.driveFolder = (b.driveFolder || b.DRIVE_FOLDER || "").trim();
     if (b.coverImage || b.COVER_IMAGE !== undefined) updateData.coverImage = (b.coverImage || b.COVER_IMAGE || "").trim();
 
-    const hackathon = await Hackathon.findByIdAndUpdate(id, updateData, { new: true });
+    let hackathon = null;
+    if (String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      hackathon = await Hackathon.findByIdAndUpdate(id, updateData, { new: true });
+    }
+    if (!hackathon) {
+      hackathon = await Hackathon.findOneAndUpdate({ eventId: id }, updateData, { new: true });
+    }
     if (!hackathon) return res.status(404).json({ success: false, message: "Hackathon not found" });
     return res.json({ success: true, hackathon });
   } catch (err) {
@@ -73,7 +82,16 @@ export async function updateHackathon(req, res) {
 export async function deleteHackathon(req, res) {
   try {
     const { id } = req.params;
-    const hackathon = await Hackathon.findByIdAndDelete(id);
+    if (!id || id === "undefined") {
+      return res.status(400).json({ success: false, message: "Invalid Hackathon ID" });
+    }
+    let hackathon = null;
+    if (String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      hackathon = await Hackathon.findByIdAndDelete(id);
+    }
+    if (!hackathon) {
+      hackathon = await Hackathon.findOneAndDelete({ eventId: id });
+    }
     if (!hackathon) return res.status(404).json({ success: false, message: "Hackathon not found" });
     return res.json({ success: true, message: "Hackathon deleted" });
   } catch (err) {

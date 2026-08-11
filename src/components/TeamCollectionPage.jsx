@@ -9,6 +9,55 @@ import {
 } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 
+function getRecordValue(record, key) {
+  if (!record || !key) return "";
+  
+  if (record[key] !== undefined && record[key] !== null && record[key] !== "") return record[key];
+
+  const upper = key.toUpperCase();
+  if (record[upper] !== undefined && record[upper] !== null && record[upper] !== "") return record[upper];
+
+  const lower = key.toLowerCase();
+  if (record[lower] !== undefined && record[lower] !== null && record[lower] !== "") return record[lower];
+
+  const ALIASES = {
+    TITLE: ["title", "name", "caption"],
+    ORGANIZER: ["organizer", "issuer", "company"],
+    DATE: ["date", "eventDate"],
+    LOCATION: ["location", "venue"],
+    PROJECT: ["projectTitle", "project", "title"],
+    THEME: ["theme", "track"],
+    MEMBERS: ["memberNames", "members", "teamMembers", "students"],
+    TECH_STACK: ["techStack", "technologyStack", "skills"],
+    STATUS: ["status", "state"],
+    POSITION: ["position", "result", "rank"],
+    DESCRIPTION: ["description", "desc", "details", "notes"],
+    GITHUB: ["github", "githubUrl", "codeUrl"],
+    DEMO: ["demo", "demoUrl", "liveUrl"],
+    PPT: ["ppt", "pptUrl", "presentationUrl"],
+    DRIVE_FOLDER: ["driveFolder", "driveUrl", "folderUrl"],
+    COVER_IMAGE: ["coverImage", "imageUrl", "image", "fileUrl"],
+    EVENT_ID: ["eventId", "_id", "id"],
+    PROJECT_ID: ["projectId", "_id", "id"],
+    CERTIFICATE_ID: ["certificateId", "_id", "id"],
+    PHOTO_ID: ["photoId", "_id", "id"],
+    OPPORTUNITY_ID: ["opportunityId", "_id", "id"],
+    CREATED_BY: ["createdBy", "email", "uploadedBy", "user"],
+  };
+
+  const aliases = ALIASES[upper] || [];
+  for (const alias of aliases) {
+    if (record[alias] !== undefined && record[alias] !== null && record[alias] !== "") {
+      if (typeof record[alias] === "object" && record[alias]?.email) {
+        return record[alias].email;
+      }
+      return record[alias];
+    }
+  }
+
+  return "";
+}
+
 function MemberSelectionSelector({ value = "", onChange, readOnly }) {
   const [groupMembers, setGroupMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
@@ -137,14 +186,14 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
             <button
               type="button"
               onClick={handleSelectAll}
-              style={{ fontSize: "11px", background: "rgba(99, 102, 241, 0.2)", border: "1px solid rgba(99, 102, 241, 0.4)", color: "#818cf8", padding: "3px 10px", borderRadius: "12px", cursor: "pointer", fontWeight: "700" }}
+              style={{ fontSize: "11px", background: "rgba(99, 102, 241, 0.2)", border: "1px solid rgba(99, 102, 241, 0.4)", color: "#818cf8", padding: "4px 12px", borderRadius: "12px", cursor: "pointer", fontWeight: "700" }}
             >
               ✓ Select All
             </button>
             <button
               type="button"
               onClick={handleClearAll}
-              style={{ fontSize: "11px", background: "rgba(239, 68, 68, 0.2)", border: "1px solid rgba(239, 68, 68, 0.4)", color: "#f87171", padding: "3px 10px", borderRadius: "12px", cursor: "pointer", fontWeight: "700" }}
+              style={{ fontSize: "11px", background: "rgba(239, 68, 68, 0.2)", border: "1px solid rgba(239, 68, 68, 0.4)", color: "#f87171", padding: "4px 12px", borderRadius: "12px", cursor: "pointer", fontWeight: "700" }}
             >
               ✕ Clear
             </button>
@@ -155,7 +204,7 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
       {loadingMembers ? (
         <div style={{ fontSize: "13px", color: "#94a3b8", padding: "8px 0" }}>Loading group members…</div>
       ) : (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "10px" }}>
           {groupMembers.map((mName) => {
             const isChecked = selectedNames.includes(mName);
             return (
@@ -163,28 +212,31 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
                 key={mName}
                 onClick={() => toggleMember(mName)}
                 style={{
-                  padding: "6px 14px",
+                  padding: "8px 16px",
                   borderRadius: "20px",
-                  fontSize: "12.5px",
+                  fontSize: "13px",
                   fontWeight: "600",
                   cursor: readOnly ? "default" : "pointer",
                   userSelect: "none",
-                  display: "flex",
+                  display: "inline-flex",
                   alignItems: "center",
-                  gap: "6px",
-                  transition: "all 0.2s ease",
-                  background: isChecked ? "rgba(16, 185, 129, 0.2)" : "rgba(30, 41, 59, 0.8)",
-                  border: isChecked ? "1px solid rgba(52, 211, 153, 0.6)" : "1px solid rgba(255, 255, 255, 0.1)",
-                  color: isChecked ? "#34d399" : "#cbd5e1",
-                  boxShadow: isChecked ? "0 0 10px rgba(52, 211, 153, 0.2)" : "none",
+                  gap: "8px",
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  background: isChecked ? "rgba(16, 185, 129, 0.25)" : "rgba(30, 41, 59, 0.8)",
+                  border: isChecked ? "1.5px solid rgba(52, 211, 153, 0.8)" : "1px solid rgba(255, 255, 255, 0.12)",
+                  color: isChecked ? "#34d399" : "#e2e8f0",
+                  boxShadow: isChecked ? "0 0 14px rgba(52, 211, 153, 0.25)" : "none",
                 }}
               >
                 <input
                   type="checkbox"
                   checked={isChecked}
-                  onChange={() => {}}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    toggleMember(mName);
+                  }}
                   readOnly
-                  style={{ accentColor: "#10b981", cursor: "pointer" }}
+                  style={{ accentColor: "#10b981", cursor: "pointer", width: "16px", height: "16px" }}
                 />
                 <span>{mName}</span>
               </div>
@@ -195,27 +247,31 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
           <div
             onClick={toggleOther}
             style={{
-              padding: "6px 14px",
+              padding: "8px 16px",
               borderRadius: "20px",
-              fontSize: "12.5px",
+              fontSize: "13px",
               fontWeight: "700",
               cursor: readOnly ? "default" : "pointer",
               userSelect: "none",
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
-              gap: "6px",
-              transition: "all 0.2s ease",
-              background: showOther ? "rgba(168, 85, 247, 0.25)" : "rgba(30, 41, 59, 0.8)",
-              border: showOther ? "1px solid rgba(192, 132, 252, 0.6)" : "1px solid rgba(168, 85, 247, 0.3)",
+              gap: "8px",
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              background: showOther ? "rgba(168, 85, 247, 0.3)" : "rgba(30, 41, 59, 0.8)",
+              border: showOther ? "1.5px solid rgba(192, 132, 252, 0.8)" : "1px solid rgba(168, 85, 247, 0.4)",
               color: showOther ? "#c084fc" : "#a78bfa",
+              boxShadow: showOther ? "0 0 14px rgba(168, 85, 247, 0.25)" : "none",
             }}
           >
             <input
               type="checkbox"
               checked={showOther}
-              onChange={() => {}}
+              onChange={(e) => {
+                e.stopPropagation();
+                toggleOther();
+              }}
               readOnly
-              style={{ accentColor: "#a855f7", cursor: "pointer" }}
+              style={{ accentColor: "#a855f7", cursor: "pointer", width: "16px", height: "16px" }}
             />
             <span>+ Others (Non-Group Member)</span>
           </div>
@@ -224,7 +280,7 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
 
       {/* EXTERNAL MEMBER TEXTINPUT IF OTHER IS CHECKED */}
       {showOther && (
-        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed rgba(168, 85, 247, 0.3)" }}>
+        <div style={{ marginTop: "14px", paddingTop: "14px", borderTop: "1px dashed rgba(168, 85, 247, 0.35)" }}>
           <label style={{ fontSize: "12px", color: "#c084fc", fontWeight: "700", display: "block", marginBottom: "6px" }}>
             Type External / Non-Group Member Names (separated by commas)
           </label>
@@ -269,7 +325,7 @@ function buildInitialForm(config, auth) {
 
 function buildEditForm(config, record) {
   return config.fields.reduce((result, field) => {
-    result[field.name] = record[field.name] || "";
+    result[field.name] = getRecordValue(record, field.name);
     return result;
   }, {});
 }
@@ -385,12 +441,25 @@ export default function TeamCollectionPage({ config, search = "" }) {
   const canManageRecord = useCallback(
     (record) => {
       if (isAdmin) return true;
-      return (
-        normalizeEmail(record?.CREATED_BY) !== "" &&
-        normalizeEmail(record?.CREATED_BY) === normalizeEmail(auth.email)
-      );
+      if (!record || !auth) return false;
+
+      const userEmail = normalizeEmail(auth.email || auth.user?.email || "");
+      const userName = (auth.name || auth.user?.name || "").toLowerCase().trim();
+      const createdByEmail = normalizeEmail(getRecordValue(record, "CREATED_BY"));
+
+      // 1. Check if user is creator
+      if (createdByEmail && createdByEmail === userEmail) return true;
+
+      // 2. Check if user is in MEMBERS list (by name or email)
+      const membersStr = String(getRecordValue(record, "MEMBERS") || "").toLowerCase();
+      if (membersStr) {
+        if (userName && membersStr.includes(userName)) return true;
+        if (userEmail && membersStr.includes(userEmail)) return true;
+      }
+
+      return false;
     },
-    [auth.email, isAdmin]
+    [auth, isAdmin]
   );
 
   const setField = (name, value) => {
@@ -457,7 +526,11 @@ export default function TeamCollectionPage({ config, search = "" }) {
       setSaving(true);
 
       if (formMode === "edit" && editingRecord) {
-        const idValue = editingRecord[config.idField];
+        const idValue =
+          getRecordValue(editingRecord, config.idField) ||
+          getRecordValue(editingRecord, "_id") ||
+          editingRecord._id ||
+          editingRecord[config.idField];
 
         await updateTeamRecord(
           config.sheetName,
@@ -472,13 +545,21 @@ export default function TeamCollectionPage({ config, search = "" }) {
         };
 
         setRecords((previous) =>
-          previous.map((record) =>
-            record[config.idField] === idValue ? updatedLocalRecord : record
-          )
+          previous.map((record) => {
+            const rId =
+              getRecordValue(record, config.idField) ||
+              getRecordValue(record, "_id") ||
+              record._id;
+            return rId === idValue ? updatedLocalRecord : record;
+          })
         );
 
-        if (selected?.[config.idField] === idValue) {
-          setSelected(updatedLocalRecord);
+        if (selected) {
+          const selId =
+            getRecordValue(selected, config.idField) ||
+            getRecordValue(selected, "_id") ||
+            selected._id;
+          if (selId === idValue) setSelected(updatedLocalRecord);
         }
 
         setNotice("Record updated successfully.");
@@ -502,7 +583,6 @@ export default function TeamCollectionPage({ config, search = "" }) {
       setFormMode(null);
       setEditingRecord(null);
 
-      // POST responses are opaque, so reload from the authenticated GET API.
       await sleep(900);
       await loadRecords({ silent: true });
     } catch (requestError) {
@@ -515,10 +595,15 @@ export default function TeamCollectionPage({ config, search = "" }) {
   const handleDelete = async (record) => {
     if (!canManageRecord(record)) return;
 
-    const idValue = record[config.idField];
-    const title = record[config.titleField] || idValue;
+    const idValue =
+      getRecordValue(record, config.idField) ||
+      getRecordValue(record, "_id") ||
+      record._id ||
+      record[config.idField];
+
+    const title = getRecordValue(record, config.titleField) || getRecordValue(record, "TITLE") || "Record";
     const confirmed = window.confirm(
-      `Delete “${title}” permanently from Google Sheets?`
+      `Delete “${title}” permanently?`
     );
     if (!confirmed) return;
 
@@ -530,11 +615,23 @@ export default function TeamCollectionPage({ config, search = "" }) {
       await deleteTeamRecord(config.sheetName, config.idField, idValue);
 
       setRecords((previous) =>
-        previous.filter((item) => item[config.idField] !== idValue)
+        previous.filter((item) => {
+          const rId =
+            getRecordValue(item, config.idField) ||
+            getRecordValue(item, "_id") ||
+            item._id;
+          return rId !== idValue;
+        })
       );
 
-      if (selected?.[config.idField] === idValue) setSelected(null);
-      setNotice(isAdmin ? "Record deleted by admin." : "Your record was deleted.");
+      if (selected) {
+        const selId =
+          getRecordValue(selected, config.idField) ||
+          getRecordValue(selected, "_id") ||
+          selected._id;
+        if (selId === idValue) setSelected(null);
+      }
+      setNotice("Record deleted successfully.");
 
       await sleep(800);
       await loadRecords({ silent: true });
@@ -618,9 +715,20 @@ export default function TeamCollectionPage({ config, search = "" }) {
           }`}
         >
           {filteredRecords.map((record) => {
-            const recordId = record[config.idField];
-            const imageUrl = fixDriveImageUrl(record[config.imageField]);
+            const recordId =
+              getRecordValue(record, config.idField) ||
+              getRecordValue(record, "_id") ||
+              record._id;
+            const imageUrl = fixDriveImageUrl(getRecordValue(record, config.imageField));
             const canManage = canManageRecord(record);
+            const title = getRecordValue(record, config.titleField) || getRecordValue(record, "TITLE") || "Untitled record";
+            const subtitle = getRecordValue(record, config.subtitleField) || getRecordValue(record, "ORGANIZER") || getRecordValue(record, "PROJECT");
+            const badge = getRecordValue(record, config.badgeField) || getRecordValue(record, "STATUS");
+            const date = getRecordValue(record, "DATE");
+            const location = getRecordValue(record, "LOCATION");
+            const techStack = getRecordValue(record, "TECH_STACK");
+            const issuer = getRecordValue(record, "ISSUER");
+            const description = getRecordValue(record, "DESCRIPTION");
 
             return (
               <article className="team-record-card" key={recordId}>
@@ -629,14 +737,12 @@ export default function TeamCollectionPage({ config, search = "" }) {
                     className="team-card-image-wrap"
                     type="button"
                     onClick={() => setSelected(record)}
-                    aria-label={`Open ${
-                      record[config.titleField] || config.pageTitle
-                    }`}
+                    aria-label={`Open ${title}`}
                   >
                     {imageUrl ? (
                       <img
                         src={imageUrl}
-                        alt={record[config.titleField] || config.pageTitle}
+                        alt={title}
                         className="team-card-image"
                         loading="lazy"
                         onError={(event) => {
@@ -660,29 +766,26 @@ export default function TeamCollectionPage({ config, search = "" }) {
                 <div className="team-record-content">
                   <div className="team-record-heading">
                     <div>
-                      <h3>{record[config.titleField] || "Untitled record"}</h3>
-                      {config.subtitleField && record[config.subtitleField] && (
-                        <p>{record[config.subtitleField]}</p>
-                      )}
+                      <h3>{title}</h3>
+                      {subtitle && <p>{subtitle}</p>}
                     </div>
-                    {config.badgeField && record[config.badgeField] && (
+                    {badge && (
                       <span className="team-record-badge">
-                        {record[config.badgeField]}
+                        {badge}
                       </span>
                     )}
                   </div>
 
                   <div className="team-record-meta">
-                    {record.DATE && <span>📅 {record.DATE}</span>}
-                    {record.DEADLINE && <span>⏳ {record.DEADLINE}</span>}
-                    {record.LOCATION && <span>📍 {record.LOCATION}</span>}
-                    {record.TECH_STACK && <span>🧩 {record.TECH_STACK}</span>}
-                    {record.ISSUER && <span>🏢 {record.ISSUER}</span>}
+                    {date && <span>📅 {date}</span>}
+                    {location && <span>📍 {location}</span>}
+                    {techStack && <span>🧩 {techStack}</span>}
+                    {issuer && <span>🏢 {issuer}</span>}
                   </div>
 
-                  {record.DESCRIPTION && (
+                  {description && (
                     <p className="team-record-description">
-                      {record.DESCRIPTION}
+                      {description.length > 120 ? description.substring(0, 120) + "…" : description}
                     </p>
                   )}
 
@@ -747,7 +850,7 @@ export default function TeamCollectionPage({ config, search = "" }) {
                 </h2>
                 <p>
                   {formMode === "edit"
-                    ? "Changes are saved directly to Google Sheets."
+                    ? "Changes are saved directly to database."
                     : "The record is added directly. There is no approval step."}
                 </p>
               </div>
@@ -859,6 +962,7 @@ export default function TeamCollectionPage({ config, search = "" }) {
         >
           <div
             className="team-modal-box team-detail-modal"
+            style={{ maxWidth: "680px", borderRadius: "24px", border: "1px solid rgba(167, 139, 250, 0.35)", padding: "28px" }}
             onMouseDown={(event) => event.stopPropagation()}
           >
             <button
@@ -869,79 +973,124 @@ export default function TeamCollectionPage({ config, search = "" }) {
               ✕
             </button>
 
-            {config.imageField && selected[config.imageField] && (
+            {config.imageField && getRecordValue(selected, config.imageField) && (
               <img
                 className="team-detail-image"
-                src={fixDriveImageUrl(selected[config.imageField])}
-                alt={selected[config.titleField] || config.pageTitle}
+                src={fixDriveImageUrl(getRecordValue(selected, config.imageField))}
+                alt={getRecordValue(selected, config.titleField) || config.pageTitle}
+                style={{ borderRadius: "16px", marginBottom: "20px", maxHeight: "280px", objectFit: "cover", width: "100%" }}
               />
             )}
 
-            <div className="team-modal-title-row">
-              <span>{config.icon}</span>
+            <div className="team-modal-title-row" style={{ marginBottom: "20px" }}>
+              <span style={{ fontSize: "32px" }}>{config.icon}</span>
               <div>
-                <h2>{selected[config.titleField] || "Record details"}</h2>
-                {config.subtitleField && (
-                  <p>{selected[config.subtitleField]}</p>
+                <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#f8fafc", margin: "0 0 4px 0" }}>
+                  {getRecordValue(selected, config.titleField) || getRecordValue(selected, "TITLE") || "Record Details"}
+                </h2>
+                {(getRecordValue(selected, config.subtitleField) || getRecordValue(selected, "ORGANIZER")) && (
+                  <p style={{ color: "#a78bfa", fontSize: "14px", fontWeight: "600", margin: 0 }}>
+                    {getRecordValue(selected, config.subtitleField) || getRecordValue(selected, "ORGANIZER")}
+                  </p>
                 )}
               </div>
             </div>
 
-            <div className="team-detail-list">
+            <div className="team-detail-list" style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "24px" }}>
               {config.detailOrder.map((fieldName) => {
-                const value = selected[fieldName];
+                const value = getRecordValue(selected, fieldName);
                 if (!value) return null;
 
+                const isUrl = isUrlField(fieldName) || String(value).startsWith("http");
+
                 return (
-                  <div className="team-detail-row" key={fieldName}>
-                    <span>{labelFromName(fieldName)}</span>
-                    {isUrlField(fieldName) ? (
-                      <a href={value} target="_blank" rel="noreferrer">
-                        Open link ↗
+                  <div
+                    className="team-detail-row"
+                    key={fieldName}
+                    style={{
+                      background: "rgba(15, 23, 42, 0.6)",
+                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                      borderRadius: "12px",
+                      padding: "12px 16px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "12px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <span style={{ color: "#94a3b8", fontSize: "13px", fontWeight: "600", minWidth: "120px" }}>
+                      {labelFromName(fieldName)}
+                    </span>
+                    {isUrl ? (
+                      <a
+                        href={value.startsWith("http") ? value : `https://${value}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: "#38bdf8", fontWeight: "700", fontSize: "13px", textDecoration: "none" }}
+                      >
+                        Open Link ↗
                       </a>
+                    ) : fieldName === "MEMBERS" ? (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "flex-end" }}>
+                        {String(value).split(",").map((m, i) => (
+                          <span key={i} style={{ background: "rgba(16, 185, 129, 0.2)", border: "1px solid rgba(52, 211, 153, 0.4)", color: "#34d399", fontSize: "12px", fontWeight: "700", padding: "3px 10px", borderRadius: "14px" }}>
+                            👤 {m.trim()}
+                          </span>
+                        ))}
+                      </div>
                     ) : (
-                      <strong>{value}</strong>
+                      <strong style={{ color: "#f8fafc", fontSize: "13.5px", fontWeight: "700", textAlign: "right" }}>
+                        {value}
+                      </strong>
                     )}
                   </div>
                 );
               })}
 
-              {selected.CREATED_BY && (
-                <div className="team-detail-row">
-                  <span>Added By</span>
-                  <strong>{selected.CREATED_BY}</strong>
-                </div>
-              )}
-              {selected.CREATED_AT && (
-                <div className="team-detail-row">
-                  <span>Added At</span>
-                  <strong>{selected.CREATED_AT}</strong>
+              {getRecordValue(selected, "CREATED_BY") && (
+                <div
+                  className="team-detail-row"
+                  style={{
+                    background: "rgba(15, 23, 42, 0.6)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    display: "flex",
+                    justify: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ color: "#94a3b8", fontSize: "13px", fontWeight: "600" }}>Added By</span>
+                  <strong style={{ color: "#cbd5e1", fontSize: "13px" }}>{getRecordValue(selected, "CREATED_BY")}</strong>
                 </div>
               )}
             </div>
 
             {canManageRecord(selected) && (
-              <div className="team-detail-footer">
+              <div className="team-detail-footer" style={{ display: "flex", gap: "12px", justifyContent: "flex-end", paddingTop: "16px", borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}>
                 <button
                   className="team-secondary-btn"
                   type="button"
+                  style={{ padding: "10px 20px", fontSize: "13.5px", fontWeight: "700" }}
                   onClick={() => {
                     const record = selected;
                     setSelected(null);
                     openEditForm(record);
                   }}
                 >
-                  Edit record
+                  ✏️ Edit record
                 </button>
                 <button
                   className="team-danger-btn"
                   type="button"
-                  disabled={deletingId === selected[config.idField]}
+                  style={{ padding: "10px 20px", fontSize: "13.5px", fontWeight: "700" }}
+                  disabled={deletingId === (getRecordValue(selected, config.idField) || getRecordValue(selected, "_id") || selected._id)}
                   onClick={() => handleDelete(selected)}
                 >
-                  {deletingId === selected[config.idField]
+                  {deletingId === (getRecordValue(selected, config.idField) || getRecordValue(selected, "_id") || selected._id)
                     ? "Deleting…"
-                    : "Delete record"}
+                    : "🗑️ Delete record"}
                 </button>
               </div>
             )}
