@@ -219,25 +219,23 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
                 key={mName}
                 onClick={() => toggleMember(mName)}
                 style={{
-                  padding: "8px 16px",
+                  padding: "8px 18px",
                   borderRadius: "20px",
                   fontSize: "13px",
-                  fontWeight: "600",
+                  fontWeight: "700",
                   cursor: readOnly ? "default" : "pointer",
                   userSelect: "none",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "8px",
+                  justifyContent: "center",
                   transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-                  background: isChecked ? "rgba(16, 185, 129, 0.25)" : "rgba(30, 41, 59, 0.8)",
-                  border: isChecked ? "1.5px solid rgba(52, 211, 153, 0.8)" : "1px solid rgba(255, 255, 255, 0.12)",
-                  color: isChecked ? "#34d399" : "#e2e8f0",
-                  boxShadow: isChecked ? "0 0 14px rgba(52, 211, 153, 0.25)" : "none",
+                  background: isChecked ? "rgba(16, 185, 129, 0.25)" : "rgba(30, 41, 59, 0.6)",
+                  border: isChecked ? "1.5px solid #10b981" : "1px solid rgba(255, 255, 255, 0.12)",
+                  color: isChecked ? "#34d399" : "#94a3b8",
+                  boxShadow: isChecked ? "0 0 14px rgba(16, 185, 129, 0.3)" : "none",
+                  transform: isChecked ? "scale(1.02)" : "scale(1)",
                 }}
               >
-                <span style={{ fontSize: "14px", fontWeight: "800", color: isChecked ? "#34d399" : "#94a3b8" }}>
-                  {isChecked ? "☑" : "☐"}
-                </span>
                 <span>{mName}</span>
               </div>
             );
@@ -247,7 +245,7 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
           <div
             onClick={toggleOther}
             style={{
-              padding: "8px 16px",
+              padding: "8px 18px",
               borderRadius: "20px",
               fontSize: "13px",
               fontWeight: "700",
@@ -255,17 +253,15 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
               userSelect: "none",
               display: "inline-flex",
               alignItems: "center",
-              gap: "8px",
+              justifyContent: "center",
               transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-              background: showOther || externalTokens.length > 0 ? "rgba(168, 85, 247, 0.3)" : "rgba(30, 41, 59, 0.8)",
-              border: showOther || externalTokens.length > 0 ? "1.5px solid rgba(192, 132, 252, 0.8)" : "1px solid rgba(168, 85, 247, 0.4)",
+              background: showOther || externalTokens.length > 0 ? "rgba(168, 85, 247, 0.3)" : "rgba(30, 41, 59, 0.6)",
+              border: showOther || externalTokens.length > 0 ? "1.5px solid #a855f7" : "1px solid rgba(168, 85, 247, 0.35)",
               color: showOther || externalTokens.length > 0 ? "#c084fc" : "#a78bfa",
-              boxShadow: showOther || externalTokens.length > 0 ? "0 0 14px rgba(168, 85, 247, 0.25)" : "none",
+              boxShadow: showOther || externalTokens.length > 0 ? "0 0 14px rgba(168, 85, 247, 0.3)" : "none",
+              transform: showOther || externalTokens.length > 0 ? "scale(1.02)" : "scale(1)",
             }}
           >
-            <span style={{ fontSize: "14px", fontWeight: "800" }}>
-              {showOther || externalTokens.length > 0 ? "☑" : "☐"}
-            </span>
             <span>+ Others (Non-Group Member)</span>
           </div>
         </div>
