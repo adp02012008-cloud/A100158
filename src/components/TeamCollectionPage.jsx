@@ -294,6 +294,210 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
   );
 }
 
+function ImageOrUrlInput({ field, value, onChange, readOnly }) {
+  const [mode, setMode] = useState(value && !value.startsWith("data:") ? "url" : "upload");
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1200;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+          onChange(dataUrl);
+          setUploading(false);
+        };
+        img.onerror = () => {
+          onChange(event.target.result);
+          setUploading(false);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        onChange(event.target.result);
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const isDataUrl = value && value.startsWith("data:");
+  const isImage = isDataUrl
+    ? value.startsWith("data:image/")
+    : value && String(value).match(/\.(png|jpg|jpeg|gif|webp)|uc\?export=view/i);
+
+  return (
+    <div style={{ background: "rgba(15, 23, 42, 0.6)", border: "1px solid rgba(167, 139, 250, 0.25)", borderRadius: "14px", padding: "14px", marginTop: "4px" }}>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+        <button
+          type="button"
+          onClick={() => setMode("upload")}
+          style={{
+            flex: 1,
+            padding: "7px 12px",
+            borderRadius: "10px",
+            fontSize: "12px",
+            fontWeight: "700",
+            cursor: "pointer",
+            border: mode === "upload" ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.12)",
+            background: mode === "upload" ? "rgba(59, 130, 246, 0.25)" : "rgba(30, 41, 59, 0.6)",
+            color: mode === "upload" ? "#60a5fa" : "#94a3b8",
+            transition: "all 0.2s ease",
+          }}
+        >
+          📁 Upload Photo / File
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("url")}
+          style={{
+            flex: 1,
+            padding: "7px 12px",
+            borderRadius: "10px",
+            fontSize: "12px",
+            fontWeight: "700",
+            cursor: "pointer",
+            border: mode === "url" ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.12)",
+            background: mode === "url" ? "rgba(59, 130, 246, 0.25)" : "rgba(30, 41, 59, 0.6)",
+            color: mode === "url" ? "#60a5fa" : "#94a3b8",
+            transition: "all 0.2s ease",
+          }}
+        >
+          🔗 Paste URL Link
+        </button>
+      </div>
+
+      {mode === "upload" ? (
+        <div>
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "18px 14px",
+              border: "2px dashed rgba(167, 139, 250, 0.35)",
+              borderRadius: "12px",
+              background: "rgba(30, 41, 59, 0.4)",
+              cursor: readOnly ? "default" : "pointer",
+              transition: "all 0.2s ease",
+              textAlign: "center",
+            }}
+          >
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              disabled={readOnly}
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+            <span style={{ fontSize: "26px", marginBottom: "6px" }}>📸</span>
+            <span style={{ fontSize: "13px", fontWeight: "700", color: "#f8fafc" }}>
+              {uploading ? "Converting photo to URL…" : "Click to select a photo / file from your device"}
+            </span>
+            <small style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+              Supports PNG, JPG, JPEG, WEBP, GIF, PDF
+            </small>
+          </label>
+        </div>
+      ) : (
+        <input
+          type="url"
+          value={value || ""}
+          placeholder={field.placeholder || "https://..."}
+          required={field.required}
+          readOnly={readOnly}
+          onChange={(e) => onChange(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "10px 14px",
+            background: "rgba(15, 23, 42, 0.9)",
+            border: "1px solid rgba(167, 139, 250, 0.3)",
+            borderRadius: "10px",
+            color: "#f8fafc",
+            fontSize: "13px",
+            outline: "none",
+          }}
+        />
+      )}
+
+      {value && (
+        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: "12px" }}>
+          {isImage ? (
+            <img
+              src={fixDriveImageUrl(value)}
+              alt="Preview"
+              style={{ width: "54px", height: "54px", borderRadius: "10px", objectFit: "cover", border: "1px solid rgba(255,255,255,0.2)" }}
+            />
+          ) : (
+            <div style={{ width: "44px", height: "44px", borderRadius: "10px", background: "rgba(59, 130, 246, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>
+              📄
+            </div>
+          )}
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <span style={{ fontSize: "12px", fontWeight: "700", color: "#34d399", display: "block" }}>
+              ✓ Photo/File URL Attached
+            </span>
+            <small style={{ fontSize: "11px", color: "#94a3b8", display: "block", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+              {value.length > 45 ? value.substring(0, 45) + "…" : value}
+            </small>
+          </div>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              style={{ background: "rgba(239, 68, 68, 0.2)", border: "1px solid rgba(239, 68, 68, 0.4)", color: "#f87171", fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "8px", cursor: "pointer" }}
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function isImageOrUrlField(field) {
+  if (!field) return false;
+  if (field.type === "url") return true;
+  const name = String(field.name || "").toUpperCase();
+  return (
+    ["COVER_IMAGE", "IMAGE_URL", "IMAGE", "FILE_URL", "PHOTO_ID", "LINK"].includes(name) ||
+    name.endsWith("_IMAGE") ||
+    name.endsWith("_URL") ||
+    name.endsWith("_FILE")
+  );
+}
+
 function createRecordId(prefix) {
   const random = Math.random().toString(36).slice(2, 7).toUpperCase();
   return `${prefix}-${Date.now()}-${random}`;
@@ -875,11 +1079,12 @@ export default function TeamCollectionPage({ config, search = "" }) {
               {config.fields.map((field) => {
                 const memberReadOnly =
                   field.studentReadOnly && auth.role === "student";
+                const isMediaField = isImageOrUrlField(field);
 
                 return (
                   <label
                     className={
-                      field.type === "textarea"
+                      field.type === "textarea" || isMediaField
                         ? "team-form-field full"
                         : "team-form-field"
                     }
@@ -891,6 +1096,13 @@ export default function TeamCollectionPage({ config, search = "" }) {
 
                     {field.name === "MEMBERS" ? (
                       <MemberSelectionSelector
+                        value={form[field.name] || ""}
+                        onChange={(newVal) => setField(field.name, newVal)}
+                        readOnly={memberReadOnly}
+                      />
+                    ) : isMediaField ? (
+                      <ImageOrUrlInput
+                        field={field}
                         value={form[field.name] || ""}
                         onChange={(newVal) => setField(field.name, newVal)}
                         readOnly={memberReadOnly}
@@ -1047,7 +1259,8 @@ export default function TeamCollectionPage({ config, search = "" }) {
 
             {config.imageField &&
               getRecordValue(selected, config.imageField) &&
-              String(getRecordValue(selected, config.imageField)).match(/\.(png|jpg|jpeg|gif|webp)|uc\?export=view/i) && (
+              (String(getRecordValue(selected, config.imageField)).startsWith("data:image/") ||
+               String(getRecordValue(selected, config.imageField)).match(/\.(png|jpg|jpeg|gif|webp)|uc\?export=view/i)) && (
                 <img
                   className="team-detail-image"
                   src={fixDriveImageUrl(getRecordValue(selected, config.imageField))}
