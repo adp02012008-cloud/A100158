@@ -1,6 +1,7 @@
 // src/pages/UserRosterAdmin.jsx
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiFetch } from "../utils/api";
+import { isSuperAdminEmail } from "../utils/roles";
 import EditModal from "../components/EditModal";
 import AddMemberModal from "../components/AddMemberModal";
 
@@ -19,7 +20,8 @@ export default function UserRosterAdmin({ search = "" }) {
       setError("");
       const res = await apiFetch("/users");
       if (res?.users) {
-        setUsers(res.users);
+        const cleaned = res.users.filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.personalEmail) && !isSuperAdminEmail(u.bitEmail));
+        setUsers(cleaned);
       } else {
         setError("Failed to fetch users.");
       }

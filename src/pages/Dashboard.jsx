@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import { useAuth } from "../context/AuthContext";
+import { isSuperAdminEmail } from "../utils/roles";
 import StudentCard from "../components/StudentCard";
 import Modal from "../components/Modal";
 import EditModal from "../components/EditModal";
@@ -167,7 +168,7 @@ export default function Dashboard({ search, setPage }) {
         apiFetch("/clusters").catch(() => ({ clusters: [] })),
       ]);
 
-      const cleaned = res.users || [];
+      const cleaned = (res.users || []).filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.emailId));
       const pRows = res.pointsRules || [];
       setPointsRows(pRows);
 

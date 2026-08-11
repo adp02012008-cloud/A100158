@@ -1,6 +1,6 @@
-// src/components/StudentCard.jsx
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
+import { isSuperAdminEmail } from "../utils/roles";
 
 function getInitials(name = "") {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
@@ -14,6 +14,9 @@ function getStatus(activity, avgActivity) {
 }
 
 export default function StudentCard({ student, onClick, onEdit, onRoleChanged, avgActivity, targetActivity = 0 }) {
+  if (student && (isSuperAdminEmail(student.email) || isSuperAdminEmail(student.emailId))) {
+    return null;
+  }
   const { auth, currentUser } = useAuth();
 
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);

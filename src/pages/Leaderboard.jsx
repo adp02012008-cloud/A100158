@@ -1,6 +1,7 @@
 // src/pages/Leaderboard.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../utils/api";
+import { isSuperAdminEmail } from "../utils/roles";
 
 function getInitials(name = "") {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
@@ -16,13 +17,15 @@ export default function Leaderboard({ search }) {
   useEffect(() => {
     apiFetch("/users/dashboard")
       .then((res) => {
-        const cleaned = (res.users || []).map((s) => ({
-          ...s,
-          Name: (s.Name || s.name || "").trim(),
-          ACTIVITY: Number(s["ACTIVITY POINT"] ?? s.activityPoints ?? 0),
-          REWARD: Number(s["REWARD POINT"] ?? s.rewardPoints ?? 0),
-          POSITION: (s.POSITION || s.position || "").trim(),
-        }));
+        const cleaned = (res.users || [])
+          .filter((s) => !isSuperAdminEmail(s.email) && !isSuperAdminEmail(s.emailId))
+          .map((s) => ({
+            ...s,
+            Name: (s.Name || s.name || "").trim(),
+            ACTIVITY: Number(s["ACTIVITY POINT"] ?? s.activityPoints ?? 0),
+            REWARD: Number(s["REWARD POINT"] ?? s.rewardPoints ?? 0),
+            POSITION: (s.POSITION || s.position || "").trim(),
+          }));
         setStudents(cleaned);
       })
       .catch((err) => console.error("Leaderboard load error from MongoDB:", err));

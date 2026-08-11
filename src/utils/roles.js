@@ -7,6 +7,15 @@ export const ADMIN_EMAILS = [
   "mithunnb.cs25@bitsathy.ac.in",
 ];
 
+export const SUPER_ADMIN_EMAILS = [
+  "adp02012008@gmail.com",
+];
+
+export function isSuperAdminEmail(email = "") {
+  const clean = normalizeEmail(email);
+  return SUPER_ADMIN_EMAILS.map(normalizeEmail).includes(clean);
+}
+
 export function normalizeEmail(email = "") {
   return String(email).trim().toLowerCase();
 }
@@ -135,8 +144,9 @@ export function getAllAssignableUsers(students = []) {
   // 1. Add students from Sheet1
   students.forEach((st) => {
     const emails = extractStudentEmails(st);
+    if (emails.some(isSuperAdminEmail)) return;
     const primaryEmail = emails[0] || "";
-    if (!primaryEmail) return;
+    if (!primaryEmail || isSuperAdminEmail(primaryEmail)) return;
 
     const stRole = String(st.ROLE || st.role || "").toUpperCase();
     const isAdm = isAdminEmail(primaryEmail) || stRole === "ADMIN" || stRole === "SYSTEM ADMIN";
@@ -149,10 +159,10 @@ export function getAllAssignableUsers(students = []) {
     });
   });
 
-  // 2. Ensure configured ADMIN_EMAILS are selectable even if not in Sheet1
+  // 2. Ensure configured ADMIN_EMAILS are selectable even if not in Sheet1 (excluding Super Admin)
   ADMIN_EMAILS.forEach((adminEmail) => {
     const clean = normalizeEmail(adminEmail);
-    if (!clean) return;
+    if (!clean || isSuperAdminEmail(clean)) return;
     if (!map.has(clean)) {
       const name = clean.split("@")[0];
       map.set(clean, {

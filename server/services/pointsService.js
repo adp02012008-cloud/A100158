@@ -45,11 +45,8 @@ export async function recalculateUserPoints(userId, session = null) {
     }
   }
 
-  const totalActivity = courseActivityPoints + taskActivityPoints;
+  const totalActivity = user.activityPoints || 0;
   const totalReward = user.rewardPoints || 0;
-
-  user.activityPoints = totalActivity;
-  await user.save(queryOpts);
 
   return {
     userId: user._id,

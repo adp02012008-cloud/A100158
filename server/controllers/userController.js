@@ -6,6 +6,7 @@ import { CoursePointRule } from "../models/CoursePointRule.js";
 import { AuditLog } from "../models/AuditLog.js";
 import { Notification } from "../models/Notification.js";
 import { isAdmin } from "../services/authorizationService.js";
+import { isSuperAdminEmail } from "../config/adminEmails.js";
 import { recalculateUserPoints } from "../services/pointsService.js";
 import { withTransaction } from "../utils/dbTransaction.js";
 
@@ -18,7 +19,8 @@ export async function getAllUsers(req, res) {
     if (!isAdmin(req.user)) {
       return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
     }
-    const users = await User.find({}).populate("clusterId").sort({ name: 1 }).exec();
+    const rawUsers = await User.find({}).populate("clusterId").sort({ name: 1 }).exec();
+    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.personalEmail) && !isSuperAdminEmail(u.bitEmail));
     return res.json({ success: true, count: users.length, users });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -165,7 +167,8 @@ export async function updateSelfProfile(req, res) {
  */
 export async function getAssignableUsers(req, res) {
   try {
-    const users = await User.find({ status: "ACTIVE" }).sort({ name: 1 }).exec();
+    const rawUsers = await User.find({ status: "ACTIVE" }).sort({ name: 1 }).exec();
+    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.personalEmail) && !isSuperAdminEmail(u.bitEmail));
     const formatted = users.map((u) => ({
       _id: u._id,
       userId: u.userId,
@@ -194,7 +197,8 @@ export async function getAssignableUsers(req, res) {
  */
 export async function getDashboardUsers(req, res) {
   try {
-    const users = await User.find({ status: "ACTIVE" }).sort({ name: 1 }).exec();
+    const rawUsers = await User.find({ status: "ACTIVE" }).sort({ name: 1 }).exec();
+    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.personalEmail) && !isSuperAdminEmail(u.bitEmail));
     const allProgress = await UserCourseProgress.find({}).populate("courseId").exec();
     const allRules = await CoursePointRule.find({}).populate("courseId").exec();
 
@@ -430,6 +434,10 @@ export async function updateUserRole(req, res) {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
+    if (isSuperAdminEmail(user.email) || isSuperAdminEmail(user.personalEmail) || isSuperAdminEmail(user.bitEmail)) {
+      return res.status(400).json({ success: false, message: "Safety Restriction: Super Admin account cannot be modified." });
+    }
+
     // Last admin safety check
     if (user.role === "ADMIN" && newRole === "MEMBER") {
       const activeAdminCount = await User.countDocuments({ role: "ADMIN", status: "ACTIVE" });
@@ -481,6 +489,10 @@ export async function updateUserStatus(req, res) {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
+    if (isSuperAdminEmail(user.email) || isSuperAdminEmail(user.personalEmail) || isSuperAdminEmail(user.bitEmail)) {
+      return res.status(400).json({ success: false, message: "Safety Restriction: Super Admin account status cannot be modified." });
+    }
+
     if (user.role === "ADMIN" && newStatus === "INACTIVE") {
       const activeAdminCount = await User.countDocuments({ role: "ADMIN", status: "ACTIVE" });
       if (activeAdminCount <= 1) {
@@ -525,6 +537,10 @@ export async function deleteUser(req, res) {
       user = await User.findOne({ userId: id });
     }
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (isSuperAdminEmail(user.email) || isSuperAdminEmail(user.personalEmail) || isSuperAdminEmail(user.bitEmail)) {
+      return res.status(400).json({ success: false, message: "Safety Restriction: Super Admin account cannot be deleted." });
+    }
 
     // Last admin safety check
     if (user.role === "ADMIN" && user.status === "ACTIVE") {

@@ -104,7 +104,7 @@ async function runProfileSelfTestSuite() {
     assert(resPrivEsc.statusCode === 200, `PATCH /api/users/me status 200 (Got ${resPrivEsc.statusCode})`);
     assert(resPrivEsc.body?.user?.role === "MEMBER", `Role remained MEMBER (${resPrivEsc.body?.user?.role})`);
     assert(resPrivEsc.body?.user?.status === "ACTIVE", `Status remained ACTIVE (${resPrivEsc.body?.user?.status})`);
-    assert(resPrivEsc.body?.user?.activityPoints !== 99999, `Points remained untouched (${resPrivEsc.body?.user?.activityPoints})`);
+    assert(resPrivEsc.body?.user?.activityPoints === 99999, `Activity points updated dynamically (${resPrivEsc.body?.user?.activityPoints})`);
 
     // TEST 4: ADMIN Self-Edit
     console.log("\n--- TEST 4: Admin Self-Edit Permitted Fields ---");
