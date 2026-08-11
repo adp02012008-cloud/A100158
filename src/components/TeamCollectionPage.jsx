@@ -294,9 +294,314 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
   );
 }
 
+function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
+  const [zoom, setZoom] = useState(1);
+  const [cropWidth, setCropWidth] = useState(400);
+  const [cropHeight, setCropHeight] = useState(300);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [aspect, setAspect] = useState("4:3");
+
+  const imageRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const handleAspectChange = (newAspect) => {
+    setAspect(newAspect);
+    if (newAspect === "16:9") {
+      setCropWidth(400);
+      setCropHeight(225);
+    } else if (newAspect === "4:3") {
+      setCropWidth(400);
+      setCropHeight(300);
+    } else if (newAspect === "1:1") {
+      setCropWidth(350);
+      setCropHeight(350);
+    }
+  };
+
+  const handleSwapDimensions = () => {
+    const temp = cropWidth;
+    setCropWidth(cropHeight);
+    setCropHeight(temp);
+    setAspect("custom");
+  };
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - panX, y: e.clientY - panY });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setPanX(e.clientX - dragStart.x);
+    setPanY(e.clientY - dragStart.y);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleApplyCrop = () => {
+    const img = imageRef.current;
+    if (!img) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = parseInt(cropWidth, 10) || 400;
+    canvas.height = parseInt(cropHeight, 10) || 300;
+    const ctx = canvas.getContext("2d");
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+
+    const displayedWidth = (img.clientWidth || 300) * zoom;
+    const displayedHeight = (img.clientHeight || 300) * zoom;
+
+    const scaleX = (img.naturalWidth || displayedWidth) / displayedWidth;
+    const scaleY = (img.naturalHeight || displayedHeight) / displayedHeight;
+
+    const centerX = containerWidth / 2 + panX;
+    const centerY = containerHeight / 2 + panY;
+
+    const cropBoxLeft = containerWidth / 2 - cropWidth / 2;
+    const cropBoxTop = containerHeight / 2 - cropHeight / 2;
+
+    const imgLeft = centerX - displayedWidth / 2;
+    const imgTop = centerY - displayedHeight / 2;
+
+    const sourceX = Math.max(0, (cropBoxLeft - imgLeft) * scaleX);
+    const sourceY = Math.max(0, (cropBoxTop - imgTop) * scaleY);
+    const sourceW = Math.min((img.naturalWidth || displayedWidth) - sourceX, cropWidth * scaleX);
+    const sourceH = Math.min((img.naturalHeight || displayedHeight) - sourceY, cropHeight * scaleY);
+
+    ctx.drawImage(
+      img,
+      sourceX,
+      sourceY,
+      sourceW,
+      sourceH,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    const croppedDataUrl = canvas.toDataURL("image/jpeg", 0.88);
+    onCropComplete(croppedDataUrl);
+  };
+
+  return (
+    <div
+      className="team-modal-overlay"
+      style={{ zIndex: 1100 }}
+      onMouseDown={onClose}
+    >
+      <div
+        className="team-modal-box"
+        style={{
+          position: "relative",
+          maxWidth: "760px",
+          width: "92%",
+          background: "#0f172a",
+          border: "1px solid rgba(167, 139, 250, 0.35)",
+          borderRadius: "24px",
+          padding: "28px",
+          boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
+          color: "#f8fafc",
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <button
+          className="team-modal-close"
+          type="button"
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+            width: "36px",
+            height: "36px",
+            borderRadius: "50%",
+            background: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            color: "#cbd5e1",
+            fontSize: "16px",
+            fontWeight: "700",
+            cursor: "pointer",
+          }}
+        >
+          ✕
+        </button>
+
+        <h3 style={{ margin: "0 0 16px 0", fontSize: "20px", fontWeight: "800", color: "#f8fafc", display: "flex", alignItems: "center", gap: "10px" }}>
+          <span>✂️</span> Crop & Adjust Photo Framing
+        </h3>
+
+        {/* Interactive Viewport Container */}
+        <div
+          ref={containerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "380px",
+            background: "#020617",
+            borderRadius: "16px",
+            overflow: "hidden",
+            cursor: isDragging ? "grabbing" : "grab",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            userSelect: "none",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+          }}
+        >
+          {/* Background Image */}
+          <img
+            ref={imageRef}
+            src={imageSrc}
+            alt="To crop"
+            style={{
+              position: "absolute",
+              transform: `translate(${panX}px, ${panY}px) scale(${zoom})`,
+              maxHeight: "100%",
+              maxWidth: "100%",
+              objectFit: "contain",
+              transition: isDragging ? "none" : "transform 0.1s ease",
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* Rule of Thirds Crop Overlay Box */}
+          <div
+            style={{
+              position: "absolute",
+              width: `${cropWidth}px`,
+              height: `${cropHeight}px`,
+              border: "2px solid #ffffff",
+              boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.65)",
+              pointerEvents: "none",
+              boxSizing: "border-box",
+            }}
+          >
+            {/* Rule of thirds grid lines */}
+            <div style={{ position: "absolute", top: "33.33%", left: 0, right: 0, height: "1px", background: "rgba(255,255,255,0.4)" }} />
+            <div style={{ position: "absolute", top: "66.66%", left: 0, right: 0, height: "1px", background: "rgba(255,255,255,0.4)" }} />
+            <div style={{ position: "absolute", left: "33.33%", top: 0, bottom: 0, width: "1px", background: "rgba(255,255,255,0.4)" }} />
+            <div style={{ position: "absolute", left: "66.66%", top: 0, bottom: 0, width: "1px", background: "rgba(255,255,255,0.4)" }} />
+
+            {/* Corner Handles */}
+            <div style={{ position: "absolute", top: "-4px", left: "-4px", width: "12px", height: "12px", borderTop: "3px solid #ffffff", borderLeft: "3px solid #ffffff" }} />
+            <div style={{ position: "absolute", top: "-4px", right: "-4px", width: "12px", height: "12px", borderTop: "3px solid #ffffff", borderRight: "3px solid #ffffff" }} />
+            <div style={{ position: "absolute", bottom: "-4px", left: "-4px", width: "12px", height: "12px", borderBottom: "3px solid #ffffff", borderLeft: "3px solid #ffffff" }} />
+            <div style={{ position: "absolute", bottom: "-4px", right: "-4px", width: "12px", height: "12px", borderBottom: "3px solid #ffffff", borderRight: "3px solid #ffffff" }} />
+          </div>
+        </div>
+
+        {/* Controls Toolbar Matching Screenshot 2 */}
+        <div style={{ marginTop: "20px", display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "center", justifyContent: "space-between" }}>
+          {/* Aspect Ratio Presets */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <span style={{ fontSize: "12.5px", color: "#94a3b8", fontWeight: "700" }}>Presets:</span>
+            {["4:3", "16:9", "1:1"].map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => handleAspectChange(r)}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  background: aspect === r ? "rgba(99, 102, 241, 0.3)" : "rgba(30, 41, 59, 0.8)",
+                  border: aspect === r ? "1px solid #6366f1" : "1px solid rgba(255,255,255,0.12)",
+                  color: aspect === r ? "#818cf8" : "#cbd5e1",
+                }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          {/* Zoom Slider */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "12.5px", color: "#94a3b8", fontWeight: "700" }}>Zoom:</span>
+            <input
+              type="range"
+              min="0.8"
+              max="3"
+              step="0.05"
+              value={zoom}
+              onChange={(e) => setZoom(parseFloat(e.target.value))}
+              style={{ accentColor: "#6366f1", width: "110px", cursor: "pointer" }}
+            />
+            <span style={{ fontSize: "12px", color: "#cbd5e1", fontWeight: "700", minWidth: "35px" }}>
+              {Math.round(zoom * 100)}%
+            </span>
+          </div>
+
+          {/* Dimension Controls Matching Screenshot 2 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(15, 23, 42, 0.8)", border: "1px solid rgba(255, 255, 255, 0.12)", padding: "6px 12px", borderRadius: "12px" }}>
+            <input
+              type="number"
+              value={cropWidth}
+              onChange={(e) => { setCropWidth(Math.max(100, parseInt(e.target.value) || 100)); setAspect("custom"); }}
+              style={{ width: "55px", background: "rgba(30, 41, 59, 0.9)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "6px", color: "#ffffff", padding: "4px 8px", fontSize: "13px", fontWeight: "700", textAlign: "center" }}
+            />
+            <span style={{ color: "#94a3b8", fontWeight: "700" }}>×</span>
+            <input
+              type="number"
+              value={cropHeight}
+              onChange={(e) => { setCropHeight(Math.max(100, parseInt(e.target.value) || 100)); setAspect("custom"); }}
+              style={{ width: "55px", background: "rgba(30, 41, 59, 0.9)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "6px", color: "#ffffff", padding: "4px 8px", fontSize: "13px", fontWeight: "700", textAlign: "center" }}
+            />
+            <button
+              type="button"
+              onClick={handleSwapDimensions}
+              title="Swap Width / Height"
+              style={{ background: "transparent", border: "none", color: "#818cf8", fontSize: "16px", cursor: "pointer", padding: "0 4px" }}
+            >
+              ⇆
+            </button>
+          </div>
+        </div>
+
+        {/* Footer Action Buttons */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}>
+          <button
+            type="button"
+            className="team-secondary-btn"
+            onClick={onClose}
+            style={{ padding: "9px 20px", fontSize: "13.5px" }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="team-primary-btn"
+            onClick={handleApplyCrop}
+            style={{ padding: "9px 22px", fontSize: "13.5px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", boxShadow: "0 4px 15px rgba(16, 185, 129, 0.4)" }}
+          >
+            ✓ Crop & Use Photo
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ImageOrUrlInput({ field, value, onChange, readOnly }) {
   const [mode, setMode] = useState(value && !value.startsWith("data:") ? "url" : "upload");
   const [uploading, setUploading] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files && e.target.files[0];
@@ -307,37 +612,10 @@ function ImageOrUrlInput({ field, value, onChange, readOnly }) {
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          let width = img.width;
-          let height = img.height;
-          const maxDim = 1200;
-
-          if (width > maxDim || height > maxDim) {
-            if (width > height) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            } else {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-          onChange(dataUrl);
-          setUploading(false);
-        };
-        img.onerror = () => {
-          onChange(event.target.result);
-          setUploading(false);
-        };
-        img.src = event.target.result;
+        onChange(event.target.result);
+        setUploading(false);
+        // Automatically prompt cropper modal on file select
+        setCropperOpen(true);
       };
       reader.readAsDataURL(file);
     } else {
@@ -471,6 +749,15 @@ function ImageOrUrlInput({ field, value, onChange, readOnly }) {
               {value.length > 45 ? value.substring(0, 45) + "…" : value}
             </small>
           </div>
+          {!readOnly && isImage && (
+            <button
+              type="button"
+              onClick={() => setCropperOpen(true)}
+              style={{ background: "rgba(99, 102, 241, 0.25)", border: "1px solid rgba(99, 102, 241, 0.4)", color: "#a5b4fc", fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "8px", cursor: "pointer" }}
+            >
+              ✂️ Crop
+            </button>
+          )}
           {!readOnly && (
             <button
               type="button"
@@ -481,6 +768,17 @@ function ImageOrUrlInput({ field, value, onChange, readOnly }) {
             </button>
           )}
         </div>
+      )}
+
+      {cropperOpen && value && (
+        <ImageCropperModal
+          imageSrc={fixDriveImageUrl(value)}
+          onCropComplete={(croppedUrl) => {
+            onChange(croppedUrl);
+            setCropperOpen(false);
+          }}
+          onClose={() => setCropperOpen(false)}
+        />
       )}
     </div>
   );
@@ -1271,9 +1569,11 @@ export default function TeamCollectionPage({ config, search = "" }) {
                   style={{
                     borderRadius: "16px",
                     marginBottom: "20px",
-                    maxHeight: "260px",
-                    objectFit: "cover",
+                    maxHeight: "380px",
+                    objectFit: "contain",
+                    background: "#020617",
                     width: "100%",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
                   }}
                 />
               )}
