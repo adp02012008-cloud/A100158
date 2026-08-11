@@ -18,7 +18,7 @@ import { findTaskByIdOrKey } from "../services/taskStateService.js";
 export async function getTasks(req, res) {
   try {
     const user = req.user;
-    const allTasks = await Task.find({}).sort({ createdAt: -1 }).exec();
+    const allTasks = await Task.find({ taskId: { $not: /^TSK-PRJ-/ } }).sort({ createdAt: -1 }).exec();
 
     // Fetch all active assignments for bulk lookup
     const activeAssignments = await TaskAssignment.find({ status: "ACTIVE" }).exec();

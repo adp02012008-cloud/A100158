@@ -77,7 +77,8 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         getTasks(auth.email),
         fetchSheetData("Sheet1").catch(() => []),
       ]);
-      setTasks(tList || []);
+      const regularTasks = (tList || []).filter((t) => !String(t.taskId || "").startsWith("TSK-PRJ-"));
+      setTasks(regularTasks);
       setStudents(Array.isArray(sheetStudents) ? sheetStudents : []);
     } catch (err) {
       console.error("Error loading admin tasks:", err);
