@@ -272,12 +272,12 @@ export async function getSubmissions(req, res) {
       return isCreator || isFor;
     });
 
-    // DEDUPLICATE APPROVED SHOWCASE SUBMISSIONS BY SUBMISSION GROUP ID SO MULTIPLE VERSIONS NEVER PRODUCE DUPLICATE CARDS
+    // DEDUPLICATE SUBMISSIONS BY SUBMISSION GROUP ID SO NEW VERSIONS REPLACE PREVIOUS VERSIONS (UNLESS allVersions=true)
     let finalSubmissions = authorized;
-    if (publicView === "true" || status === "APPROVED") {
+    if (req.query.allVersions !== "true") {
       const groupMap = new Map();
       authorized.forEach((sub) => {
-        const key = sub.submissionGroupId || sub.taskId?.taskId || sub.taskId;
+        const key = sub.submissionGroupId || `${sub.taskId?.taskId || sub.taskId}_${sub.submittedBy?._id || sub.submittedBy}`;
         const existing = groupMap.get(key);
         if (!existing || sub.version > existing.version) {
           groupMap.set(key, sub);

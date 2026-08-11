@@ -81,9 +81,24 @@ export default function AdminSubmissionsReview({ search = "" }) {
     return String(val).trim();
   };
 
+  // Deduplicate submissions by submissionGroupId -> select ONLY highest version for active review tabs
+  const latestSubmissions = useMemo(() => {
+    const groupMap = new Map();
+    submissions.forEach((sub) => {
+      const key = sub.submissionGroupId || `${sub.taskId?.taskId || sub.taskId}_${sub.submittedBy?._id || sub.submittedBy}`;
+      const existing = groupMap.get(key);
+      if (!existing || sub.version > existing.version) {
+        groupMap.set(key, sub);
+      }
+    });
+    return Array.from(groupMap.values());
+  }, [submissions]);
+
   // Filter submissions
   const filteredSubmissions = useMemo(() => {
-    return submissions.filter((sub) => {
+    const targetList = statusTab === "ALL" ? submissions : latestSubmissions;
+
+    return targetList.filter((sub) => {
       const cleanStatus = (sub.status || "SUBMITTED").toUpperCase();
 
       // Tab filter
@@ -102,7 +117,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
       return true;
     });
-  }, [submissions, statusTab, search, userMap]);
+  }, [submissions, latestSubmissions, statusTab, search, userMap]);
 
   const handleOpenReviewModal = (sub) => {
     setSelectedSub(sub);
@@ -251,9 +266,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
       {/* Filter Tabs */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         {[
-          { key: "PENDING", label: `⏳ Pending Review (${submissions.filter((s) => (s.status || "SUBMITTED").toUpperCase() === "SUBMITTED").length})` },
-          { key: "APPROVED", label: `✅ Approved & Published (${submissions.filter((s) => (s.status || "").toUpperCase() === "APPROVED").length})` },
-          { key: "CHANGES_REQUESTED", label: `⚠️ Changes Requested (${submissions.filter((s) => (s.status || "").toUpperCase() === "CHANGES_REQUESTED").length})` },
+          { key: "PENDING", label: `⏳ Pending Review (${latestSubmissions.filter((s) => (s.status || "SUBMITTED").toUpperCase() === "SUBMITTED").length})` },
+          { key: "APPROVED", label: `✅ Approved & Published (${latestSubmissions.filter((s) => (s.status || "").toUpperCase() === "APPROVED").length})` },
+          { key: "CHANGES_REQUESTED", label: `⚠️ Changes Requested (${latestSubmissions.filter((s) => (s.status || "").toUpperCase() === "CHANGES_REQUESTED").length})` },
           { key: "ALL", label: `📁 All History (${submissions.length})` },
         ].map((tab) => (
           <button
