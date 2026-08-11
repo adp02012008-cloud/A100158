@@ -64,47 +64,43 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
   const [showOther, setShowOther] = useState(false);
   const [otherText, setOtherText] = useState("");
 
+  const DEFAULT_MEMBERS = useMemo(
+    () => [
+      "DHASHAPRAKASH A",
+      "HARISH KARTHIK K B S",
+      "MITHUN N B",
+      "SWETHA K",
+      "NITHISH KUMAR S",
+      "SUDARSAN K",
+      "SRINATH T S",
+      "SRIVARSHINI R",
+      "DEEPIKA K",
+      "DHANUSSH R S",
+    ],
+    []
+  );
+
   useEffect(() => {
     let isMounted = true;
     apiFetch("/users/assignable")
       .then((res) => {
         if (!isMounted) return;
         const users = (res.users || []).map((u) => u.name || u.NAME).filter(Boolean);
-        setGroupMembers(users.length > 0 ? users : [
-          "DHASHAPRAKASH A",
-          "HARISH KARTHIK K B S",
-          "MITHUN N B",
-          "SWETHA K",
-          "NITHISH KUMAR S",
-          "SUDARSAN K",
-          "SRINATH T S",
-          "SRIVARSHINI R",
-          "DEEPIKA K",
-          "DHANUSSH R S",
-        ]);
+        setGroupMembers(users.length > 0 ? users : DEFAULT_MEMBERS);
       })
       .catch(() => {
         if (!isMounted) return;
-        setGroupMembers([
-          "DHASHAPRAKASH A",
-          "HARISH KARTHIK K B S",
-          "MITHUN N B",
-          "SWETHA K",
-          "NITHISH KUMAR S",
-          "SUDARSAN K",
-          "SRINATH T S",
-          "SRIVARSHINI R",
-          "DEEPIKA K",
-          "DHANUSSH R S",
-        ]);
+        setGroupMembers(DEFAULT_MEMBERS);
       })
       .finally(() => {
         if (isMounted) setLoadingMembers(false);
       });
-    return () => { isMounted = false; };
-  }, []);
+    return () => {
+      isMounted = false;
+    };
+  }, [DEFAULT_MEMBERS]);
 
-  // Parse current tokens from parent prop `value` directly
+  // Current tokens array
   const currentTokens = useMemo(() => {
     return String(value || "")
       .split(",")
@@ -112,54 +108,46 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
       .filter(Boolean);
   }, [value]);
 
-  // Determine selected group members derived from `currentTokens`
-  const selectedGroupMembers = useMemo(() => {
-    return groupMembers.filter((g) =>
-      currentTokens.some((t) => t.toLowerCase() === g.toLowerCase())
-    );
-  }, [groupMembers, currentTokens]);
+  // Active list of group members (fallback to DEFAULT_MEMBERS if loading)
+  const activeMembersList = groupMembers.length > 0 ? groupMembers : DEFAULT_MEMBERS;
 
-  // Determine external member tokens
+  // External (non-group) member tokens
   const externalTokens = useMemo(() => {
-    return currentTokens.filter((t) =>
-      !groupMembers.some((g) => g.toLowerCase() === t.toLowerCase())
+    return currentTokens.filter(
+      (t) => !activeMembersList.some((g) => g.toLowerCase() === t.toLowerCase())
     );
-  }, [groupMembers, currentTokens]);
+  }, [currentTokens, activeMembersList]);
 
-  const toggleMember = (memberName) => {
+  // Count selected group members
+  const selectedCount = useMemo(() => {
+    return activeMembersList.filter((g) =>
+      currentTokens.some((t) => t.toLowerCase() === g.toLowerCase())
+    ).length;
+  }, [activeMembersList, currentTokens]);
+
+  const toggleMember = (mName) => {
     if (readOnly) return;
-    const isCurrentlySelected = selectedGroupMembers.some(
-      (m) => m.toLowerCase() === memberName.toLowerCase()
-    );
+    const exists = currentTokens.some((t) => t.toLowerCase() === mName.toLowerCase());
 
-    let nextGroup;
-    if (isCurrentlySelected) {
-      nextGroup = selectedGroupMembers.filter(
-        (m) => m.toLowerCase() !== memberName.toLowerCase()
-      );
+    let nextTokens;
+    if (exists) {
+      nextTokens = currentTokens.filter((t) => t.toLowerCase() !== mName.toLowerCase());
     } else {
-      nextGroup = [...selectedGroupMembers, memberName];
+      nextTokens = [...currentTokens, mName];
     }
 
-    const extTextToUse = showOther ? otherText : externalTokens.join(", ");
-    const extTokens = extTextToUse.split(",").map((s) => s.trim()).filter(Boolean);
-    const combined = Array.from(new Set([...nextGroup, ...extTokens])).join(", ");
-    onChange(combined);
+    onChange(nextTokens.join(", "));
   };
 
   const handleSelectAll = () => {
     if (readOnly) return;
-    const extTextToUse = showOther ? otherText : externalTokens.join(", ");
-    const extTokens = extTextToUse.split(",").map((s) => s.trim()).filter(Boolean);
-    const combined = Array.from(new Set([...groupMembers, ...extTokens])).join(", ");
+    const combined = Array.from(new Set([...activeMembersList, ...externalTokens])).join(", ");
     onChange(combined);
   };
 
   const handleClearAll = () => {
     if (readOnly) return;
-    const extTextToUse = showOther ? otherText : externalTokens.join(", ");
-    const extTokens = extTextToUse.split(",").map((s) => s.trim()).filter(Boolean);
-    onChange(extTokens.join(", "));
+    onChange(externalTokens.join(", "));
   };
 
   const toggleOther = () => {
@@ -168,15 +156,22 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     setShowOther(nextShowOther);
     if (!nextShowOther) {
       setOtherText("");
-      onChange(selectedGroupMembers.join(", "));
+      // Keep only group members
+      const groupTokens = currentTokens.filter((t) =>
+        activeMembersList.some((g) => g.toLowerCase() === t.toLowerCase())
+      );
+      onChange(groupTokens.join(", "));
     }
   };
 
   const handleOtherTextChange = (e) => {
     const val = e.target.value;
     setOtherText(val);
-    const extTokens = val.split(",").map((s) => s.trim()).filter(Boolean);
-    const combined = Array.from(new Set([...selectedGroupMembers, ...extTokens])).join(", ");
+    const newExtTokens = val.split(",").map((s) => s.trim()).filter(Boolean);
+    const groupTokens = currentTokens.filter((t) =>
+      activeMembersList.some((g) => g.toLowerCase() === t.toLowerCase())
+    );
+    const combined = Array.from(new Set([...groupTokens, ...newExtTokens])).join(", ");
     onChange(combined);
   };
 
@@ -184,7 +179,7 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
     <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(167, 139, 250, 0.25)", borderRadius: "16px", padding: "18px", marginTop: "6px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "8px" }}>
         <span style={{ fontSize: "13px", fontWeight: "700", color: "#a78bfa" }}>
-          Group Members Selection ({selectedGroupMembers.length} selected)
+          Group Members Selection ({selectedCount} selected)
         </span>
         {!readOnly && (
           <div style={{ display: "flex", gap: "8px" }}>
@@ -210,9 +205,9 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
         <div style={{ fontSize: "13px", color: "#94a3b8", padding: "8px 0" }}>Loading group members…</div>
       ) : (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "10px" }}>
-          {groupMembers.map((mName) => {
-            const isChecked = selectedGroupMembers.some(
-              (m) => m.toLowerCase() === mName.toLowerCase()
+          {activeMembersList.map((mName) => {
+            const isChecked = currentTokens.some(
+              (t) => t.toLowerCase() === mName.toLowerCase()
             );
             return (
               <div
