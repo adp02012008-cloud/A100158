@@ -12,6 +12,7 @@ export default function ManageCoursesModal({ onClose }) {
   const [editingCourse, setEditingCourse] = useState(null);
   const [showAddCourse, setShowAddCourse] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadCourseData = useCallback(async () => {
     try {
@@ -64,6 +65,18 @@ export default function ManageCoursesModal({ onClose }) {
     );
   };
 
+  const filteredCourses = useMemo(() => {
+    if (!searchQuery.trim()) return courses;
+    const term = searchQuery.toLowerCase().trim();
+    return courses.filter((c) => {
+      const matchName = (c.name || "").toLowerCase().includes(term);
+      const matchCategory = (c.category || "").toLowerCase().includes(term);
+      const matchCluster = (c.clusterAccess || "").toLowerCase().includes(term);
+      const matchDesc = (c.description || "").toLowerCase().includes(term);
+      return matchName || matchCategory || matchCluster || matchDesc;
+    });
+  }, [courses, searchQuery]);
+
   return (
     <div className="modal" onClick={onClose}>
       <div
@@ -82,7 +95,7 @@ export default function ManageCoursesModal({ onClose }) {
         <button className="close-btn" onClick={onClose} style={{ top: "20px", right: "20px" }}>✕</button>
 
         {/* Modal Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "22px", paddingRight: "36px", flexWrap: "wrap", gap: "16px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "18px", paddingRight: "36px", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <h3 className="edit-modal-title" style={{ margin: 0, fontSize: "22px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px", color: "#f8fafc" }}>
               <span>📚</span> Manage System Courses
@@ -115,6 +128,75 @@ export default function ManageCoursesModal({ onClose }) {
           </button>
         </div>
 
+        {/* Search Bar Input */}
+        <div style={{ marginBottom: "18px" }}>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                left: "14px",
+                fontSize: "15px",
+                color: "#94a3b8",
+                pointerEvents: "none",
+              }}
+            >
+              🔍
+            </span>
+            <input
+              type="text"
+              className="edit-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by course name, category, or cluster..."
+              style={{
+                width: "100%",
+                paddingLeft: "42px",
+                paddingRight: searchQuery ? "38px" : "14px",
+                paddingTop: "10px",
+                paddingBottom: "10px",
+                fontSize: "13.5px",
+                borderRadius: "12px",
+                background: "rgba(255, 255, 255, 0.04)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                color: "#f8fafc",
+                outline: "none",
+                transition: "all 0.2s ease",
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  background: "none",
+                  border: "none",
+                  color: "#94a3b8",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  padding: "4px",
+                }}
+                title="Clear Search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          {searchQuery.trim() && (
+            <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "6px", marginLeft: "4px" }}>
+              Found <strong style={{ color: "#a5b4fc" }}>{filteredCourses.length}</strong> of {courses.length} courses
+            </div>
+          )}
+        </div>
+
         {error && <div className="error-banner" style={{ color: "#ef4444", marginBottom: "16px" }}>⚠️ {error}</div>}
 
         {loading ? (
@@ -128,18 +210,32 @@ export default function ManageCoursesModal({ onClose }) {
             <h4 style={{ color: "#f8fafc", margin: "0 0 6px 0", fontSize: "16px" }}>No courses found</h4>
             <p style={{ color: "#94a3b8", fontSize: "13px", margin: 0 }}>Click "Add New Course" above to create your first course.</p>
           </div>
+        ) : filteredCourses.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
+            <div style={{ fontSize: "36px", marginBottom: "10px" }}>🔍</div>
+            <h4 style={{ color: "#f8fafc", margin: "0 0 6px 0", fontSize: "15px" }}>No courses match "{searchQuery}"</h4>
+            <p style={{ color: "#94a3b8", fontSize: "13px", margin: "0 0 12px 0" }}>Try checking spelling or search for another keyword.</p>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => setSearchQuery("")}
+              style={{ fontSize: "12px", padding: "6px 14px", borderRadius: "8px" }}
+            >
+              Clear Search Filter
+            </button>
+          </div>
         ) : (
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               gap: "14px",
-              maxHeight: "500px",
+              maxHeight: "460px",
               overflowY: "auto",
               paddingRight: "8px",
             }}
           >
-            {courses.map((course) => {
+            {filteredCourses.map((course) => {
               const rule = getRuleForCourse(course);
               const levelMap = rule?.levelPoints || {};
               const levelEntries = Object.entries(levelMap);
