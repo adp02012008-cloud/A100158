@@ -1,5 +1,5 @@
 // src/components/ManageCoursesModal.jsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { apiFetch } from "../utils/api";
 import EditCourseModal from "./EditCourseModal";
 import AddCourseModal from "./AddCourseModal";
