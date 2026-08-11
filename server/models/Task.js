@@ -37,7 +37,7 @@ const taskSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ["PENDING", "IN_PROGRESS", "UNDER_REVIEW", "COMPLETED"],
+        values: ["PENDING", "IN_PROGRESS", "UNDER_REVIEW", "CHANGES_REQUESTED", "COMPLETED", "APPROVED"],
         message: "{VALUE} is not a valid task status",
       },
       default: "PENDING",
