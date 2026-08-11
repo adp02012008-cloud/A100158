@@ -160,6 +160,27 @@ export default function Dashboard({ search, setPage }) {
 
   const [clusterFilter, setClusterFilter] = useState("All");
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [syncingSheet, setSyncingSheet] = useState(false);
+
+  const handleSyncSheetRewards = async () => {
+    setSyncingSheet(true);
+    try {
+      const res = await apiFetch("/points/sync-sheet-rewards", {
+        method: "POST",
+        body: JSON.stringify({ spreadsheetId: "1t5uHtrRMSXQkxrFRUudDpwuN23A6K61PhdrjDNZFaV8" }),
+      });
+      if (res?.success) {
+        alert(`✅ ${res.message || "Reward Points updated successfully!"}`);
+        loadData();
+      } else {
+        alert("Sync Warning: " + (res?.message || "Failed to sync reward points."));
+      }
+    } catch (err) {
+      alert("Failed to sync reward points from Google Sheet: " + err.message);
+    } finally {
+      setSyncingSheet(false);
+    }
+  };
 
   const loadData = useCallback(async () => {
     try {
@@ -296,6 +317,21 @@ export default function Dashboard({ search, setPage }) {
               }}
             >
               🏛️ Manage Clusters
+            </button>
+
+            <button
+              onClick={handleSyncSheetRewards}
+              disabled={syncingSheet}
+              style={{
+                background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+                color: "#fff",
+                border: "none",
+                fontWeight: "600",
+                boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
+                opacity: syncingSheet ? 0.7 : 1,
+              }}
+            >
+              {syncingSheet ? "⏳ Syncing Rewards..." : "🔄 Sync Sheet Reward Points"}
             </button>
 
             <button onClick={() => exportToExcel(filtered)}>📊 Export Excel</button>

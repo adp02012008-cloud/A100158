@@ -5,6 +5,7 @@ import { AuditLog } from "../models/AuditLog.js";
 import { isAdmin } from "../services/authorizationService.js";
 import { recalculateUserPoints } from "../services/pointsService.js";
 import { withTransaction } from "../utils/dbTransaction.js";
+import { syncRewardPointsFromGoogleSheet } from "../services/googleSheetRewardSyncService.js";
 
 /**
  * GET /api/points/rules
@@ -101,3 +102,38 @@ export async function recalculateAllPoints(req, res) {
     return res.status(500).json({ success: false, message: err.message });
   }
 }
+
+/**
+ * POST /api/points/sync-sheet-rewards
+ * Fetches Google Sheet and updates ONLY rewardPoints for team members and admins.
+ */
+export async function syncRewardPointsFromSheet(req, res) {
+  try {
+    if (!isAdmin(req.user)) {
+      return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
+    }
+
+    const { spreadsheetId, tabName, rawCsvData } = req.body || {};
+    const sheetId = spreadsheetId || "1t5uHtrRMSXQkxrFRUudDpwuN23A6K61PhdrjDNZFaV8";
+
+    const result = await syncRewardPointsFromGoogleSheet(sheetId, tabName || "Sheet1", rawCsvData);
+
+    await AuditLog.create({
+      auditId: `AUD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      actorUserId: req.user._id,
+      actionType: "SYNC_GOOGLE_SHEET_REWARD_POINTS",
+      targetEntity: "User",
+      targetId: sheetId,
+      details: { updatedCount: result.updatedCount, totalRows: result.totalRows },
+    });
+
+    return res.json({
+      success: true,
+      message: `Successfully synchronized Reward Points for ${result.updatedCount} members from Google Sheet.`,
+      result,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
