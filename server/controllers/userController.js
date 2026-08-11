@@ -20,7 +20,7 @@ export async function getAllUsers(req, res) {
       return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
     }
     const rawUsers = await User.find({}).populate("clusterId").sort({ name: 1 }).exec();
-    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.personalEmail) && !isSuperAdminEmail(u.bitEmail));
+    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email));
     return res.json({ success: true, count: users.length, users });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -168,7 +168,7 @@ export async function updateSelfProfile(req, res) {
 export async function getAssignableUsers(req, res) {
   try {
     const rawUsers = await User.find({ status: "ACTIVE" }).sort({ name: 1 }).exec();
-    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.personalEmail) && !isSuperAdminEmail(u.bitEmail));
+    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email));
     const formatted = users.map((u) => ({
       _id: u._id,
       userId: u.userId,
@@ -198,7 +198,7 @@ export async function getAssignableUsers(req, res) {
 export async function getDashboardUsers(req, res) {
   try {
     const rawUsers = await User.find({ status: "ACTIVE" }).sort({ name: 1 }).exec();
-    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.personalEmail) && !isSuperAdminEmail(u.bitEmail));
+    const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email));
     const allProgress = await UserCourseProgress.find({}).populate("courseId").exec();
     const allRules = await CoursePointRule.find({}).populate("courseId").exec();
 
@@ -434,7 +434,7 @@ export async function updateUserRole(req, res) {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    if (isSuperAdminEmail(user.email) || isSuperAdminEmail(user.personalEmail) || isSuperAdminEmail(user.bitEmail)) {
+    if (isSuperAdminEmail(user.email)) {
       return res.status(400).json({ success: false, message: "Safety Restriction: Super Admin account cannot be modified." });
     }
 
@@ -489,7 +489,7 @@ export async function updateUserStatus(req, res) {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    if (isSuperAdminEmail(user.email) || isSuperAdminEmail(user.personalEmail) || isSuperAdminEmail(user.bitEmail)) {
+    if (isSuperAdminEmail(user.email)) {
       return res.status(400).json({ success: false, message: "Safety Restriction: Super Admin account status cannot be modified." });
     }
 
@@ -538,7 +538,7 @@ export async function deleteUser(req, res) {
     }
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    if (isSuperAdminEmail(user.email) || isSuperAdminEmail(user.personalEmail) || isSuperAdminEmail(user.bitEmail)) {
+    if (isSuperAdminEmail(user.email)) {
       return res.status(400).json({ success: false, message: "Safety Restriction: Super Admin account cannot be deleted." });
     }
 
