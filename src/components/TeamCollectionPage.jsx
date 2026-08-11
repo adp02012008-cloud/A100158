@@ -5,8 +5,251 @@ import {
   deleteTeamRecord,
   listTeamRecords,
   updateTeamRecord,
+  apiFetch,
 } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+
+function MemberSelectionSelector({ value = "", onChange, readOnly }) {
+  const [groupMembers, setGroupMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
+  const [selectedNames, setSelectedNames] = useState([]);
+  const [showOther, setShowOther] = useState(false);
+  const [otherText, setOtherText] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+    apiFetch("/users/assignable")
+      .then((res) => {
+        if (!isMounted) return;
+        const users = (res.users || []).map((u) => u.name || u.NAME).filter(Boolean);
+        setGroupMembers(users.length > 0 ? users : [
+          "DHASHAPRAKASH A",
+          "HARISH KARTHIK K B S",
+          "MITHUN N B",
+          "SWETHA K",
+          "NITHISH KUMAR S",
+          "SUDARSAN K",
+          "SRINATH T S",
+          "SRIVARSHINI R",
+          "DEEPIKA K",
+          "DHANUSSH R S",
+        ]);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setGroupMembers([
+          "DHASHAPRAKASH A",
+          "HARISH KARTHIK K B S",
+          "MITHUN N B",
+          "SWETHA K",
+          "NITHISH KUMAR S",
+          "SUDARSAN K",
+          "SRINATH T S",
+          "SRIVARSHINI R",
+          "DEEPIKA K",
+          "DHANUSSH R S",
+        ]);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingMembers(false);
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!value) {
+      setSelectedNames([]);
+      setOtherText("");
+      setShowOther(false);
+      return;
+    }
+
+    const tokens = String(value).split(",").map((s) => s.trim()).filter(Boolean);
+    const inGroup = [];
+    const external = [];
+
+    tokens.forEach((token) => {
+      const match = groupMembers.find((g) => g.toLowerCase() === token.toLowerCase());
+      if (match) {
+        if (!inGroup.includes(match)) inGroup.push(match);
+      } else {
+        external.push(token);
+      }
+    });
+
+    setSelectedNames(inGroup);
+    if (external.length > 0) {
+      setShowOther(true);
+      setOtherText(external.join(", "));
+    }
+  }, [value, groupMembers]);
+
+  const updateParent = (nextSelected, isOtherActive, nextOtherText) => {
+    const extTokens = isOtherActive
+      ? nextOtherText.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    const combined = Array.from(new Set([...nextSelected, ...extTokens])).join(", ");
+    onChange(combined);
+  };
+
+  const toggleMember = (memberName) => {
+    if (readOnly) return;
+    const next = selectedNames.includes(memberName)
+      ? selectedNames.filter((n) => n !== memberName)
+      : [...selectedNames, memberName];
+    setSelectedNames(next);
+    updateParent(next, showOther, otherText);
+  };
+
+  const handleSelectAll = () => {
+    if (readOnly) return;
+    setSelectedNames([...groupMembers]);
+    updateParent(groupMembers, showOther, otherText);
+  };
+
+  const handleClearAll = () => {
+    if (readOnly) return;
+    setSelectedNames([]);
+    updateParent([], showOther, otherText);
+  };
+
+  const toggleOther = () => {
+    if (readOnly) return;
+    const nextOther = !showOther;
+    setShowOther(nextOther);
+    updateParent(selectedNames, nextOther, otherText);
+  };
+
+  const handleOtherTextChange = (e) => {
+    const val = e.target.value;
+    setOtherText(val);
+    updateParent(selectedNames, showOther, val);
+  };
+
+  return (
+    <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(167, 139, 250, 0.25)", borderRadius: "14px", padding: "16px", marginTop: "6px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", flexWrap: "wrap", gap: "8px" }}>
+        <span style={{ fontSize: "13px", fontWeight: "700", color: "#a78bfa" }}>
+          Group Members Selection ({selectedNames.length} selected)
+        </span>
+        {!readOnly && (
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              style={{ fontSize: "11px", background: "rgba(99, 102, 241, 0.2)", border: "1px solid rgba(99, 102, 241, 0.4)", color: "#818cf8", padding: "3px 10px", borderRadius: "12px", cursor: "pointer", fontWeight: "700" }}
+            >
+              ✓ Select All
+            </button>
+            <button
+              type="button"
+              onClick={handleClearAll}
+              style={{ fontSize: "11px", background: "rgba(239, 68, 68, 0.2)", border: "1px solid rgba(239, 68, 68, 0.4)", color: "#f87171", padding: "3px 10px", borderRadius: "12px", cursor: "pointer", fontWeight: "700" }}
+            >
+              ✕ Clear
+            </button>
+          </div>
+        )}
+      </div>
+
+      {loadingMembers ? (
+        <div style={{ fontSize: "13px", color: "#94a3b8", padding: "8px 0" }}>Loading group members…</div>
+      ) : (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
+          {groupMembers.map((mName) => {
+            const isChecked = selectedNames.includes(mName);
+            return (
+              <div
+                key={mName}
+                onClick={() => toggleMember(mName)}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: "20px",
+                  fontSize: "12.5px",
+                  fontWeight: "600",
+                  cursor: readOnly ? "default" : "pointer",
+                  userSelect: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.2s ease",
+                  background: isChecked ? "rgba(16, 185, 129, 0.2)" : "rgba(30, 41, 59, 0.8)",
+                  border: isChecked ? "1px solid rgba(52, 211, 153, 0.6)" : "1px solid rgba(255, 255, 255, 0.1)",
+                  color: isChecked ? "#34d399" : "#cbd5e1",
+                  boxShadow: isChecked ? "0 0 10px rgba(52, 211, 153, 0.2)" : "none",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => {}}
+                  readOnly
+                  style={{ accentColor: "#10b981", cursor: "pointer" }}
+                />
+                <span>{mName}</span>
+              </div>
+            );
+          })}
+
+          {/* OTHER OPTION TOGGLE */}
+          <div
+            onClick={toggleOther}
+            style={{
+              padding: "6px 14px",
+              borderRadius: "20px",
+              fontSize: "12.5px",
+              fontWeight: "700",
+              cursor: readOnly ? "default" : "pointer",
+              userSelect: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.2s ease",
+              background: showOther ? "rgba(168, 85, 247, 0.25)" : "rgba(30, 41, 59, 0.8)",
+              border: showOther ? "1px solid rgba(192, 132, 252, 0.6)" : "1px solid rgba(168, 85, 247, 0.3)",
+              color: showOther ? "#c084fc" : "#a78bfa",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={showOther}
+              onChange={() => {}}
+              readOnly
+              style={{ accentColor: "#a855f7", cursor: "pointer" }}
+            />
+            <span>+ Others (Non-Group Member)</span>
+          </div>
+        </div>
+      )}
+
+      {/* EXTERNAL MEMBER TEXTINPUT IF OTHER IS CHECKED */}
+      {showOther && (
+        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed rgba(168, 85, 247, 0.3)" }}>
+          <label style={{ fontSize: "12px", color: "#c084fc", fontWeight: "700", display: "block", marginBottom: "6px" }}>
+            Type External / Non-Group Member Names (separated by commas)
+          </label>
+          <input
+            type="text"
+            value={otherText}
+            placeholder="e.g. John Doe, Sarah Connor..."
+            readOnly={readOnly}
+            onChange={handleOtherTextChange}
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              background: "rgba(15, 23, 42, 0.9)",
+              border: "1px solid rgba(168, 85, 247, 0.4)",
+              borderRadius: "10px",
+              color: "#f8fafc",
+              fontSize: "13px",
+              outline: "none",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 function createRecordId(prefix) {
   const random = Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -203,6 +446,12 @@ export default function TeamCollectionPage({ config, search = "" }) {
         String(value || "").trim(),
       ])
     );
+
+    if (config.sheetName === "Hackathons") {
+      if (!submittedFields.DESCRIPTION) {
+        submittedFields.DESCRIPTION = submittedFields.TITLE || "Hackathon Event Record";
+      }
+    }
 
     try {
       setSaving(true);
@@ -522,7 +771,13 @@ export default function TeamCollectionPage({ config, search = "" }) {
                       {field.label} {field.required && <b>*</b>}
                     </span>
 
-                    {field.type === "textarea" ? (
+                    {field.name === "MEMBERS" ? (
+                      <MemberSelectionSelector
+                        value={form[field.name] || ""}
+                        onChange={(newVal) => setField(field.name, newVal)}
+                        readOnly={memberReadOnly}
+                      />
+                    ) : field.type === "textarea" ? (
                       <textarea
                         rows="4"
                         value={form[field.name] || ""}
