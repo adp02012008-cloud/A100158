@@ -55,12 +55,18 @@ export async function updateCourse(req, res) {
     await course.save();
 
     if (levelPoints && typeof levelPoints === "object") {
+      const sanitizedLevelPoints = {};
+      Object.keys(levelPoints).forEach((k) => {
+        const safeK = String(k).replace(/\.0\b/g, "").replace(/\./g, "-");
+        sanitizedLevelPoints[safeK] = Number(levelPoints[k]) || 0;
+      });
+
       await CoursePointRule.findOneAndUpdate(
         { courseId: course._id },
         {
           courseId: course._id,
           courseName: course.name,
-          levelPoints,
+          levelPoints: sanitizedLevelPoints,
           clusterAccess: course.clusterAccess,
         },
         { upsert: true, new: true }
@@ -142,26 +148,30 @@ function extractLevelName(rawLevel, rawName) {
 
   if (!strToTest) return "LEVEL 0";
 
+  let lvl = "LEVEL 0";
+
   // First match level with prefix: e.g. "Level 0", "Level 1A", "Level 2.0", "Level 3B Written Test"
   const prefixMatch = strToTest.match(/(?:level\s*[-–]?\s*|[-–]\s*)([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*)/i);
   if (prefixMatch && prefixMatch[1]) {
     const lvlCode = prefixMatch[1].toUpperCase().trim();
-    return `LEVEL ${lvlCode}`;
+    lvl = `LEVEL ${lvlCode}`;
+  } else {
+    // Direct prefix e.g. "Level 0" -> "LEVEL 0"
+    const directMatch = strToTest.match(/^level\s*(.+)/i);
+    if (directMatch && directMatch[1]) {
+      lvl = `LEVEL ${directMatch[1].toUpperCase().trim()}`;
+    } else {
+      // Alphanumeric code like "1A", "0", "1", "2.0"
+      const codeMatch = strToTest.match(/([0-9]+(?:\.[0-9]+)?[A-Z]?)/i);
+      if (codeMatch && codeMatch[1]) {
+        lvl = `LEVEL ${codeMatch[1].toUpperCase().trim()}`;
+      }
+    }
   }
 
-  // Direct prefix e.g. "Level 0" -> "LEVEL 0"
-  const directMatch = strToTest.match(/^level\s*(.+)/i);
-  if (directMatch && directMatch[1]) {
-    return `LEVEL ${directMatch[1].toUpperCase().trim()}`;
-  }
-
-  // Alphanumeric code like "1A", "0", "1", "2.0"
-  const codeMatch = strToTest.match(/([0-9]+(?:\.[0-9]+)?[A-Z]?)/i);
-  if (codeMatch && codeMatch[1]) {
-    return `LEVEL ${codeMatch[1].toUpperCase().trim()}`;
-  }
-
-  return "LEVEL 0";
+  // Mongoose Map keys CANNOT contain dots ('.')
+  // Strip trailing '.0' or replace '.' with '-' (e.g. 'LEVEL 2.0' -> 'LEVEL 2', 'LEVEL 2.1' -> 'LEVEL 2-1')
+  return lvl.replace(/\.0\b/g, "").replace(/\./g, "-");
 }
 
 export async function deleteAllCourses(req, res) {
@@ -296,13 +306,14 @@ export async function bulkImportCourses(req, res) {
       // 3. Build levelPoints map for CoursePointRule
       const levelPointsMap = {};
       levelRows.forEach((row, idx) => {
+        const safeKey = String(row.levelName).replace(/\.0\b/g, "").replace(/\./g, "-");
         if (row.pointsVal !== null) {
-          levelPointsMap[row.levelName] = row.pointsVal;
+          levelPointsMap[safeKey] = row.pointsVal;
         } else {
           // Default points calculation if no points given
-          const levelNumMatch = row.levelName.match(/\d+/);
+          const levelNumMatch = safeKey.match(/\d+/);
           const levelNum = levelNumMatch ? parseInt(levelNumMatch[0], 10) : idx;
-          levelPointsMap[row.levelName] = (levelNum + 1) * 100;
+          levelPointsMap[safeKey] = (levelNum + 1) * 100;
         }
         totalLevelsProcessed++;
       });

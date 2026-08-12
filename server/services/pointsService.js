@@ -28,7 +28,10 @@ export async function recalculateUserPoints(userId, session = null) {
   userProgressList.forEach((prog) => {
     const rule = ruleMap.get(String(prog.courseId));
     if (rule && rule.levelPoints && prog.currentLevel) {
-      const pts = rule.levelPoints.get(prog.currentLevel) || rule.levelPoints.get(prog.currentLevel.replace("-", " ")) || 0;
+      const sanitizedLvl = prog.currentLevel.replace(/\.0\b/g, "").replace(/\./g, "-");
+      const pts = rule.levelPoints.get(prog.currentLevel) ||
+                  rule.levelPoints.get(sanitizedLvl) ||
+                  rule.levelPoints.get(prog.currentLevel.replace("-", " ")) || 0;
       courseActivityPoints += Number(pts) || 0;
     }
   });
