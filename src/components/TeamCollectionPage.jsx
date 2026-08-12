@@ -20,10 +20,14 @@ function getRecordValue(record, key) {
   const lower = key.toLowerCase();
   if (record[lower] !== undefined && record[lower] !== null && record[lower] !== "") return record[lower];
 
+  const camel = key.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+  if (record[camel] !== undefined && record[camel] !== null && record[camel] !== "") return record[camel];
+
   const ALIASES = {
-    TITLE: ["title", "name", "caption"],
+    TITLE: ["title", "name", "caption", "CAPTION"],
+    CAPTION: ["caption", "title", "name"],
     ORGANIZER: ["organizer", "issuer", "company"],
-    DATE: ["date", "eventDate"],
+    DATE: ["date", "eventDate", "CREATED_AT", "createdAt"],
     LOCATION: ["location", "venue"],
     PROJECT: ["projectTitle", "project", "title"],
     THEME: ["theme", "track"],
@@ -36,20 +40,26 @@ function getRecordValue(record, key) {
     DEMO: ["demo", "demoUrl", "liveUrl"],
     PPT: ["ppt", "pptUrl", "presentationUrl"],
     DRIVE_FOLDER: ["driveFolder", "driveUrl", "folderUrl"],
-    COVER_IMAGE: ["coverImage", "imageUrl", "image", "fileUrl"],
-    EVENT_ID: ["eventId", "_id", "id"],
+    COVER_IMAGE: ["coverImage", "imageUrl", "image", "fileUrl", "url"],
+    IMAGE_URL: ["imageUrl", "coverImage", "image", "fileUrl", "url"],
+    IMAGE: ["image", "imageUrl", "coverImage", "fileUrl", "url"],
+    FILE_URL: ["fileUrl", "imageUrl", "coverImage", "image", "url"],
+    EVENT_ID: ["eventId", "eventLegacyId", "_id", "id"],
     PROJECT_ID: ["projectId", "_id", "id"],
     CERTIFICATE_ID: ["certificateId", "_id", "id"],
     PHOTO_ID: ["photoId", "_id", "id"],
     OPPORTUNITY_ID: ["opportunityId", "_id", "id"],
     CREATED_BY: ["createdBy", "email", "uploadedBy", "user"],
+    UPLOADED_BY: ["uploadedBy", "createdBy", "email", "user"],
   };
 
-  const aliases = ALIASES[upper] || [];
+  const aliases = ALIASES[upper] || ALIASES[key] || [];
   for (const alias of aliases) {
     if (record[alias] !== undefined && record[alias] !== null && record[alias] !== "") {
-      if (typeof record[alias] === "object" && record[alias]?.email) {
-        return record[alias].email;
+      if (typeof record[alias] === "object") {
+        if (record[alias]?.email) return record[alias].email;
+        if (record[alias]?.name) return record[alias].name;
+        if (record[alias]?._id) return String(record[alias]._id);
       }
       return record[alias];
     }
@@ -827,6 +837,10 @@ function fixDriveImageUrl(url = "") {
   const value = String(url).trim();
   if (!value) return "";
 
+  if (value.startsWith("data:") || value.startsWith("blob:")) {
+    return value;
+  }
+
   const fileMatch = value.match(/\/file\/d\/([^/]+)/);
   if (fileMatch) {
     return `https://drive.google.com/uc?export=view&id=${fileMatch[1]}`;
@@ -1210,14 +1224,15 @@ export default function TeamCollectionPage({ config, search = "" }) {
               record._id;
             const imageUrl = fixDriveImageUrl(getRecordValue(record, config.imageField));
             const canManage = canManageRecord(record);
-            const title = getRecordValue(record, config.titleField) || getRecordValue(record, "TITLE") || "Untitled record";
-            const subtitle = getRecordValue(record, config.subtitleField) || getRecordValue(record, "ORGANIZER") || getRecordValue(record, "PROJECT");
+            const title = getRecordValue(record, config.titleField) || getRecordValue(record, "TITLE") || getRecordValue(record, "CAPTION") || "Untitled record";
+            const subtitle = getRecordValue(record, config.subtitleField) || getRecordValue(record, "ORGANIZER") || getRecordValue(record, "PROJECT") || getRecordValue(record, "EVENT_ID");
             const badge = getRecordValue(record, config.badgeField) || getRecordValue(record, "STATUS");
-            const date = getRecordValue(record, "DATE");
+            const date = getRecordValue(record, "DATE") || getRecordValue(record, "CREATED_AT");
             const location = getRecordValue(record, "LOCATION");
             const techStack = getRecordValue(record, "TECH_STACK");
             const issuer = getRecordValue(record, "ISSUER");
             const description = getRecordValue(record, "DESCRIPTION");
+            const uploadedBy = getRecordValue(record, "UPLOADED_BY") || getRecordValue(record, "CREATED_BY");
 
             return (
               <article className="team-record-card" key={recordId}>
@@ -1256,7 +1271,7 @@ export default function TeamCollectionPage({ config, search = "" }) {
                   <div className="team-record-heading">
                     <div>
                       <h3>{title}</h3>
-                      {subtitle && <p>{subtitle}</p>}
+                      {subtitle && <p className="team-record-subtitle">{subtitle}</p>}
                     </div>
                     {badge && (
                       <span className="team-record-badge">
@@ -1270,11 +1285,13 @@ export default function TeamCollectionPage({ config, search = "" }) {
                     {location && <span>📍 {location}</span>}
                     {techStack && <span>🧩 {techStack}</span>}
                     {issuer && <span>🏢 {issuer}</span>}
+                    {uploadedBy && <span>👤 {uploadedBy}</span>}
+                    {recordId && <span className="record-id-chip">ID: {recordId}</span>}
                   </div>
 
                   {description && (
                     <p className="team-record-description">
-                      {description.length > 120 ? description.substring(0, 120) + "…" : description}
+                      {description.length > 140 ? description.substring(0, 140) + "…" : description}
                     </p>
                   )}
 
