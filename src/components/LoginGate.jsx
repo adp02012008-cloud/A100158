@@ -439,27 +439,26 @@ export default function LoginGate({ children }) {
         </div>
       </div>
 
-      <footer className="login-footer">
-        <div className="login-footer-card">
-          <div className="login-footer-top">
-            <div className="login-footer-brand">
-              <span className="login-footer-badge">A#100158</span>
-              <span className="login-footer-crafted">
-                Crafted &amp; Developed by <strong>Dhashaprakash A</strong>
-              </span>
-            </div>
+      <footer className="login-footer-bar">
+        <div className="login-footer-row">
+          {/* Brand & Dev Info */}
+          <div className="login-footer-col brand-col">
+            <span className="login-footer-badge">A#100158</span>
+            <span className="login-footer-crafted">
+              Crafted &amp; Developed by <strong>Dhashaprakash A</strong>
+            </span>
+          </div>
 
-            <div className="login-footer-feedback">
-              <p className="login-footer-feedback-head">
-                Have a query? Found a bug? Have a suggestion?
-              </p>
-              <p className="login-footer-feedback-sub">
-                Let me know — your feedback helps improve <strong>A#100158</strong>.
-              </p>
+          {/* Feedback & Query Highlight */}
+          <div className="login-footer-col feedback-col">
+            <div className="login-footer-feedback-pill">
+              <span className="feedback-head">Have a query? Found a bug? Have a suggestion?</span>
+              <span className="feedback-sub">Let me know — your feedback helps improve <strong>A#100158</strong>.</span>
             </div>
           </div>
 
-          <div className="login-footer-connect">
+          {/* Connect Links */}
+          <div className="login-footer-col connect-col">
             <span className="login-footer-connect-label">Connect:</span>
             <div className="login-footer-connect-links">
               <a
@@ -500,12 +499,12 @@ export default function LoginGate({ children }) {
               </a>
             </div>
           </div>
+        </div>
 
-          <div className="login-footer-bottom">
-            <p className="login-footer-copyright">
-              © 2026 <strong>A#100158</strong> · Developed by <strong>Dhashaprakash A</strong> · All Rights Reserved.
-            </p>
-          </div>
+        <div className="login-footer-subrow">
+          <p className="login-footer-copyright">
+            © 2026 <strong>A#100158</strong> · Developed by <strong>Dhashaprakash A</strong> · All Rights Reserved.
+          </p>
         </div>
       </footer>
     </div>
