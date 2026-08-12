@@ -13,8 +13,28 @@ export default function ManageCoursesModal({ onClose }) {
   const [editingCourse, setEditingCourse] = useState(null);
   const [showAddCourse, setShowAddCourse] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [confirmInputText, setConfirmInputText] = useState("");
+  const [deletingAll, setDeletingAll] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleDeleteAllCourses = async () => {
+    if (confirmInputText.trim() !== "DELETE ALL COURSES") return;
+
+    setDeletingAll(true);
+    try {
+      const res = await apiFetch("/courses/all", { method: "DELETE" });
+      alert(res?.message || "Successfully deleted all courses!");
+      setShowDeleteAllModal(false);
+      setConfirmInputText("");
+      await loadCourseData();
+    } catch (err) {
+      alert("Failed to delete all courses: " + err.message);
+    } finally {
+      setDeletingAll(false);
+    }
+  };
 
   const loadCourseData = useCallback(async () => {
     try {
@@ -108,6 +128,33 @@ export default function ManageCoursesModal({ onClose }) {
           </div>
 
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            {courses.length > 0 && (
+              <button
+                type="button"
+                className="btn danger"
+                onClick={() => {
+                  setConfirmInputText("");
+                  setShowDeleteAllModal(true);
+                }}
+                style={{
+                  fontSize: "13px",
+                  padding: "10px 16px",
+                  background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "10px",
+                  fontWeight: "600",
+                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.3)",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <span>🗑️</span> Delete All Courses
+              </button>
+            )}
+
             <button
               type="button"
               className="btn secondary"
@@ -483,6 +530,113 @@ export default function ManageCoursesModal({ onClose }) {
               loadCourseData();
             }}
           />
+        )}
+
+        {/* Two-Step Verification Delete All Modal */}
+        {showDeleteAllModal && (
+          <div className="modal" onClick={() => setShowDeleteAllModal(false)} style={{ zIndex: 1300 }}>
+            <div
+              className="modal-box"
+              style={{
+                maxWidth: "520px",
+                width: "90%",
+                padding: "26px",
+                borderRadius: "18px",
+                background: "#180a0a",
+                border: "1px solid rgba(239, 68, 68, 0.4)",
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
+                color: "#f8fafc",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="close-btn"
+                onClick={() => setShowDeleteAllModal(false)}
+                style={{ top: "18px", right: "18px" }}
+              >
+                ✕
+              </button>
+
+              <div style={{ textAlign: "center", marginBottom: "18px" }}>
+                <span style={{ fontSize: "42px" }}>⚠️</span>
+                <h3 style={{ margin: "10px 0 6px 0", color: "#fca5a5", fontSize: "20px", fontWeight: "700" }}>
+                  Delete All Courses (Permanent Action)
+                </h3>
+                <p style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: "1.5", margin: 0 }}>
+                  This will permanently delete all <strong>{courses.length} courses</strong>, point rules, and user course progress from MongoDB Atlas. This action <strong>cannot be undone</strong>.
+                </p>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(239, 68, 68, 0.12)",
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  borderRadius: "12px",
+                  padding: "14px",
+                  marginBottom: "20px",
+                  fontSize: "12.5px",
+                }}
+              >
+                <div style={{ fontWeight: "700", color: "#f87171", marginBottom: "8px" }}>
+                  🔒 Step 2 of 2: Security Verification
+                </div>
+                <label style={{ display: "block", marginBottom: "6px", color: "#cbd5e1" }}>
+                  Please type <strong style={{ color: "#ef4444" }}>DELETE ALL COURSES</strong> below to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={confirmInputText}
+                  onChange={(e) => setConfirmInputText(e.target.value)}
+                  placeholder="DELETE ALL COURSES"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    background: "#0d0404",
+                    border: "1px solid rgba(239, 68, 68, 0.4)",
+                    color: "#ffffff",
+                    fontWeight: "700",
+                    fontSize: "13px",
+                    outline: "none",
+                    letterSpacing: "0.05em",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={() => setShowDeleteAllModal(false)}
+                  disabled={deletingAll}
+                  style={{ fontSize: "13px", padding: "10px 18px", borderRadius: "10px" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn danger"
+                  onClick={handleDeleteAllCourses}
+                  disabled={confirmInputText.trim() !== "DELETE ALL COURSES" || deletingAll}
+                  style={{
+                    fontSize: "13px",
+                    padding: "10px 20px",
+                    background: confirmInputText.trim() === "DELETE ALL COURSES"
+                      ? "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)"
+                      : "rgba(239, 68, 68, 0.2)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "10px",
+                    fontWeight: "700",
+                    cursor: confirmInputText.trim() === "DELETE ALL COURSES" && !deletingAll ? "pointer" : "not-allowed",
+                    opacity: confirmInputText.trim() === "DELETE ALL COURSES" && !deletingAll ? 1 : 0.5,
+                  }}
+                >
+                  {deletingAll ? "Deleting All Courses..." : "💥 CONFIRM & DELETE ALL COURSES"}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

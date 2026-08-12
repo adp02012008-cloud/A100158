@@ -117,30 +117,56 @@ export async function updateCourseProgress(req, res) {
 }
 
 function extractBaseCourseName(rawName, rawCategory) {
-  if (rawCategory && typeof rawCategory === "string" && rawCategory.trim() && rawCategory.trim().toLowerCase() !== "general") {
-    return rawCategory.trim();
+  const nameStr = (rawName || "").trim();
+  if (nameStr) {
+    return nameStr;
   }
-  if (!rawName) return "General Course";
-
-  let base = rawName
-    .replace(/\s*[-–]?\s*level\s*[-–]?\s*([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*).*/i, "")
-    .replace(/\s*[-–]\s*[0-9]+[A-Z]?.*/i, "")
-    .trim();
-
-  return base || rawName.trim();
+  const catStr = (rawCategory || "").trim();
+  if (catStr && catStr.toLowerCase() !== "general") {
+    return catStr;
+  }
+  return "General Course";
 }
 
-function extractLevelName(rawName) {
-  if (!rawName) return "LEVEL 0";
-  const match = rawName.match(/(?:level\s*[-–]?\s*|[-–]\s*)([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*)/i);
-  if (match && match[1]) {
-    let lvl = match[1].toUpperCase().trim();
+function extractLevelName(rawLevel, rawName) {
+  if (rawLevel && typeof rawLevel === "string" && rawLevel.trim()) {
+    let lvl = rawLevel.trim().toUpperCase();
     if (!lvl.startsWith("LEVEL")) {
       lvl = `LEVEL ${lvl}`;
     }
     return lvl;
   }
+  if (rawName && typeof rawName === "string") {
+    const match = rawName.match(/(?:level\s*[-–]?\s*|[-–]\s*)([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*)/i);
+    if (match && match[1]) {
+      let lvl = match[1].toUpperCase().trim();
+      if (!lvl.startsWith("LEVEL")) {
+        lvl = `LEVEL ${lvl}`;
+      }
+      return lvl;
+    }
+  }
   return "LEVEL 0";
+}
+
+export async function deleteAllCourses(req, res) {
+  try {
+    const coursesCount = await Course.countDocuments();
+    const rulesCount = await CoursePointRule.countDocuments();
+
+    await Course.deleteMany({});
+    await CoursePointRule.deleteMany({});
+    await UserCourseProgress.deleteMany({});
+
+    return res.json({
+      success: true,
+      message: `Successfully deleted all ${coursesCount} courses, ${rulesCount} point rules, and user progress from MongoDB Atlas.`,
+      deletedCoursesCount: coursesCount,
+    });
+  } catch (err) {
+    console.error("Delete all courses error:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
 }
 
 export async function bulkImportCourses(req, res) {
@@ -155,17 +181,27 @@ export async function bulkImportCourses(req, res) {
 
     for (let i = 0; i < courses.length; i++) {
       const item = courses[i];
-      const rawName = item.name || item["Course Name"] || item["courseName"] || item["Name"] || "";
+      const rawName = item["Course Name"] || item.name || item["courseName"] || item["Name"] || "";
       if (!rawName || typeof rawName !== "string" || !rawName.trim()) {
         continue;
       }
 
       const rawCategory = (item.category || item["Category"] || "").trim();
       const baseCourseName = extractBaseCourseName(rawName.trim(), rawCategory);
-      const levelName = extractLevelName(rawName.trim());
+      const rawLevel = item["Level"] || item.level || item["levelName"] || "";
+      const levelName = extractLevelName(rawLevel, rawName.trim());
+
       const description = (item.description || item["Description"] || "").trim();
       const clusterAccess = (item.clusterAccess || item["Cluster Access"] || item["cluster"] || "Both").trim();
       const status = (item.status || item["Status"] || "ACTIVE").toUpperCase().trim();
+
+      // Extract explicit points if present in row
+      const rawPoints = item["Points"] || item.points || item["Level Points"] || item.levelPoints;
+      let pointsVal = null;
+      if (rawPoints !== undefined && rawPoints !== null && String(rawPoints).trim() !== "") {
+        const num = Number(String(rawPoints).trim());
+        if (!isNaN(num)) pointsVal = num;
+      }
 
       let prerequisites = [];
       const rawPrereqs = item.prerequisites || item["Prerequisites"] || item["prerequisite"] || [];
@@ -182,6 +218,7 @@ export async function bulkImportCourses(req, res) {
       groupedMap.get(baseCourseName).push({
         rawName: rawName.trim(),
         levelName,
+        pointsVal,
         description,
         prerequisites,
         clusterAccess,
@@ -244,11 +281,10 @@ export async function bulkImportCourses(req, res) {
       // 3. Build levelPoints map for CoursePointRule
       const levelPointsMap = {};
       levelRows.forEach((row, idx) => {
-        const filePts = row.item.levelPoints || row.item["levelPoints"] || row.item["Level Points"];
-        if (filePts && typeof filePts === "object" && filePts[row.levelName]) {
-          levelPointsMap[row.levelName] = Number(filePts[row.levelName]) || 0;
+        if (row.pointsVal !== null) {
+          levelPointsMap[row.levelName] = row.pointsVal;
         } else {
-          // Progressive points: LEVEL 0 = 100, LEVEL 1 = 200, LEVEL 2 = 300... or (idx + 1) * 100
+          // Default points calculation if no points given
           const levelNumMatch = row.levelName.match(/\d+/);
           const levelNum = levelNumMatch ? parseInt(levelNumMatch[0], 10) : idx;
           levelPointsMap[row.levelName] = (levelNum + 1) * 100;

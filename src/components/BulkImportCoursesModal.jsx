@@ -31,12 +31,14 @@ function parseCSV(text) {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
 
-  // Parse header
-  const headers = parseCSVLine(lines[0]);
+  // Detect delimiter: tab (\t) or comma (,)
+  const delimiter = lines[0].includes("\t") ? "\t" : ",";
+
+  const headers = parseCSVLine(lines[0], delimiter);
   const results = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const values = parseCSVLine(lines[i]);
+    const values = parseCSVLine(lines[i], delimiter);
     if (values.length === 0 || values.every((v) => !v)) continue;
 
     const rowObj = {};
@@ -49,7 +51,7 @@ function parseCSV(text) {
   return results;
 }
 
-function parseCSVLine(line) {
+function parseCSVLine(line, delimiter = ",") {
   const result = [];
   let cur = "";
   let inQuotes = false;
@@ -58,7 +60,7 @@ function parseCSVLine(line) {
     const char = line[i];
     if (char === '"') {
       inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
+    } else if (char === delimiter && !inQuotes) {
       result.push(cur.trim().replace(/^"|"$/g, ""));
       cur = "";
     } else {

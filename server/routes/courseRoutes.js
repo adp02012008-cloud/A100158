@@ -5,6 +5,7 @@ import {
   createCourse,
   updateCourse,
   deleteCourse,
+  deleteAllCourses,
   getUserCourseProgress,
   updateCourseProgress,
   bulkImportCourses,
@@ -17,6 +18,7 @@ router.use(verifyAuthToken);
 router.get("/", getCourses);
 router.post("/", requireAdmin, createCourse);
 router.post("/bulk-import", requireAdmin, bulkImportCourses);
+router.delete("/all", requireAdmin, deleteAllCourses);
 router.put("/:id", requireAdmin, updateCourse);
 router.delete("/:id", requireAdmin, deleteCourse);
 router.get("/progress", getUserCourseProgress);
