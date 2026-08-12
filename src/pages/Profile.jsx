@@ -315,7 +315,7 @@ export default function Profile() {
     .toUpperCase();
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px 16px" }}>
+    <div className="profile-container">
       {/* Header Notification Banners */}
       {successMsg && (
         <div
@@ -370,22 +370,8 @@ export default function Profile() {
       )}
 
       {/* Hero User Header Banner */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, rgba(79, 70, 229, 0.25) 0%, rgba(147, 51, 234, 0.25) 50%, rgba(16, 185, 129, 0.15) 100%)",
-          border: "1px solid rgba(167, 139, 250, 0.3)",
-          borderRadius: "20px",
-          padding: "32px 36px",
-          marginBottom: "24px",
-          display: "flex",
-          justify: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "20px",
-          boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "24px", flexWrap: "wrap" }}>
+      <div className="profile-hero-card">
+        <div className="profile-hero-user-info">
           {/* Squircle Avatar */}
           <div
             style={{
@@ -408,7 +394,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <div className="profile-hero-name-row">
               <h2 style={{ margin: 0, fontSize: "26px", fontWeight: "800", color: "#f8fafc" }}>
                 {profile?.name}
               </h2>
@@ -419,7 +405,7 @@ export default function Profile() {
               )}
             </div>
 
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px", alignItems: "center" }}>
+            <div className="profile-hero-badges-row">
               <span
                 style={{
                   background: profile?.role === "ADMIN" ? "linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.4) 100%)" : "rgba(99, 102, 241, 0.25)",
@@ -484,22 +470,15 @@ export default function Profile() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        <div className="profile-hero-actions">
           <button
             onClick={() => loadShowcaseData(profile)}
             disabled={showcaseLoading}
+            className="profile-hero-btn"
             style={{
-              padding: "10px 16px",
-              borderRadius: "12px",
               background: "rgba(255, 255, 255, 0.08)",
               border: "1px solid rgba(255, 255, 255, 0.15)",
               color: "#f8fafc",
-              fontWeight: "600",
-              cursor: "pointer",
-              fontSize: "13px",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
             }}
           >
             🔄 {showcaseLoading ? "Refreshing…" : "Refresh Portfolio"}
@@ -508,19 +487,11 @@ export default function Profile() {
           {!isEditing ? (
             <button
               onClick={handleStartEdit}
+              className="profile-hero-btn"
               style={{
-                padding: "10px 20px",
-                borderRadius: "12px",
                 background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-                border: "none",
                 color: "#ffffff",
-                fontWeight: "700",
-                fontSize: "14px",
-                cursor: "pointer",
                 boxShadow: "0 4px 15px rgba(99, 102, 241, 0.4)",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
               }}
             >
               ✏️ Edit Profile
@@ -528,15 +499,11 @@ export default function Profile() {
           ) : (
             <button
               onClick={handleCancelEdit}
+              className="profile-hero-btn"
               style={{
-                padding: "10px 18px",
-                borderRadius: "12px",
                 background: "rgba(239, 68, 68, 0.2)",
                 border: "1px solid rgba(239, 68, 68, 0.4)",
                 color: "#f87171",
-                fontWeight: "700",
-                fontSize: "13px",
-                cursor: "pointer",
               }}
             >
               ✕ Cancel Edit
@@ -546,17 +513,11 @@ export default function Profile() {
       </div>
 
       {/* Overview Quick Stats Summary Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+      <div className="profile-stats-grid">
         <div
           onClick={() => setActiveTab("COURSES")}
-          style={{
-            background: "rgba(15, 23, 42, 0.7)",
-            border: "1px solid rgba(99, 102, 241, 0.3)",
-            borderRadius: "16px",
-            padding: "20px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
+          className="profile-stat-card"
+          style={{ border: "1px solid rgba(99, 102, 241, 0.3)" }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "28px" }}>🎓</span>
@@ -568,14 +529,8 @@ export default function Profile() {
 
         <div
           onClick={() => setActiveTab("PROJECTS")}
-          style={{
-            background: "rgba(15, 23, 42, 0.7)",
-            border: "1px solid rgba(16, 185, 129, 0.3)",
-            borderRadius: "16px",
-            padding: "20px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
+          className="profile-stat-card"
+          style={{ border: "1px solid rgba(16, 185, 129, 0.3)" }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "28px" }}>🏆</span>
@@ -587,14 +542,8 @@ export default function Profile() {
 
         <div
           onClick={() => setActiveTab("HACKATHONS")}
-          style={{
-            background: "rgba(15, 23, 42, 0.7)",
-            border: "1px solid rgba(245, 158, 11, 0.3)",
-            borderRadius: "16px",
-            padding: "20px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
+          className="profile-stat-card"
+          style={{ border: "1px solid rgba(245, 158, 11, 0.3)" }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "28px" }}>🚀</span>
@@ -606,14 +555,8 @@ export default function Profile() {
 
         <div
           onClick={() => setActiveTab("CERTIFICATES")}
-          style={{
-            background: "rgba(15, 23, 42, 0.7)",
-            border: "1px solid rgba(168, 85, 247, 0.3)",
-            borderRadius: "16px",
-            padding: "20px",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
+          className="profile-stat-card"
+          style={{ border: "1px solid rgba(168, 85, 247, 0.3)" }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "28px" }}>📜</span>
@@ -625,7 +568,7 @@ export default function Profile() {
       </div>
 
       {/* Segmented Tab Switcher */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "24px", flexWrap: "wrap" }}>
+      <div className="profile-tabs-row">
         {[
           { key: "OVERVIEW", label: "👤 Profile Details & Meta" },
           { key: "COURSES", label: `🎓 Courses (${userCourses.length})` },
@@ -636,18 +579,7 @@ export default function Profile() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            style={{
-              padding: "10px 20px",
-              borderRadius: "12px",
-              fontSize: "14px",
-              fontWeight: "700",
-              cursor: "pointer",
-              border: "1px solid",
-              background: activeTab === tab.key ? "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)" : "rgba(15, 23, 42, 0.6)",
-              borderColor: activeTab === tab.key ? "#6366f1" : "rgba(255, 255, 255, 0.12)",
-              color: activeTab === tab.key ? "#ffffff" : "#94a3b8",
-              boxShadow: activeTab === tab.key ? "0 4px 14px rgba(79, 70, 229, 0.3)" : "none",
-            }}
+            className={`profile-tab-btn ${tab.key === "OVERVIEW" ? "tab-overview" : ""} ${activeTab === tab.key ? "active" : ""}`}
           >
             {tab.label}
           </button>
@@ -1008,21 +940,11 @@ export default function Profile() {
                   <small style={{ color: "#64748b" }}>Complete assigned courses on the Dashboard to earn completion badges!</small>
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px" }}>
+                <div className="profile-showcase-grid">
                   {userCourses.map((c, idx) => (
                     <div
                       key={idx}
-                      style={{
-                        background: "rgba(15, 23, 42, 0.9)",
-                        border: "1px solid rgba(99, 102, 241, 0.3)",
-                        borderRadius: "14px",
-                        padding: "18px 20px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: "12px",
-                        boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-                      }}
+                      className="profile-showcase-card"
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                         <div
