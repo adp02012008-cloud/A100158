@@ -754,35 +754,41 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Login Full-Width Horizontal Footer Bar ───────────────── */
 .login-footer-bar {
   width: 100%;
-  background: rgba(10, 4, 26, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(10, 4, 26, 0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  padding: 12px 32px 8px 32px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  padding: 12px 24px 8px 24px;
   z-index: 20;
-  margin-top: 12px;
+  margin-top: auto;
   animation: fadeIn 0.5s ease forwards;
 }
 
-.login-footer-row {
+.login-footer-inner {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 8px;
   width: 100%;
-  max-width: 1440px;
+  max-width: 1300px;
   margin: 0 auto;
 }
 
-.login-footer-col {
+.login-footer-main-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.login-footer-col.brand-col {
-  flex-shrink: 0;
+.login-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .login-footer-badge {
@@ -790,17 +796,16 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff;
   font-family: var(--font-heading);
   font-weight: 800;
-  font-size: 13px;
-  padding: 4px 12px;
+  font-size: 12.5px;
+  padding: 3px 12px;
   border-radius: 999px;
   letter-spacing: 0.05em;
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
 }
 
 .login-footer-crafted {
   font-size: 13.5px;
   color: rgba(255, 255, 255, 0.88);
-  white-space: nowrap;
 }
 
 .login-footer-crafted strong {
@@ -811,56 +816,15 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-text-fill-color: transparent;
 }
 
-.login-footer-col.feedback-col {
-  flex: 1;
-  justify-content: center;
-  min-width: 0;
-}
-
-.login-footer-feedback-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  padding: 5px 18px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.88);
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.login-footer-feedback-pill:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(167, 243, 208, 0.45);
-}
-
-.login-footer-feedback-pill .feedback-head {
-  font-weight: 600;
-  color: #a7f3d0;
-  white-space: nowrap;
-}
-
-.login-footer-feedback-pill .feedback-sub {
-  color: rgba(255, 255, 255, 0.78);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.login-footer-feedback-pill .feedback-sub strong {
-  color: #ffffff;
-}
-
-.login-footer-col.connect-col {
-  flex-shrink: 0;
+.login-footer-connect {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .login-footer-connect-label {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -878,7 +842,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #93c5fd;
   text-decoration: none;
   font-weight: 500;
-  font-size: 13px;
+  font-size: 12.5px;
   padding: 4px 12px;
   border-radius: 999px;
   background: rgba(147, 197, 253, 0.08);
@@ -903,19 +867,59 @@ h1, h2, h3, h4, h5, h6 {
 .login-footer-dot {
   color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
-  margin: 0 1px;
+}
+
+.login-footer-feedback-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 4px 20px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.88);
+  width: 100%;
+  max-width: 900px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.login-footer-feedback-banner:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(167, 243, 208, 0.45);
+}
+
+.login-footer-feedback-banner .feedback-head {
+  font-weight: 600;
+  color: #a7f3d0;
+  white-space: nowrap;
+}
+
+.login-footer-feedback-banner .feedback-sep {
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 700;
+}
+
+.login-footer-feedback-banner .feedback-sub {
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.login-footer-feedback-banner .feedback-sub strong {
+  color: #ffffff;
 }
 
 .login-footer-subrow {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  margin-top: 8px;
-  padding-top: 6px;
+  width: 100%;
+  padding-top: 4px;
   text-align: center;
 }
 
 .login-footer-copyright {
   margin: 0;
-  font-size: 12px;
+  font-size: 11.5px;
   color: rgba(255, 255, 255, 0.52);
   letter-spacing: 0.01em;
 }
@@ -925,27 +929,26 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
 
-@media (max-width: 1100px) {
-  .login-footer-bar {
-    padding: 12px 16px 8px 16px;
-  }
-  .login-footer-row {
+@media (max-width: 850px) {
+  .login-footer-main-row {
     flex-direction: column;
-    gap: 10px;
-  }
-  .login-footer-col.feedback-col {
-    width: 100%;
     justify-content: center;
+    text-align: center;
+    gap: 8px;
   }
-  .login-footer-feedback-pill {
+  .login-footer-feedback-banner {
     flex-direction: column;
     border-radius: 12px;
     padding: 8px 14px;
-    text-align: center;
+    gap: 4px;
   }
-  .login-footer-feedback-pill .feedback-head,
-  .login-footer-feedback-pill .feedback-sub {
+  .login-footer-feedback-banner .feedback-sep {
+    display: none;
+  }
+  .login-footer-feedback-banner .feedback-head,
+  .login-footer-feedback-banner .feedback-sub {
     white-space: normal;
+    text-align: center;
   }
 }
 
