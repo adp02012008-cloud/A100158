@@ -5,38 +5,12 @@ import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import "./index.css";
 
-if (import.meta.env.DEV && "serviceWorker" in navigator) {
-  const cleanupKey = "bugSlayersDevServiceWorkerCleaned";
-
-  const cleanDevServiceWorkers = async () => {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    const controlledByServiceWorker = Boolean(navigator.serviceWorker.controller);
-
-    const cacheKeys = "caches" in window ? await caches.keys() : [];
-    const workboxCacheKeys = cacheKeys.filter(
-      (key) => key.includes("workbox") || key.includes("precache")
-    );
-
-    await Promise.all([
-      ...registrations.map((registration) => registration.unregister()),
-      ...workboxCacheKeys.map((key) => caches.delete(key)),
-    ]);
-
-    if (
-      (registrations.length > 0 ||
-        workboxCacheKeys.length > 0 ||
-        controlledByServiceWorker) &&
-      sessionStorage.getItem(cleanupKey) !== "true"
-    ) {
-      sessionStorage.setItem(cleanupKey, "true");
-      window.location.reload();
-      return;
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (let registration of registrations) {
+      registration.update();
     }
-
-    sessionStorage.removeItem(cleanupKey);
-  };
-
-  cleanDevServiceWorkers().catch(() => {});
+  }).catch(() => {});
 }
 
 createRoot(document.getElementById("root")).render(
