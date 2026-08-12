@@ -113,9 +113,12 @@ export default function AddMemberModal({ onClose, onCreated }) {
       onClick={onClose}
     >
       <div
+        className="add-member-modal-box"
         style={{
           width: "100%",
           maxWidth: "640px",
+          maxHeight: "90vh",
+          overflowY: "auto",
           background: "rgba(26, 15, 52, 0.96)",
           border: "1px solid rgba(167, 139, 250, 0.25)",
           borderRadius: "16px",
@@ -161,7 +164,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        <form onSubmit={handleSubmit} className="add-member-form-grid">
           <div style={{ display: "flex", flexDirection: "column" }}>
             <label style={labelStyle}>Full Name *</label>
             <input

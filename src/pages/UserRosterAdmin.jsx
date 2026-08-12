@@ -125,20 +125,10 @@ export default function UserRosterAdmin({ search = "" }) {
   const inactiveCount = users.filter((u) => u.status === "INACTIVE").length;
 
   return (
-    <div className="page-container" style={{ maxWidth: "1240px", margin: "0 auto", padding: "24px 20px" }}>
+    <div className="user-roster-container">
       {/* Header Hub Card */}
-      <div
-        style={{
-          padding: "28px 32px",
-          marginBottom: "28px",
-          background: "linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(15, 23, 42, 0.75) 100%)",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
-          borderRadius: "20px",
-          backdropFilter: "blur(16px)",
-          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.3)",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+      <div className="user-roster-hub">
+        <div className="user-roster-hub-top">
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
               <span style={{ fontSize: "24px" }}>👥</span>
@@ -152,107 +142,57 @@ export default function UserRosterAdmin({ search = "" }) {
           </div>
 
           <button
+            className="user-roster-add-btn"
             onClick={() => setShowAddMember(true)}
-            style={{
-              fontSize: "13.5px",
-              padding: "10px 22px",
-              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "10px",
-              fontWeight: "600",
-              boxShadow: "0 4px 16px rgba(99, 102, 241, 0.35)",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              transition: "transform 0.15s ease",
-            }}
           >
             <span>➕</span> Add New Member
           </button>
         </div>
 
-        {/* Filter Tab Pills */}
-        <div style={{ display: "flex", gap: "10px", marginTop: "24px", flexWrap: "wrap" }}>
+        {/* Filter Tab Pills - Horizontal Scrollable */}
+        <div className="user-roster-filter-pills">
           <button
             onClick={() => setRoleFilter("ALL")}
+            className={`roster-pill ${roleFilter === "ALL" ? "active" : ""}`}
             style={{
-              fontSize: "12.5px",
-              padding: "8px 18px",
-              borderRadius: "24px",
-              border: roleFilter === "ALL" ? "none" : "1px solid rgba(255,255,255,0.1)",
               background: roleFilter === "ALL" ? "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)" : "rgba(255,255,255,0.04)",
-              color: roleFilter === "ALL" ? "#fff" : "#cbd5e1",
-              fontWeight: roleFilter === "ALL" ? "600" : "500",
-              cursor: "pointer",
               boxShadow: roleFilter === "ALL" ? "0 4px 12px rgba(99, 102, 241, 0.3)" : "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
             }}
           >
-            <span>👥</span> All Users <span style={{ opacity: 0.85, fontSize: "11px", background: "rgba(255,255,255,0.2)", padding: "1px 7px", borderRadius: "10px" }}>{users.length}</span>
+            <span>👥</span> All Users <span className="roster-pill-count">{users.length}</span>
           </button>
 
           <button
             onClick={() => setRoleFilter("ADMIN")}
+            className={`roster-pill ${roleFilter === "ADMIN" ? "active" : ""}`}
             style={{
-              fontSize: "12.5px",
-              padding: "8px 18px",
-              borderRadius: "24px",
-              border: roleFilter === "ADMIN" ? "none" : "1px solid rgba(255,255,255,0.1)",
               background: roleFilter === "ADMIN" ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" : "rgba(255,255,255,0.04)",
-              color: roleFilter === "ADMIN" ? "#fff" : "#cbd5e1",
-              fontWeight: roleFilter === "ADMIN" ? "600" : "500",
-              cursor: "pointer",
               boxShadow: roleFilter === "ADMIN" ? "0 4px 12px rgba(245, 158, 11, 0.3)" : "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
             }}
           >
-            <span>👑</span> System Admins <span style={{ opacity: 0.85, fontSize: "11px", background: "rgba(255,255,255,0.2)", padding: "1px 7px", borderRadius: "10px" }}>{adminCount}</span>
+            <span>👑</span> System Admins <span className="roster-pill-count">{adminCount}</span>
           </button>
 
           <button
             onClick={() => setRoleFilter("MEMBER")}
+            className={`roster-pill ${roleFilter === "MEMBER" ? "active" : ""}`}
             style={{
-              fontSize: "12.5px",
-              padding: "8px 18px",
-              borderRadius: "24px",
-              border: roleFilter === "MEMBER" ? "none" : "1px solid rgba(255,255,255,0.1)",
               background: roleFilter === "MEMBER" ? "linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)" : "rgba(255,255,255,0.04)",
-              color: roleFilter === "MEMBER" ? "#fff" : "#cbd5e1",
-              fontWeight: roleFilter === "MEMBER" ? "600" : "500",
-              cursor: "pointer",
               boxShadow: roleFilter === "MEMBER" ? "0 4px 12px rgba(56, 189, 248, 0.3)" : "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
             }}
           >
-            <span>🎓</span> Team Members <span style={{ opacity: 0.85, fontSize: "11px", background: "rgba(255,255,255,0.2)", padding: "1px 7px", borderRadius: "10px" }}>{memberCount}</span>
+            <span>🎓</span> Team Members <span className="roster-pill-count">{memberCount}</span>
           </button>
 
           <button
             onClick={() => setRoleFilter("INACTIVE")}
+            className={`roster-pill ${roleFilter === "INACTIVE" ? "active" : ""}`}
             style={{
-              fontSize: "12.5px",
-              padding: "8px 18px",
-              borderRadius: "24px",
-              border: roleFilter === "INACTIVE" ? "none" : "1px solid rgba(255,255,255,0.1)",
               background: roleFilter === "INACTIVE" ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : "rgba(255,255,255,0.04)",
-              color: roleFilter === "INACTIVE" ? "#fff" : "#cbd5e1",
-              fontWeight: roleFilter === "INACTIVE" ? "600" : "500",
-              cursor: "pointer",
               boxShadow: roleFilter === "INACTIVE" ? "0 4px 12px rgba(239, 68, 68, 0.3)" : "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
             }}
           >
-            <span>⛔</span> Deactivated <span style={{ opacity: 0.85, fontSize: "11px", background: "rgba(255,255,255,0.2)", padding: "1px 7px", borderRadius: "10px" }}>{inactiveCount}</span>
+            <span>⛔</span> Deactivated <span className="roster-pill-count">{inactiveCount}</span>
           </button>
         </div>
       </div>
@@ -284,64 +224,30 @@ export default function UserRosterAdmin({ search = "" }) {
             return (
               <div
                 key={user._id}
-                style={{
-                  padding: "22px 26px",
-                  background: "linear-gradient(135deg, rgba(30, 27, 75, 0.45) 0%, rgba(15, 23, 42, 0.6) 100%)",
-                  borderRadius: "16px",
-                  border: "1px solid rgba(255, 255, 255, 0.09)",
-                  boxShadow: "0 6px 24px rgba(0, 0, 0, 0.25)",
-                  backdropFilter: "blur(16px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
-                  gap: "20px",
-                  opacity: isTargetActive ? 1 : 0.6,
-                  transition: "all 0.2s ease",
-                }}
+                className={`user-roster-card ${!isTargetActive ? "inactive-user" : ""}`}
               >
                 {/* Left Metadata Area - Spacious, Uncluttered & Structured */}
-                <div style={{ display: "flex", alignItems: "flex-start", gap: "20px", flex: "1 1 420px", minWidth: 0 }}>
+                <div className="user-roster-left">
                   {/* Styled Avatar Circle */}
                   <div
+                    className="user-roster-avatar"
                     style={{
-                      width: "52px",
-                      height: "52px",
-                      borderRadius: "16px",
                       background: isTargetAdmin
                         ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
                         : "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: "800",
-                      fontSize: "20px",
-                      flexShrink: 0,
                       boxShadow: isTargetAdmin
                         ? "0 4px 14px rgba(245, 158, 11, 0.35)"
                         : "0 4px 14px rgba(99, 102, 241, 0.35)",
-                      border: "2px solid rgba(255, 255, 255, 0.15)",
-                      marginTop: "2px",
                     }}
                   >
                     {(user.name || "U")[0]?.toUpperCase()}
                   </div>
 
                   {/* Details Block */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="user-roster-details">
                     {/* Row 1: Full Name & Role/Status Badges */}
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "8px" }}>
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontSize: "17px",
-                          fontWeight: "700",
-                          color: "#f8fafc",
-                          letterSpacing: "-0.2px",
-                          wordBreak: "break-word",
-                        }}
-                      >
+                      <h3 className="user-roster-name">
                         {user.name}
                       </h3>
 
@@ -379,86 +285,42 @@ export default function UserRosterAdmin({ search = "" }) {
                     </div>
 
                     {/* Row 2: Email & Enrolment ID */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "10px", fontSize: "13.5px", color: "#94a3b8" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "#cbd5e1" }}>
+                    <div className="user-roster-meta-row">
+                      <span className="user-roster-email">
                         <span style={{ opacity: 0.8 }}>✉️</span> {user.email}
                       </span>
 
                       {user.enrolmentNumber && (
-                        <span
-                          style={{
-                            fontSize: "11px",
-                            fontFamily: "monospace",
-                            padding: "2px 8px",
-                            borderRadius: "6px",
-                            background: "rgba(255, 255, 255, 0.06)",
-                            color: "#a5b4fc",
-                            border: "1px solid rgba(255, 255, 255, 0.08)",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
-                        >
+                        <span className="user-roster-enrolment">
                           <span>🆔</span> {user.enrolmentNumber}
                         </span>
                       )}
                     </div>
 
                     {/* Row 3: Meta Tag Pills (Position & Cluster) */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          padding: "5px 12px",
-                          background: "rgba(255, 255, 255, 0.04)",
-                          border: "1px solid rgba(255, 255, 255, 0.08)",
-                          borderRadius: "8px",
-                          color: "#94a3b8",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <span>💼</span> Position: <strong style={{ color: "#f1f5f9", fontWeight: "600" }}>{user.position || "Member"}</strong>
+                    <div className="user-roster-tags-row">
+                      <span className="user-roster-tag">
+                        <span>💼</span> Position: <strong>{user.position || "Member"}</strong>
                       </span>
 
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          padding: "5px 12px",
-                          background: "rgba(255, 255, 255, 0.04)",
-                          border: "1px solid rgba(255, 255, 255, 0.08)",
-                          borderRadius: "8px",
-                          color: "#94a3b8",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <span>🚀</span> Cluster: <strong style={{ color: "#f1f5f9", fontWeight: "600" }}>{user.clusterName || "Core"}</strong>
+                      <span className="user-roster-tag">
+                        <span>🚀</span> Cluster: <strong>{user.clusterName || "Core"}</strong>
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Right Action Controls */}
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", flexShrink: 0 }}>
+                <div className="user-roster-actions">
                   {/* Role Switch Button */}
                   <button
                     type="button"
                     disabled={isProcessing}
+                    className="user-roster-action-btn"
                     style={{
-                      fontSize: "12px",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
                       background: isTargetAdmin ? "rgba(99, 102, 241, 0.15)" : "rgba(245, 158, 11, 0.15)",
                       color: isTargetAdmin ? "#818cf8" : "#fbbf24",
                       border: isTargetAdmin ? "1px solid rgba(99, 102, 241, 0.3)" : "1px solid rgba(245, 158, 11, 0.3)",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "5px",
                     }}
                     onClick={() => handleRoleToggle(user)}
                     title={isTargetAdmin ? "Demote Admin to Member" : "Promote Member to Admin"}
@@ -470,18 +332,11 @@ export default function UserRosterAdmin({ search = "" }) {
                   <button
                     type="button"
                     disabled={isProcessing}
+                    className="user-roster-action-btn"
                     style={{
-                      fontSize: "12px",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
                       background: isTargetActive ? "rgba(239, 68, 68, 0.15)" : "rgba(34, 197, 94, 0.15)",
                       color: isTargetActive ? "#f87171" : "#4ade80",
                       border: isTargetActive ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid rgba(34, 197, 94, 0.3)",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "5px",
                     }}
                     onClick={() => handleStatusToggle(user)}
                   >
@@ -492,19 +347,7 @@ export default function UserRosterAdmin({ search = "" }) {
                   <button
                     type="button"
                     disabled={isProcessing}
-                    style={{
-                      fontSize: "12px",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      background: "rgba(255, 255, 255, 0.08)",
-                      color: "#f8fafc",
-                      border: "1px solid rgba(255, 255, 255, 0.15)",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "5px",
-                    }}
+                    className="user-roster-action-btn btn-secondary-style"
                     onClick={() => setEditingUser(user)}
                   >
                     ✏️ Edit
@@ -514,19 +357,7 @@ export default function UserRosterAdmin({ search = "" }) {
                   <button
                     type="button"
                     disabled={isProcessing}
-                    style={{
-                      fontSize: "12px",
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      backgroundColor: "rgba(239, 68, 68, 0.12)",
-                      color: "#f87171",
-                      border: "1px solid rgba(239, 68, 68, 0.25)",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "5px",
-                    }}
+                    className="user-roster-action-btn btn-delete-style"
                     onClick={() => handleDeleteUser(user)}
                   >
                     🗑️ Delete
@@ -563,4 +394,3 @@ export default function UserRosterAdmin({ search = "" }) {
     </div>
   );
 }
-
