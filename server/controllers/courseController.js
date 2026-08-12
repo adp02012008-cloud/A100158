@@ -117,35 +117,50 @@ export async function updateCourseProgress(req, res) {
 }
 
 function extractBaseCourseName(rawName, rawCategory) {
-  const nameStr = (rawName || "").trim();
-  if (nameStr) {
-    return nameStr;
-  }
   const catStr = (rawCategory || "").trim();
+  const nameStr = (rawName || "").trim();
+
+  // Strip Level suffix from nameStr (e.g. "Algebra - Level 0" -> "Algebra", "Advanced Modelling & Simulation Level 1" -> "Advanced Modelling & Simulation")
+  let cleanName = nameStr
+    .replace(/\s*[-–]?\s*level\s*[-–]?\s*([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*).*/i, "")
+    .replace(/\s*[-–]\s*[0-9]+[A-Z]?.*/i, "")
+    .trim();
+
   if (catStr && catStr.toLowerCase() !== "general") {
-    return catStr;
+    if (cleanName.toLowerCase().startsWith(catStr.toLowerCase()) || catStr.toLowerCase().startsWith(cleanName.toLowerCase())) {
+      return catStr;
+    }
   }
-  return "General Course";
+
+  return cleanName || nameStr || catStr || "General Course";
 }
 
 function extractLevelName(rawLevel, rawName) {
-  if (rawLevel && typeof rawLevel === "string" && rawLevel.trim()) {
-    let lvl = rawLevel.trim().toUpperCase();
-    if (!lvl.startsWith("LEVEL")) {
-      lvl = `LEVEL ${lvl}`;
-    }
-    return lvl;
+  const strToTest = (rawLevel && typeof rawLevel === "string" && rawLevel.trim())
+    ? rawLevel.trim()
+    : (rawName && typeof rawName === "string" ? rawName.trim() : "");
+
+  if (!strToTest) return "LEVEL 0";
+
+  // First match level with prefix: e.g. "Level 0", "Level 1A", "Level 2.0", "Level 3B Written Test"
+  const prefixMatch = strToTest.match(/(?:level\s*[-–]?\s*|[-–]\s*)([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*)/i);
+  if (prefixMatch && prefixMatch[1]) {
+    const lvlCode = prefixMatch[1].toUpperCase().trim();
+    return `LEVEL ${lvlCode}`;
   }
-  if (rawName && typeof rawName === "string") {
-    const match = rawName.match(/(?:level\s*[-–]?\s*|[-–]\s*)([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*)/i);
-    if (match && match[1]) {
-      let lvl = match[1].toUpperCase().trim();
-      if (!lvl.startsWith("LEVEL")) {
-        lvl = `LEVEL ${lvl}`;
-      }
-      return lvl;
-    }
+
+  // Direct prefix e.g. "Level 0" -> "LEVEL 0"
+  const directMatch = strToTest.match(/^level\s*(.+)/i);
+  if (directMatch && directMatch[1]) {
+    return `LEVEL ${directMatch[1].toUpperCase().trim()}`;
   }
+
+  // Alphanumeric code like "1A", "0", "1", "2.0"
+  const codeMatch = strToTest.match(/([0-9]+(?:\.[0-9]+)?[A-Z]?)/i);
+  if (codeMatch && codeMatch[1]) {
+    return `LEVEL ${codeMatch[1].toUpperCase().trim()}`;
+  }
+
   return "LEVEL 0";
 }
 
