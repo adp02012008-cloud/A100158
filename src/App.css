@@ -751,35 +751,45 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(8px);
 }
 
-/* ── Login Full-Width Horizontal Footer Bar ───────────────── */
-.login-footer-bar {
+/* ── Sleek Floating Glassmorphic Footer Dock ──────────────── */
+.login-footer-dock {
   width: 100%;
-  background: rgba(10, 4, 26, 0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  padding: 12px 24px 8px 24px;
+  max-width: 860px;
+  margin: 16px auto 14px auto;
+  padding: 0 16px;
   z-index: 20;
-  margin-top: auto;
   animation: fadeIn 0.5s ease forwards;
 }
 
-.login-footer-inner {
+.login-footer-glass {
+  background: rgba(14, 8, 36, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.5), 
+    0 0 30px rgba(139, 92, 246, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 16px 24px 12px 24px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  max-width: 1300px;
-  margin: 0 auto;
+  gap: 12px;
+  transition: all 0.3s ease;
 }
 
-.login-footer-main-row {
+.login-footer-glass:hover {
+  border-color: rgba(139, 92, 246, 0.45);
+  box-shadow: 
+    0 20px 48px rgba(0, 0, 0, 0.6), 
+    0 0 40px rgba(139, 92, 246, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.login-footer-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -796,22 +806,22 @@ h1, h2, h3, h4, h5, h6 {
   color: #ffffff;
   font-family: var(--font-heading);
   font-weight: 800;
-  font-size: 12.5px;
-  padding: 3px 12px;
+  font-size: 13px;
+  padding: 4px 14px;
   border-radius: 999px;
   letter-spacing: 0.05em;
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.45);
 }
 
 .login-footer-crafted {
   font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .login-footer-crafted strong {
   color: #ffffff;
   font-weight: 700;
-  background: linear-gradient(90deg, #ffffff 0%, #d8b4fe 100%);
+  background: linear-gradient(90deg, #ffffff 0%, #c084fc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -823,132 +833,133 @@ h1, h2, h3, h4, h5, h6 {
   flex-wrap: wrap;
 }
 
-.login-footer-connect-label {
+.login-footer-connect-title {
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.login-footer-connect-links {
+.login-footer-pills {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.login-footer-link {
+.footer-pill-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #93c5fd;
+  color: #e0e7ff;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 12.5px;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 999px;
-  background: rgba(147, 197, 253, 0.08);
-  border: 1px solid rgba(147, 197, 253, 0.2);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.login-footer-link:hover {
+.footer-pill-btn.linkedin:hover {
+  color: #ffffff;
+  background: rgba(10, 102, 194, 0.35);
+  border-color: rgba(10, 102, 194, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(10, 102, 194, 0.35);
+}
+
+.footer-pill-btn.github:hover {
   color: #ffffff;
   background: rgba(139, 92, 246, 0.35);
   border-color: rgba(167, 139, 250, 0.6);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
 }
 
-.login-footer-icon {
+.footer-pill-btn.phone:hover {
+  color: #ffffff;
+  background: rgba(16, 185, 129, 0.35);
+  border-color: rgba(16, 185, 129, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+}
+
+.pill-icon {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
 }
 
-.login-footer-dot {
-  color: rgba(255, 255, 255, 0.3);
-  font-weight: 700;
-}
-
-.login-footer-feedback-banner {
+.login-footer-feedback {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.08) 100%);
+  border: 1px dashed rgba(167, 139, 250, 0.25);
+  border-radius: 12px;
+  padding: 8px 16px;
+  transition: all 0.25s ease;
+}
+
+.login-footer-feedback:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.16) 0%, rgba(59, 130, 246, 0.14) 100%);
+  border-color: rgba(167, 243, 208, 0.5);
+}
+
+.feedback-icon-box {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.feedback-text-content {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  padding: 4px 20px;
+  flex-wrap: wrap;
   font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.88);
-  width: 100%;
-  max-width: 900px;
-  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-.login-footer-feedback-banner:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(167, 243, 208, 0.45);
-}
-
-.login-footer-feedback-banner .feedback-head {
-  font-weight: 600;
-  color: #a7f3d0;
-  white-space: nowrap;
-}
-
-.login-footer-feedback-banner .feedback-sep {
-  color: rgba(255, 255, 255, 0.3);
+.feedback-title {
   font-weight: 700;
-}
-
-.login-footer-feedback-banner .feedback-sub {
-  color: rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
-}
-
-.login-footer-feedback-banner .feedback-sub strong {
-  color: #ffffff;
-}
-
-.login-footer-subrow {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  width: 100%;
-  padding-top: 4px;
-  text-align: center;
-}
-
-.login-footer-copyright {
-  margin: 0;
-  font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.52);
+  color: #a7f3d0;
   letter-spacing: 0.01em;
 }
 
+.feedback-desc {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.feedback-desc strong {
+  color: #ffffff;
+}
+
+.login-footer-copyright {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+  text-align: center;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
 .login-footer-copyright strong {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.88);
   font-weight: 600;
 }
 
-@media (max-width: 850px) {
-  .login-footer-main-row {
+@media (max-width: 680px) {
+  .login-footer-header {
     flex-direction: column;
-    justify-content: center;
+    align-items: center;
     text-align: center;
-    gap: 8px;
+    gap: 10px;
   }
-  .login-footer-feedback-banner {
+  .feedback-text-content {
     flex-direction: column;
-    border-radius: 12px;
-    padding: 8px 14px;
-    gap: 4px;
-  }
-  .login-footer-feedback-banner .feedback-sep {
-    display: none;
-  }
-  .login-footer-feedback-banner .feedback-head,
-  .login-footer-feedback-banner .feedback-sub {
-    white-space: normal;
-    text-align: center;
+    align-items: flex-start;
+    gap: 2px;
   }
 }
 
