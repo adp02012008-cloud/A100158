@@ -373,65 +373,40 @@ export default function Profile() {
       <div className="profile-hero-card">
         <div className="profile-hero-user-info">
           {/* Squircle Avatar */}
-          <div
-            style={{
-              width: "76px",
-              height: "76px",
-              borderRadius: "20px",
-              background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-              color: "#ffffff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "30px",
-              fontWeight: "800",
-              boxShadow: "0 8px 24px rgba(99, 102, 241, 0.4)",
-              border: "2px solid rgba(255, 255, 255, 0.2)",
-              flexShrink: 0,
-            }}
-          >
+          <div className="profile-hero-avatar">
             {initials}
           </div>
 
-          <div>
-            <div className="profile-hero-name-row">
-              <h2 style={{ margin: 0, fontSize: "26px", fontWeight: "800", color: "#f8fafc" }}>
+          <div className="profile-hero-details">
+            <div className="profile-hero-name-container">
+              <h2 className="profile-hero-name">
                 {profile?.name}
               </h2>
               {profile?.enrolmentNumber && (
-                <span style={{ fontSize: "12px", fontFamily: "monospace", color: "#94a3b8", background: "rgba(15, 23, 42, 0.6)", padding: "2px 8px", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
+                <div className="profile-hero-id-pill">
                   🆔 {profile.enrolmentNumber}
-                </span>
+                </div>
               )}
             </div>
 
             <div className="profile-hero-badges-row">
               <span
+                className="profile-badge-pill"
                 style={{
                   background: profile?.role === "ADMIN" ? "linear-gradient(135deg, rgba(234, 179, 8, 0.3) 0%, rgba(202, 138, 4, 0.4) 100%)" : "rgba(99, 102, 241, 0.25)",
                   border: profile?.role === "ADMIN" ? "1px solid #eab308" : "1px solid #6366f1",
                   color: profile?.role === "ADMIN" ? "#fef08a" : "#a5b4fc",
-                  padding: "4px 12px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
-                  fontWeight: "700",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
                 }}
               >
                 {profile?.role === "ADMIN" ? "👑 System Admin" : "🎓 Team Member"}
               </span>
 
               <span
+                className="profile-badge-pill"
                 style={{
                   background: "rgba(255, 255, 255, 0.08)",
                   border: "1px solid rgba(255, 255, 255, 0.15)",
                   color: "#cbd5e1",
-                  padding: "4px 12px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
-                  fontWeight: "600",
                 }}
               >
                 💼 {profile?.position || "Member"}
@@ -439,14 +414,11 @@ export default function Profile() {
 
               {profile?.clusterName && (
                 <span
+                  className="profile-badge-pill"
                   style={{
                     background: "rgba(168, 85, 247, 0.25)",
                     border: "1px solid #a855f7",
                     color: "#e9d5ff",
-                    padding: "4px 12px",
-                    borderRadius: "20px",
-                    fontSize: "12px",
-                    fontWeight: "600",
                   }}
                 >
                   🚀 {profile.clusterName}
@@ -454,14 +426,11 @@ export default function Profile() {
               )}
 
               <span
+                className="profile-badge-pill"
                 style={{
                   background: profile?.status === "ACTIVE" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)",
                   border: profile?.status === "ACTIVE" ? "1px solid #22c55e" : "1px solid #ef4444",
                   color: profile?.status === "ACTIVE" ? "#4ade80" : "#f87171",
-                  padding: "4px 10px",
-                  borderRadius: "20px",
-                  fontSize: "12px",
-                  fontWeight: "600",
                 }}
               >
                 {profile?.status === "ACTIVE" ? "🟢 ACTIVE" : "🔴 INACTIVE"}

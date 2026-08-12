@@ -3719,19 +3719,73 @@ h1, h2, h3, h4, h5, h6 {
   min-width: 0;
 }
 
-.profile-hero-name-row {
+.profile-hero-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.profile-hero-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-hero-name-container {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
+.profile-hero-name {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.profile-hero-id-pill {
+  font-size: 12px;
+  font-family: monospace;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .profile-hero-badges-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 10px;
   align-items: center;
+  margin-top: 4px;
+}
+
+.profile-badge-pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .profile-hero-actions {
@@ -3843,9 +3897,9 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 640px) {
   .profile-hero-card {
-    padding: 20px 16px;
+    padding: 24px 18px;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 16px;
     text-align: center;
   }
@@ -3853,23 +3907,64 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 12px;
+    gap: 14px;
+    width: 100%;
   }
-  .profile-hero-name-row {
-    justify-content: center;
+  .profile-hero-avatar {
+    margin: 0 auto;
+    width: 72px;
+    height: 72px;
+    font-size: 28px;
   }
-  .profile-hero-badges-row {
-    justify-content: center;
+  .profile-hero-details {
+    align-items: center;
     width: 100%;
     gap: 6px;
   }
+  .profile-hero-name-container {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+  }
+  .profile-hero-name {
+    font-size: 22px;
+    text-align: center;
+  }
   
-  /* Hero Action Buttons - 2 Equal Columns Side by Side */
+  /* 2x2 Equal Matrix Grid for Badges on Mobile */
+  .profile-hero-badges-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 10px auto 0 auto !important;
+  }
+  .profile-badge-pill {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    padding: 7px 6px !important;
+    font-size: 11.5px !important;
+    border-radius: 12px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 2 Equal Columns for Action Buttons on Mobile */
   .profile-hero-actions {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     width: 100% !important;
+    max-width: 360px !important;
     gap: 8px !important;
+    margin-top: 4px !important;
   }
   .profile-hero-btn {
     width: 100% !important;
@@ -3921,6 +4016,7 @@ h1, h2, h3, h4, h5, h6 {
     padding: 14px 16px !important;
   }
 }
+
 
 
 
