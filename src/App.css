@@ -4017,6 +4017,183 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ── Dashboard Toolbar & Admin Quick Actions Styling ───────────────── */
+.dashboard-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.cluster-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cluster-filter button {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.cluster-filter button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+.cluster-filter button.active {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+.dashboard-admin-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.dashboard-mgmt-group,
+.dashboard-export-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.dashboard-action-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-action-btn.btn-members {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+}
+
+.dashboard-action-btn.btn-courses {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+}
+
+.dashboard-action-btn.btn-clusters {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+
+.dashboard-action-btn.btn-excel {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+}
+.dashboard-action-btn.btn-excel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+.dashboard-action-btn.btn-pdf {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+}
+.dashboard-action-btn.btn-pdf:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+/* Mobile Responsiveness for Dashboard Toolbar & Quick Actions */
+@media (max-width: 640px) {
+  .dashboard-toolbar {
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  
+  /* Touch Scroll Pill Bar for Cluster Filter */
+  .cluster-filter {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .cluster-filter::-webkit-scrollbar {
+    display: none;
+  }
+  .cluster-filter button {
+    flex: 0 0 auto !important;
+    padding: 8px 16px !important;
+    font-size: 12.5px !important;
+  }
+
+  .dashboard-admin-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+  }
+
+  /* Management Group: 2 Side-by-Side + 1 Full Width Banner */
+  .dashboard-mgmt-group {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .dashboard-action-btn.btn-members,
+  .dashboard-action-btn.btn-courses {
+    width: 100% !important;
+    padding: 11px 6px !important;
+    font-size: 12px !important;
+  }
+  .dashboard-action-btn.btn-clusters {
+    grid-column: span 2 !important;
+    width: 100% !important;
+    padding: 11px 6px !important;
+    font-size: 12.5px !important;
+  }
+
+  /* Export Group: 2 Side-by-Side Columns */
+  .dashboard-export-group {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .dashboard-action-btn.btn-excel,
+  .dashboard-action-btn.btn-pdf {
+    width: 100% !important;
+    padding: 11px 6px !important;
+    font-size: 12.5px !important;
+  }
+}
+
+
 
 
 
