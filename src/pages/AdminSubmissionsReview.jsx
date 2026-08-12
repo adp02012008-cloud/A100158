@@ -220,52 +220,27 @@ export default function AdminSubmissionsReview({ search = "" }) {
   };
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px 16px" }}>
+    <div className="review-container">
       {/* Header Banner */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)",
-          border: "1px solid rgba(167, 139, 250, 0.25)",
-          borderRadius: "16px",
-          padding: "24px 32px",
-          marginBottom: "24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "16px",
-        }}
-      >
+      <div className="review-header-banner">
         <div>
-          <h2 style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: "#f8fafc" }}>
+          <h2 className="review-header-title">
             📥 Submissions Review Queue
           </h2>
-          <p style={{ margin: "6px 0 0 0", color: "#94a3b8", fontSize: "14px" }}>
+          <p className="review-header-subtitle">
             Review, approve, and provide feedback on member project deliverables. Approved submissions automatically publish to the Projects Showcase.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button
-            onClick={loadData}
-            style={{
-              padding: "10px 18px",
-              borderRadius: "8px",
-              background: "rgba(255, 255, 255, 0.08)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              color: "#f8fafc",
-              fontWeight: "600",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
+        <div>
+          <button onClick={loadData} className="review-refresh-btn">
             🔄 Refresh Queue
           </button>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
+      <div className="review-filter-tabs">
         {[
           { key: "PENDING", label: `⏳ Pending Review (${latestSubmissions.filter((s) => (s.status || "SUBMITTED").toUpperCase() === "SUBMITTED").length})` },
           { key: "APPROVED", label: `✅ Approved & Published (${latestSubmissions.filter((s) => (s.status || "").toUpperCase() === "APPROVED").length})` },
@@ -275,17 +250,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
           <button
             key={tab.key}
             onClick={() => setStatusTab(tab.key)}
-            style={{
-              padding: "10px 20px",
-              borderRadius: "10px",
-              fontSize: "14px",
-              fontWeight: "600",
-              cursor: "pointer",
-              border: "1px solid",
-              background: statusTab === tab.key ? "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)" : "rgba(15, 23, 42, 0.6)",
-              borderColor: statusTab === tab.key ? "#6366f1" : "rgba(255, 255, 255, 0.12)",
-              color: statusTab === tab.key ? "#ffffff" : "#94a3b8",
-            }}
+            className={`review-filter-tab ${statusTab === tab.key ? "active" : ""}`}
           >
             {tab.label}
           </button>
@@ -311,7 +276,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
           ✨ No submissions match the selected filter!
         </div>
       ) : (
-        <div style={{ display: "grid", gap: "20px" }}>
+        <div className="review-grid">
           {filteredSubmissions.map((sub) => {
             const subId = sub._id || sub.id;
             const taskTitle = sub.taskId?.title || "Untitled Task";
@@ -338,19 +303,10 @@ export default function AdminSubmissionsReview({ search = "" }) {
             );
 
             return (
-              <div
-                key={subId}
-                style={{
-                  background: "rgba(26, 15, 52, 0.8)",
-                  border: "1px solid rgba(167, 139, 250, 0.2)",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
-                  <div>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px", flexWrap: "wrap" }}>
+              <div key={subId} className="review-card">
+                <div className="review-card-header">
+                  <div className="review-card-info">
+                    <div className="review-card-badges">
                       <span style={{ padding: "4px 10px", borderRadius: "12px", background: "rgba(99, 102, 241, 0.2)", color: "#818cf8", fontSize: "12px", fontWeight: "700" }}>
                         {taskDomain}
                       </span>
@@ -369,20 +325,20 @@ export default function AdminSubmissionsReview({ search = "" }) {
                       )}
                     </div>
 
-                    <h3 style={{ margin: "0 0 6px 0", fontSize: "18px", color: "#f8fafc", fontWeight: "700" }}>
+                    <h3 className="review-card-title">
                       {taskTitle}
                     </h3>
 
-                    <div style={{ fontSize: "14px", color: "#cbd5e1" }}>
+                    <div className="review-submitter-text">
                       Submitted by: <strong style={{ color: "#f8fafc" }}>{submitterName}</strong> ({getDisplayEmail(sub.submittedBy)})
                     </div>
-                    <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>
+                    <div className="review-date-text">
                       📅 Date: {new Date(sub.submittedAt).toLocaleString()}
                     </div>
                   </div>
 
                   {/* Status Badge & Actions */}
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
+                  <div className="review-status-col">
                     <span
                       style={{
                         padding: "6px 14px",
@@ -436,7 +392,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
                 {/* Represented Members */}
                 {Array.isArray(sub.submittedFor) && sub.submittedFor.length > 0 && (
-                  <div style={{ marginTop: "12px", background: "rgba(15, 23, 42, 0.6)", padding: "10px 14px", borderRadius: "8px" }}>
+                  <div className="review-members-box" style={{ marginTop: "12px", background: "rgba(15, 23, 42, 0.6)", padding: "10px 14px", borderRadius: "8px" }}>
                     <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "6px", fontWeight: "600" }}>
                       Covered / Represented Members:
                     </div>
@@ -461,13 +417,14 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
                 {/* Notes & Links */}
                 {sub.notes && (
-                  <div style={{ marginTop: "12px", fontSize: "14px", color: "#cbd5e1", background: "rgba(15, 23, 42, 0.4)", padding: "10px 14px", borderRadius: "8px" }}>
+                  <div className="review-notes-box" style={{ marginTop: "12px", fontSize: "14px", color: "#cbd5e1", background: "rgba(15, 23, 42, 0.4)", padding: "10px 14px", borderRadius: "8px" }}>
                     💬 <strong>Submitter Notes:</strong> {sub.notes}
                   </div>
                 )}
 
                 {prevChangesRequested && (
                   <div
+                    className="review-prev-feedback-box"
                     style={{
                       marginTop: "12px",
                       background: "linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.15) 100%)",
@@ -488,20 +445,16 @@ export default function AdminSubmissionsReview({ search = "" }) {
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }}>
+                <div className="review-card-links">
                   {sub.demoUrl && (
                     <a
                       href={sub.demoUrl.startsWith("http") ? sub.demoUrl : `https://${sub.demoUrl}`}
                       target="_blank"
                       rel="noreferrer"
+                      className="review-link-btn"
                       style={{
-                        padding: "8px 16px",
-                        borderRadius: "8px",
                         background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                         color: "#fff",
-                        textDecoration: "none",
-                        fontWeight: "600",
-                        fontSize: "13px",
                       }}
                     >
                       🚀 Live Demo Link
@@ -513,15 +466,11 @@ export default function AdminSubmissionsReview({ search = "" }) {
                       href={sub.githubUrl.startsWith("http") ? sub.githubUrl : `https://${sub.githubUrl}`}
                       target="_blank"
                       rel="noreferrer"
+                      className="review-link-btn"
                       style={{
-                        padding: "8px 16px",
-                        borderRadius: "8px",
                         background: "rgba(255, 255, 255, 0.1)",
                         border: "1px solid rgba(255, 255, 255, 0.15)",
                         color: "#fff",
-                        textDecoration: "none",
-                        fontWeight: "600",
-                        fontSize: "13px",
                       }}
                     >
                       📦 GitHub Repository
@@ -542,6 +491,8 @@ export default function AdminSubmissionsReview({ search = "" }) {
                           fontSize: "13px",
                           color: rev.decision === "APPROVED" ? "#4ade80" : rev.decision === "CHANGES_REQUESTED" ? "#f87171" : "#38bdf8",
                           marginBottom: "4px",
+                          wordBreak: "break-word",
+                          overflowWrap: "anywhere",
                         }}
                       >
                         • <strong>{rev.decision}:</strong> {rev.feedback || "No feedback written"}
@@ -554,27 +505,13 @@ export default function AdminSubmissionsReview({ search = "" }) {
                 )}
 
                 {/* Admin Controls */}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                    marginTop: "16px",
-                    paddingTop: "14px",
-                    borderTop: "1px solid rgba(255, 255, 255, 0.08)",
-                  }}
-                >
+                <div className="review-card-actions">
                   <button
                     onClick={() => handleOpenReviewModal(sub)}
+                    className="review-action-btn"
                     style={{
-                      padding: "8px 18px",
-                      borderRadius: "8px",
                       background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
                       color: "#fff",
-                      border: "none",
-                      fontWeight: "600",
-                      fontSize: "13px",
-                      cursor: "pointer",
                       boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)",
                     }}
                   >
@@ -583,15 +520,11 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
                   <button
                     onClick={() => handleOpenEditModal(sub)}
+                    className="review-action-btn"
                     style={{
-                      padding: "8px 16px",
-                      borderRadius: "8px",
                       background: "rgba(255, 255, 255, 0.08)",
                       border: "1px solid rgba(255, 255, 255, 0.15)",
                       color: "#cbd5e1",
-                      fontWeight: "600",
-                      fontSize: "13px",
-                      cursor: "pointer",
                     }}
                   >
                     ✏️ Edit Deliverable & Unlock Member Window
@@ -600,15 +533,11 @@ export default function AdminSubmissionsReview({ search = "" }) {
                   {isEditWindowActive && (
                     <button
                       onClick={() => handleLockMemberEdit(sub)}
+                      className="review-action-btn"
                       style={{
-                        padding: "8px 14px",
-                        borderRadius: "8px",
                         background: "rgba(239, 68, 68, 0.15)",
                         border: "1px solid rgba(239, 68, 68, 0.3)",
                         color: "#f87171",
-                        fontWeight: "600",
-                        fontSize: "13px",
-                        cursor: "pointer",
                       }}
                     >
                       🔒 Lock Member Edit Window
@@ -638,14 +567,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
           onClick={() => setSelectedSub(null)}
         >
           <div
-            style={{
-              width: "100%",
-              maxWidth: "560px",
-              background: "rgba(26, 15, 52, 0.98)",
-              border: "1px solid rgba(167, 139, 250, 0.3)",
-              borderRadius: "16px",
-              padding: "24px",
-            }}
+            className="review-modal-box"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#f8fafc" }}>
@@ -752,14 +674,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
           onClick={() => setEditModalSub(null)}
         >
           <div
-            style={{
-              width: "100%",
-              maxWidth: "560px",
-              background: "rgba(26, 15, 52, 0.98)",
-              border: "1px solid rgba(167, 139, 250, 0.3)",
-              borderRadius: "16px",
-              padding: "24px",
-            }}
+            className="review-modal-box"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#f8fafc" }}>
