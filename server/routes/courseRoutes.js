@@ -7,6 +7,7 @@ import {
   deleteCourse,
   getUserCourseProgress,
   updateCourseProgress,
+  bulkImportCourses,
 } from "../controllers/courseController.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.use(verifyAuthToken);
 
 router.get("/", getCourses);
 router.post("/", requireAdmin, createCourse);
+router.post("/bulk-import", requireAdmin, bulkImportCourses);
 router.put("/:id", requireAdmin, updateCourse);
 router.delete("/:id", requireAdmin, deleteCourse);
 router.get("/progress", getUserCourseProgress);

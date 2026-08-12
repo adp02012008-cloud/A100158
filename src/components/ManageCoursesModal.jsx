@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { apiFetch } from "../utils/api";
 import EditCourseModal from "./EditCourseModal";
 import AddCourseModal from "./AddCourseModal";
+import BulkImportCoursesModal from "./BulkImportCoursesModal";
 
 export default function ManageCoursesModal({ onClose }) {
   const [courses, setCourses] = useState([]);
@@ -11,6 +12,7 @@ export default function ManageCoursesModal({ onClose }) {
   const [error, setError] = useState("");
   const [editingCourse, setEditingCourse] = useState(null);
   const [showAddCourse, setShowAddCourse] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -105,27 +107,51 @@ export default function ManageCoursesModal({ onClose }) {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="btn primary"
-            onClick={() => setShowAddCourse(true)}
-            style={{
-              fontSize: "13px",
-              padding: "10px 18px",
-              background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "10px",
-              fontWeight: "600",
-              boxShadow: "0 4px 14px rgba(16, 185, 129, 0.3)",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <span>➕</span> Add New Course
-          </button>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="btn secondary"
+              onClick={() => setShowBulkImport(true)}
+              style={{
+                fontSize: "13px",
+                padding: "10px 16px",
+                background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "10px",
+                fontWeight: "600",
+                boxShadow: "0 4px 14px rgba(124, 58, 237, 0.3)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span>📤</span> Bulk Import (CSV / JSON)
+            </button>
+
+            <button
+              type="button"
+              className="btn primary"
+              onClick={() => setShowAddCourse(true)}
+              style={{
+                fontSize: "13px",
+                padding: "10px 18px",
+                background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "10px",
+                fontWeight: "600",
+                boxShadow: "0 4px 14px rgba(16, 185, 129, 0.3)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <span>➕</span> Add New Course
+            </button>
+          </div>
         </div>
 
         {/* Search Bar Input */}
@@ -443,6 +469,17 @@ export default function ManageCoursesModal({ onClose }) {
             onClose={() => setShowAddCourse(false)}
             onCreated={() => {
               setShowAddCourse(false);
+              loadCourseData();
+            }}
+          />
+        )}
+
+        {/* Bulk Import Modal */}
+        {showBulkImport && (
+          <BulkImportCoursesModal
+            onClose={() => setShowBulkImport(false)}
+            onSuccess={() => {
+              setShowBulkImport(false);
               loadCourseData();
             }}
           />
