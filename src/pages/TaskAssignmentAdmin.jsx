@@ -252,6 +252,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       setSubmittingReview(false);
     }
   };
+
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
       const effStatus = getTaskEffectiveStatus(t);
@@ -276,21 +277,13 @@ export default function TaskAssignmentAdmin({ search = "" }) {
         <div className="login-loading">Loading Task Assignments…</div>
       </div>
     );
-  }  return (
-    <div className="page-container" style={{ maxWidth: "1280px", margin: "0 auto", padding: "12px 20px 40px" }}>
+  }
+
+  return (
+    <div className="task-admin-container">
       {/* Header Hub Card */}
-      <div
-        style={{
-          padding: "26px 30px",
-          marginBottom: "24px",
-          background: "linear-gradient(135deg, rgba(26, 15, 52, 0.85) 0%, rgba(35, 18, 68, 0.95) 100%)",
-          border: "1px solid rgba(167, 139, 250, 0.25)",
-          borderRadius: "20px",
-          backdropFilter: "blur(18px)",
-          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.45)",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "18px" }}>
+      <div className="task-admin-hub">
+        <div className="task-admin-hub-top">
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
               <span style={{ fontSize: "24px" }}>📋</span>
@@ -305,42 +298,19 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
           <button
             type="button"
+            className="task-admin-assign-btn"
             onClick={openCreateModal}
-            style={{
-              fontSize: "13.5px",
-              padding: "10px 22px",
-              background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "12px",
-              fontWeight: "600",
-              boxShadow: "0 4px 16px rgba(37, 99, 235, 0.4)",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              transition: "transform 0.15s ease",
-            }}
           >
             <span>➕</span> Assign New Task
           </button>
         </div>
 
         {/* Filter Toolbar Inside Header Hub */}
-        <div style={{ display: "flex", gap: "16px", marginTop: "20px", flexWrap: "wrap", alignItems: "center", paddingTop: "18px", borderTop: "1px solid rgba(167, 139, 250, 0.15)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#cbd5e1", whiteSpace: "nowrap" }}>Filter by Domain:</label>
+        <div className="task-filter-toolbar">
+          <div className="task-filter-group">
+            <label className="task-filter-label">Filter by Domain:</label>
             <select
-              style={{
-                padding: "8px 14px",
-                borderRadius: "10px",
-                background: "rgba(26, 15, 52, 0.9)",
-                border: "1px solid rgba(167, 139, 250, 0.25)",
-                color: "#f8fafc",
-                fontSize: "13px",
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="task-filter-select"
               value={domainFilter}
               onChange={(e) => setDomainFilter(e.target.value)}
             >
@@ -353,19 +323,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             </select>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#cbd5e1", whiteSpace: "nowrap" }}>Filter by Status:</label>
+          <div className="task-filter-group">
+            <label className="task-filter-label">Filter by Status:</label>
             <select
-              style={{
-                padding: "8px 14px",
-                borderRadius: "10px",
-                background: "rgba(26, 15, 52, 0.9)",
-                border: "1px solid rgba(167, 139, 250, 0.25)",
-                color: "#f8fafc",
-                fontSize: "13px",
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="task-filter-select"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -378,19 +339,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             </select>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <label style={{ fontSize: "12.5px", fontWeight: "600", color: "#cbd5e1", whiteSpace: "nowrap" }}>Filter by Priority:</label>
+          <div className="task-filter-group">
+            <label className="task-filter-label">Filter by Priority:</label>
             <select
-              style={{
-                padding: "8px 14px",
-                borderRadius: "10px",
-                background: "rgba(26, 15, 52, 0.9)",
-                border: "1px solid rgba(167, 139, 250, 0.25)",
-                color: "#f8fafc",
-                fontSize: "13px",
-                outline: "none",
-                cursor: "pointer",
-              }}
+              className="task-filter-select"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
             >
@@ -401,31 +353,16 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             </select>
           </div>
 
-          <div style={{ marginLeft: "auto", fontSize: "12.5px", color: "#a78bfa" }}>
+          <div className="task-filter-count">
             Showing <strong style={{ color: "#ffffff" }}>{filteredTasks.length}</strong> of {tasks.length} tasks
           </div>
         </div>
       </div>
 
       {/* Task Cards Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
-          gap: "22px",
-        }}
-      >
+      <div className="task-admin-grid">
         {filteredTasks.length === 0 ? (
-          <div
-            style={{
-              padding: "50px 20px",
-              textAlign: "center",
-              background: "rgba(35, 18, 68, 0.4)",
-              borderRadius: "20px",
-              border: "1px dashed rgba(167, 139, 250, 0.2)",
-              gridColumn: "1 / -1",
-            }}
-          >
+          <div className="task-empty-card">
             <div style={{ fontSize: "42px", marginBottom: "14px" }}>📋</div>
             <h3 style={{ color: "#ffffff", margin: "0 0 8px 0", fontSize: "18px" }}>No matching tasks found</h3>
             <p style={{ color: "#a78bfa", margin: 0, fontSize: "14px" }}>
@@ -437,21 +374,8 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             const effStatus = getTaskEffectiveStatus(t);
 
             return (
-              <div
-                key={t.id}
-                style={{
-                  padding: "22px 24px",
-                  background: "linear-gradient(135deg, rgba(35, 18, 68, 0.7) 0%, rgba(26, 15, 52, 0.85) 100%)",
-                  borderRadius: "18px",
-                  border: "1px solid rgba(167, 139, 250, 0.2)",
-                  boxShadow: "0 8px 28px rgba(0, 0, 0, 0.35)",
-                  backdropFilter: "blur(16px)",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                {/* Domain Pill & Priority Badge Row (No-wrap guaranteed) */}
+              <div key={t.id} className="task-admin-card">
+                {/* Domain Pill & Priority Badge Row */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "10px" }}>
                   <span
                     style={{
@@ -506,49 +430,15 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 </div>
 
                 {/* Task Title */}
-                <h3
-                  style={{
-                    margin: "0 0 8px 0",
-                    fontSize: "18px",
-                    fontWeight: "700",
-                    color: "#ffffff",
-                    lineHeight: "1.35",
-                    letterSpacing: "-0.2px",
-                  }}
-                >
-                  {t.title}
-                </h3>
+                <h3 className="task-card-title">{t.title}</h3>
 
                 {/* Task Description */}
-                <p
-                  style={{
-                    fontSize: "13.5px",
-                    color: "#cbd5e1",
-                    lineHeight: "1.55",
-                    marginBottom: "16px",
-                    flexGrow: 1,
-                  }}
-                >
+                <p className="task-card-desc">
                   {t.description || "No description provided."}
                 </p>
 
                 {/* Status & Due Date Meta Container */}
-                <div
-                  style={{
-                    display: "flex",
-                    justify: "space-between",
-                    alignItems: "center",
-                    padding: "10px 14px",
-                    background: "rgba(26, 15, 52, 0.6)",
-                    border: "1px solid rgba(167, 139, 250, 0.15)",
-                    borderRadius: "12px",
-                    marginBottom: "14px",
-                    fontSize: "12.5px",
-                    color: "#cbd5e1",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                  }}
-                >
+                <div className="task-card-meta-box">
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                     <span>🗓️</span> <strong>Due:</strong> {t.dueDate || "No deadline"}
                   </span>
@@ -621,6 +511,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                             display: "inline-flex",
                             alignItems: "center",
                             gap: "5px",
+                            wordBreak: "break-all",
                           }}
                         >
                           <span>👤</span> {safeDisplay}
@@ -630,17 +521,8 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   </div>
                 </div>
 
-                {/* Equal 3-Column Action Buttons Grid Pinned at Bottom */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
-                    gap: "8px",
-                    marginTop: "auto",
-                    paddingTop: "14px",
-                    borderTop: "1px solid rgba(167, 139, 250, 0.15)",
-                  }}
-                >
+                {/* 3-Column Action Buttons Grid */}
+                <div className="task-card-actions">
                   <button
                     type="button"
                     style={{
@@ -716,7 +598,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       {/* Create / Edit Task Modal */}
       {modalOpen && (
         <div className="modal-overlay" onClick={() => setModalOpen(false)}>
-          <div className="modal-content task-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content task-modal task-admin-modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingTask ? "✏️ Edit Task Assignment" : "➕ Assign New Task / Domain"}</h3>
               <button
@@ -743,7 +625,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 />
               </div>
 
-              <div className="form-grid-2">
+              <div className="form-grid-2 task-form-grid-2">
                 <div className="form-group">
                   <label>Project Domain *</label>
                   <select
@@ -794,7 +676,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 </div>
               </div>
 
-              <div className="form-grid-2">
+              <div className="form-grid-2 task-form-grid-2">
                 <div className="form-group">
                   <label>Due Date</label>
                   <input
@@ -876,7 +758,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
       {/* Submissions & Multi-Admin Review Modal */}
       {submissionsModalTask && (
         <div className="modal-overlay" onClick={() => setSubmissionsModalTask(null)}>
-          <div className="modal-content task-modal" style={{ maxWidth: "850px" }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content task-modal task-admin-modal-box" style={{ maxWidth: "850px" }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
                 <h3>📥 Submissions & Reviews for: {submissionsModalTask.title}</h3>
@@ -949,7 +831,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
                       {sub.notes && <p className="submission-notes" style={{ marginTop: "10px" }}>💬 <strong>Notes:</strong> {sub.notes}</p>}
 
-                      <div className="submission-links" style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                      <div className="submission-links" style={{ display: "flex", gap: "10px", marginTop: "10px", flexWrap: "wrap" }}>
                         {sub.githubUrl && (
                           <a href={sub.githubUrl} target="_blank" rel="noreferrer" className="sub-link-btn github">
                             📦 GitHub Repository
@@ -990,7 +872,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
                         {reviewingSubId === sub.id ? (
                           <div>
-                            <div style={{ display: "flex", gap: "12px", marginBottom: "10px" }}>
+                            <div style={{ display: "flex", gap: "12px", marginBottom: "10px", flexWrap: "wrap" }}>
                               <label style={{ cursor: "pointer", color: "#4ade80", fontWeight: 600 }}>
                                 <input type="radio" name={`dec-${sub.id}`} value="APPROVED" checked={reviewDecision === "APPROVED"} onChange={() => setReviewDecision("APPROVED")} />
                                 {" "}✅ Approve
@@ -1014,7 +896,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                               style={{ width: "100%", marginBottom: "10px" }}
                             />
 
-                            <div style={{ display: "flex", gap: "8px" }}>
+                            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                               <button
                                 type="button"
                                 className="btn-primary"
