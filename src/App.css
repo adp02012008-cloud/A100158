@@ -1097,12 +1097,187 @@ h1, h2, h3, h4, h5, h6 {
   .team-modal-box { padding: 20px 16px; }
 }
 
+/* Mobile Header Quick Actions & Menu Toggle */
+.mobile-header-quick-actions {
+  display: none;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-menu-toggle-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mobile-menu-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.desktop-notif-center {
+  display: flex;
+  align-items: center;
+}
+
+/* Horizontal Touch Scroll Utility */
+.team-subnav-links,
+.cluster-filter,
+.tab-pills-row {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.team-subnav-links::-webkit-scrollbar,
+.cluster-filter::-webkit-scrollbar,
+.tab-pills-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Specific Responsive Adjustments */
 @media (max-width: 768px) {
-  .app { padding: 16px; }
-  .page-content { margin-top: 112px; }
-  .nav { grid-template-columns: 1fr; }
-  .nav-right { flex-direction: column; align-items: stretch; }
-  .search-wrap { min-width: 100%; }
+  .app {
+    padding: 12px 12px 30px;
+  }
+  .navbar-sticky-wrapper {
+    top: 8px;
+    margin-bottom: 14px;
+  }
+  .navbar-card {
+    padding: 12px 14px;
+    border-radius: 16px;
+    gap: 8px;
+  }
+  .nav-top-row {
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo-wrap {
+    flex: 1;
+    min-width: max-content;
+  }
+  .logo {
+    font-size: 19px;
+  }
+  .logo-icon {
+    width: 34px;
+    height: 34px;
+  }
+  
+  /* Show Mobile Header Quick Actions */
+  .mobile-header-quick-actions {
+    display: flex;
+  }
+  .desktop-notif-center {
+    display: none;
+  }
+  
+  .search-wrap {
+    min-width: 100%;
+    order: 3;
+    margin-top: 4px;
+  }
+  .search {
+    padding: 8px 14px 8px 34px;
+    font-size: 12.5px;
+    background: rgba(15, 23, 42, 0.8);
+  }
+
+  /* Collapsible Navigation Menu Drawer */
+  .controls {
+    display: none;
+    width: 100%;
+    order: 4;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .controls.mobile-expanded {
+    display: flex;
+    animation: fadeIn 0.25s ease;
+  }
+  .controls .nav-link-btn,
+  .controls .view-toggle-btn,
+  .controls .logout-btn,
+  .controls .role-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Secondary Subnav (Private Team Hub) on Mobile */
+  .team-subnav-row {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-top: 10px;
+  }
+  .team-subnav-row.mobile-expanded {
+    display: flex;
+    animation: fadeIn 0.25s ease;
+  }
+  .team-subnav-label {
+    font-size: 11.5px;
+  }
+
+  /* Single-Row Horizontal Pill Scroll for Team Links */
+  .team-subnav-links {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  .subnav-link-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 7px 14px;
+    font-size: 12px;
+    border-radius: 14px;
+  }
+
+  /* Filter and Action Rows Horizontal Scroll */
+  .filter-bar-row {
+    padding: 12px 14px;
+    gap: 12px;
+    border-radius: 14px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab-pills-row,
+  .cluster-filter {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+  .tab-pill,
+  .cluster-filter button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
   .grid { grid-template-columns: 1fr; }
   .mini-chart-row { grid-template-columns: 1fr; }
   .distribution-grid, .mini-stats, .modal-stats-grid, .edit-grid { grid-template-columns: 1fr; }
