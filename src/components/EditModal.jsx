@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import { formatDateForInput } from "../utils/dateUtils";
 
 function getLevelColumns(row) {
   return Object.keys(row || {}).filter((k) => k.toLowerCase().startsWith("level"));
@@ -21,7 +22,7 @@ export default function EditModal({ student, onClose, onSaved }) {
     Name: student.Name || student.name || "",
     POSITION: student.POSITION || student.position || "",
     CLUSTER: student.CLUSTER || student.clusterName || "",
-    JOINED: student.JOINED || student.joinedDate || "",
+    JOINED: formatDateForInput(student.JOINED || student.joinedDate || ""),
     ROLE: student.ROLE || student.role || "MEMBER",
     STATUS: student.STATUS || student.status || "ACTIVE",
   });
@@ -366,6 +367,8 @@ export default function EditModal({ student, onClose, onSaved }) {
 }
 
 function EditField({ label, value, onChange, type = "text" }) {
+  const inputValue = type === "date" ? formatDateForInput(value) : (value ?? "");
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
       <label className="edit-label" style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1" }}>{label}</label>
@@ -384,7 +387,7 @@ function EditField({ label, value, onChange, type = "text" }) {
           boxSizing: "border-box",
           colorScheme: type === "date" ? "dark" : undefined,
         }}
-        value={value}
+        value={inputValue}
         onChange={(e) => onChange(e.target.value)}
       />
     </div>

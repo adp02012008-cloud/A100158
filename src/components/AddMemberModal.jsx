@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../utils/api";
+import { formatDateForInput } from "../utils/dateUtils";
 
 export default function AddMemberModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -8,7 +9,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
     enrolmentNumber: "",
     position: "Member",
     clusterName: "Core",
-    joinedDate: new Date().toISOString().split("T")[0],
+    joinedDate: formatDateForInput(new Date()),
     role: "MEMBER",
   });
   const [existingClusters, setExistingClusters] = useState(["Core", "Computer Cluster"]);
@@ -203,7 +204,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
             <input
               style={inputStyle}
               type="date"
-              value={form.joinedDate}
+              value={formatDateForInput(form.joinedDate)}
               onChange={(e) => handleChange("joinedDate", e.target.value)}
             />
           </div>

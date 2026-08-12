@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchSheetData } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { extractStudentEmails, getAllAssignableUsers, normalizeEmail } from "../utils/roles";
+import { formatDateForInput } from "../utils/dateUtils";
 import {
   createReview,
   deleteTask,
@@ -137,7 +138,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     }
     setFormDescription(task.description || "");
     setFormPriority(task.priority || "Medium");
-    setFormDueDate(task.dueDate || "");
+    setFormDueDate(formatDateForInput(task.dueDate || ""));
     setFormAssigned(task.assignedEmails || []);
     setFormSubmissionMode(task.submissionMode || "FLEXIBLE");
     setFormError("");
@@ -682,7 +683,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   <input
                     type="date"
                     className="form-input"
-                    value={formDueDate}
+                    value={formatDateForInput(formDueDate)}
                     onChange={(e) => setFormDueDate(e.target.value)}
                   />
                 </div>
