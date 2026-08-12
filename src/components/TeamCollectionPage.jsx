@@ -9,71 +9,92 @@ import {
 } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 
+function formatValue(val) {
+  if (val === undefined || val === null) return "";
+  if (typeof val === "string" || typeof val === "number" || typeof val === "boolean") {
+    return String(val);
+  }
+  if (Array.isArray(val)) {
+    return val.map((item) => formatValue(item)).filter(Boolean).join(", ");
+  }
+  if (typeof val === "object") {
+    if (val.email) return String(val.email);
+    if (val.name) return String(val.name);
+    if (val.title) return String(val.title);
+    if (val.caption) return String(val.caption);
+    if (val._id) return String(val._id);
+    if (val.id) return String(val.id);
+    return "";
+  }
+  return String(val);
+}
+
 function getRecordValue(record, key) {
   if (!record || !key) return "";
-  
-  if (record[key] !== undefined && record[key] !== null && record[key] !== "") return record[key];
 
-  const upper = key.toUpperCase();
-  if (record[upper] !== undefined && record[upper] !== null && record[upper] !== "") return record[upper];
+  const extract = () => {
+    if (record[key] !== undefined && record[key] !== null && record[key] !== "") return record[key];
 
-  const lower = key.toLowerCase();
-  if (record[lower] !== undefined && record[lower] !== null && record[lower] !== "") return record[lower];
+    const upper = key.toUpperCase();
+    if (record[upper] !== undefined && record[upper] !== null && record[upper] !== "") return record[upper];
 
-  const camel = key.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-  if (record[camel] !== undefined && record[camel] !== null && record[camel] !== "") return record[camel];
+    const lower = key.toLowerCase();
+    if (record[lower] !== undefined && record[lower] !== null && record[lower] !== "") return record[lower];
 
-  const ALIASES = {
-    TITLE: ["title", "name", "caption", "CAPTION"],
-    CAPTION: ["caption", "title", "name"],
-    ORGANIZER: ["organizer", "issuer", "company"],
-    ISSUER: ["issuer", "organizer", "company"],
-    COMPANY: ["company", "organizer", "issuer"],
-    DATE: ["date", "eventDate", "deadline", "CREATED_AT", "createdAt"],
-    DEADLINE: ["deadline", "date", "eventDate"],
-    LOCATION: ["location", "venue"],
-    PROJECT: ["projectTitle", "project", "title"],
-    THEME: ["theme", "track"],
-    MEMBERS: ["memberNames", "members", "teamMembers", "students"],
-    TECH_STACK: ["techStack", "technologyStack", "skills"],
-    STATUS: ["status", "state"],
-    POSITION: ["position", "result", "rank"],
-    CATEGORY: ["category", "type", "domain"],
-    TYPE: ["type", "category"],
-    DESCRIPTION: ["description", "desc", "details", "notes", "eligibility"],
-    ELIGIBILITY: ["eligibility", "description", "details"],
-    ENROLMENT_NUMBER: ["enrolmentNumber", "enrolment", "studentId", "rollNo"],
-    GITHUB: ["github", "githubUrl", "codeUrl"],
-    DEMO: ["demo", "demoUrl", "liveUrl"],
-    PPT: ["ppt", "pptUrl", "presentationUrl"],
-    DRIVE_FOLDER: ["driveFolder", "driveUrl", "folderUrl"],
-    LINK: ["link", "url", "fileUrl", "applicationLink"],
-    COVER_IMAGE: ["coverImage", "imageUrl", "image", "fileUrl", "url"],
-    IMAGE_URL: ["imageUrl", "coverImage", "image", "fileUrl", "url"],
-    IMAGE: ["image", "imageUrl", "coverImage", "fileUrl", "url"],
-    FILE_URL: ["fileUrl", "imageUrl", "coverImage", "image", "url"],
-    EVENT_ID: ["eventId", "eventLegacyId", "_id", "id"],
-    PROJECT_ID: ["projectId", "_id", "id"],
-    CERTIFICATE_ID: ["certificateId", "_id", "id"],
-    PHOTO_ID: ["photoId", "_id", "id"],
-    OPPORTUNITY_ID: ["opportunityId", "_id", "id"],
-    CREATED_BY: ["createdBy", "email", "uploadedBy", "user"],
-    UPLOADED_BY: ["uploadedBy", "createdBy", "email", "user"],
+    const camel = key.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    if (record[camel] !== undefined && record[camel] !== null && record[camel] !== "") return record[camel];
+
+    const ALIASES = {
+      TITLE: ["title", "name", "caption", "CAPTION"],
+      CAPTION: ["caption", "title", "name"],
+      ORGANIZER: ["organizer", "issuer", "company"],
+      ISSUER: ["issuer", "organizer", "company"],
+      COMPANY: ["company", "organizer", "issuer"],
+      DATE: ["date", "eventDate", "deadline", "CREATED_AT", "createdAt"],
+      DEADLINE: ["deadline", "date", "eventDate"],
+      LOCATION: ["location", "venue"],
+      PROJECT: ["projectTitle", "project", "title"],
+      THEME: ["theme", "track"],
+      MEMBERS: ["memberNames", "members", "teamMembers", "students"],
+      TECH_STACK: ["techStack", "technologyStack", "skills"],
+      STATUS: ["status", "state"],
+      POSITION: ["position", "result", "rank"],
+      CATEGORY: ["category", "type", "domain"],
+      TYPE: ["type", "category"],
+      DESCRIPTION: ["description", "desc", "details", "notes", "eligibility"],
+      ELIGIBILITY: ["eligibility", "description", "details"],
+      ENROLMENT_NUMBER: ["enrolmentNumber", "enrolment", "studentId", "rollNo"],
+      GITHUB: ["github", "githubUrl", "codeUrl"],
+      DEMO: ["demo", "demoUrl", "liveUrl"],
+      PPT: ["ppt", "pptUrl", "presentationUrl"],
+      DRIVE_FOLDER: ["driveFolder", "driveUrl", "folderUrl"],
+      LINK: ["link", "url", "fileUrl", "applicationLink"],
+      COVER_IMAGE: ["coverImage", "imageUrl", "image", "fileUrl", "url"],
+      IMAGE_URL: ["imageUrl", "coverImage", "image", "fileUrl", "url"],
+      IMAGE: ["image", "imageUrl", "coverImage", "fileUrl", "url"],
+      FILE_URL: ["fileUrl", "imageUrl", "coverImage", "image", "url"],
+      EVENT_ID: ["eventId", "eventLegacyId", "_id", "id"],
+      PROJECT_ID: ["projectId", "_id", "id"],
+      CERTIFICATE_ID: ["certificateId", "_id", "id"],
+      PHOTO_ID: ["photoId", "_id", "id"],
+      OPPORTUNITY_ID: ["opportunityId", "_id", "id"],
+      CREATED_BY: ["createdBy", "email", "uploadedBy", "user", "userId"],
+      UPLOADED_BY: ["uploadedBy", "createdBy", "email", "user", "userId"],
+      USER_ID: ["userId", "user", "createdBy", "uploadedBy", "email"],
+    };
+
+    const aliases = ALIASES[upper] || ALIASES[key] || [];
+    for (const alias of aliases) {
+      if (record[alias] !== undefined && record[alias] !== null && record[alias] !== "") {
+        return record[alias];
+      }
+    }
+
+    return "";
   };
 
-  const aliases = ALIASES[upper] || ALIASES[key] || [];
-  for (const alias of aliases) {
-    if (record[alias] !== undefined && record[alias] !== null && record[alias] !== "") {
-      if (typeof record[alias] === "object") {
-        if (record[alias]?.email) return record[alias].email;
-        if (record[alias]?.name) return record[alias].name;
-        if (record[alias]?._id) return String(record[alias]._id);
-      }
-      return record[alias];
-    }
-  }
-
-  return "";
+  const rawValue = extract();
+  return formatValue(rawValue);
 }
 
 function MemberSelectionSelector({ value = "", onChange, readOnly }) {
