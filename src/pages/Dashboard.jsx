@@ -259,8 +259,6 @@ export default function Dashboard({ search, setPage }) {
   const belowAverageCount = students.filter((s) => s.ACTIVITY < avgActivity).length;
   const topPerformersCount = students.filter((s) => s.ACTIVITY > avgActivity + 5).length;
 
-  const topFive = [...filtered].sort((a, b) => b.ACTIVITY - a.ACTIVITY).slice(0, 5);
-  const chartMax = topFive.length > 0 ? Math.max(...topFive.map((s) => s.ACTIVITY), 1) : 1;
   const isAdminView = auth.role === "admin" && auth.viewMode === "admin";
 
   return (
@@ -332,22 +330,7 @@ export default function Dashboard({ search, setPage }) {
       </div>
 
       <div className="analytics-grid">
-        <div className="analytics-card">
-          <h3>Top 5 Students by Activity</h3>
-          <div className="mini-chart">
-            {topFive.length > 0 ? topFive.map((s, i) => (
-              <div key={i} className="mini-chart-row">
-                <div className="mini-chart-label">{s.Name}</div>
-                <div className="mini-chart-track">
-                  <div className="mini-chart-fill" style={{ width: `${(s.ACTIVITY / chartMax) * 100}%` }} />
-                </div>
-                <div className="mini-chart-value">{s.ACTIVITY}</div>
-              </div>
-            )) : <div className="leader-empty">No data available.</div>}
-          </div>
-        </div>
-
-        <div className="analytics-card">
+        <div className="analytics-card" style={{ gridColumn: "1 / -1" }}>
           <h3>Cluster Distribution</h3>
           <div className="distribution-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "10px" }}>
             {Object.entries(clusterCounts).map(([clusterName, count]) => (
