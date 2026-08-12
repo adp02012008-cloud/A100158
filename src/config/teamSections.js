@@ -108,6 +108,7 @@ export const TEAM_SECTION_CONFIGS = {
     idField: "CERTIFICATE_ID",
     idPrefix: "CRT",
     icon: "📜",
+    imageField: "FILE_URL",
     titleField: "TITLE",
     subtitleField: "ISSUER",
     badgeField: "CATEGORY",

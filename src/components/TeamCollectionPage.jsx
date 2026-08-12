@@ -27,7 +27,10 @@ function getRecordValue(record, key) {
     TITLE: ["title", "name", "caption", "CAPTION"],
     CAPTION: ["caption", "title", "name"],
     ORGANIZER: ["organizer", "issuer", "company"],
-    DATE: ["date", "eventDate", "CREATED_AT", "createdAt"],
+    ISSUER: ["issuer", "organizer", "company"],
+    COMPANY: ["company", "organizer", "issuer"],
+    DATE: ["date", "eventDate", "deadline", "CREATED_AT", "createdAt"],
+    DEADLINE: ["deadline", "date", "eventDate"],
     LOCATION: ["location", "venue"],
     PROJECT: ["projectTitle", "project", "title"],
     THEME: ["theme", "track"],
@@ -35,11 +38,16 @@ function getRecordValue(record, key) {
     TECH_STACK: ["techStack", "technologyStack", "skills"],
     STATUS: ["status", "state"],
     POSITION: ["position", "result", "rank"],
-    DESCRIPTION: ["description", "desc", "details", "notes"],
+    CATEGORY: ["category", "type", "domain"],
+    TYPE: ["type", "category"],
+    DESCRIPTION: ["description", "desc", "details", "notes", "eligibility"],
+    ELIGIBILITY: ["eligibility", "description", "details"],
+    ENROLMENT_NUMBER: ["enrolmentNumber", "enrolment", "studentId", "rollNo"],
     GITHUB: ["github", "githubUrl", "codeUrl"],
     DEMO: ["demo", "demoUrl", "liveUrl"],
     PPT: ["ppt", "pptUrl", "presentationUrl"],
     DRIVE_FOLDER: ["driveFolder", "driveUrl", "folderUrl"],
+    LINK: ["link", "url", "fileUrl", "applicationLink"],
     COVER_IMAGE: ["coverImage", "imageUrl", "image", "fileUrl", "url"],
     IMAGE_URL: ["imageUrl", "coverImage", "image", "fileUrl", "url"],
     IMAGE: ["image", "imageUrl", "coverImage", "fileUrl", "url"],
@@ -1225,14 +1233,23 @@ export default function TeamCollectionPage({ config, search = "" }) {
             const imageUrl = fixDriveImageUrl(getRecordValue(record, config.imageField));
             const canManage = canManageRecord(record);
             const title = getRecordValue(record, config.titleField) || getRecordValue(record, "TITLE") || getRecordValue(record, "CAPTION") || "Untitled record";
-            const subtitle = getRecordValue(record, config.subtitleField) || getRecordValue(record, "ORGANIZER") || getRecordValue(record, "PROJECT") || getRecordValue(record, "EVENT_ID");
-            const badge = getRecordValue(record, config.badgeField) || getRecordValue(record, "STATUS");
-            const date = getRecordValue(record, "DATE") || getRecordValue(record, "CREATED_AT");
+            const subtitle = getRecordValue(record, config.subtitleField) || getRecordValue(record, "ISSUER") || getRecordValue(record, "ORGANIZER") || getRecordValue(record, "PROJECT") || getRecordValue(record, "COMPANY") || getRecordValue(record, "EVENT_ID");
+            const badge = getRecordValue(record, config.badgeField) || getRecordValue(record, "STATUS") || getRecordValue(record, "CATEGORY") || getRecordValue(record, "TYPE");
+            const date = getRecordValue(record, "DATE") || getRecordValue(record, "DEADLINE") || getRecordValue(record, "CREATED_AT");
             const location = getRecordValue(record, "LOCATION");
             const techStack = getRecordValue(record, "TECH_STACK");
-            const issuer = getRecordValue(record, "ISSUER");
-            const description = getRecordValue(record, "DESCRIPTION");
+            const issuer = getRecordValue(record, "ISSUER") || getRecordValue(record, "COMPANY");
+            const enrolment = getRecordValue(record, "ENROLMENT_NUMBER");
+            const members = getRecordValue(record, "MEMBERS");
+            const eligibility = getRecordValue(record, "ELIGIBILITY");
+            const description = getRecordValue(record, "DESCRIPTION") || getRecordValue(record, "CAPTION") || eligibility;
             const uploadedBy = getRecordValue(record, "UPLOADED_BY") || getRecordValue(record, "CREATED_BY");
+
+            const github = getRecordValue(record, "GITHUB");
+            const demo = getRecordValue(record, "DEMO");
+            const ppt = getRecordValue(record, "PPT");
+            const driveFolder = getRecordValue(record, "DRIVE_FOLDER");
+            const link = getRecordValue(record, "LINK") || getRecordValue(record, "FILE_URL");
 
             return (
               <article className="team-record-card" key={recordId}>
@@ -1281,10 +1298,12 @@ export default function TeamCollectionPage({ config, search = "" }) {
                   </div>
 
                   <div className="team-record-meta">
+                    {enrolment && <span>🎓 Roll: {enrolment}</span>}
                     {date && <span>📅 {date}</span>}
                     {location && <span>📍 {location}</span>}
                     {techStack && <span>🧩 {techStack}</span>}
                     {issuer && <span>🏢 {issuer}</span>}
+                    {members && <span>👥 {members.length > 40 ? members.substring(0, 40) + "…" : members}</span>}
                     {uploadedBy && <span>👤 {uploadedBy}</span>}
                     {recordId && <span className="record-id-chip">ID: {recordId}</span>}
                   </div>
@@ -1293,6 +1312,36 @@ export default function TeamCollectionPage({ config, search = "" }) {
                     <p className="team-record-description">
                       {description.length > 140 ? description.substring(0, 140) + "…" : description}
                     </p>
+                  )}
+
+                  {(github || demo || ppt || driveFolder || (link && !link.startsWith("data:"))) && (
+                    <div className="team-record-links" style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
+                      {github && (
+                        <a href={github} target="_blank" rel="noopener noreferrer" style={{ fontSize: "11.5px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#cbd5e1", padding: "4px 10px", borderRadius: "8px", textDecoration: "none", fontWeight: "600" }}>
+                          💻 GitHub
+                        </a>
+                      )}
+                      {demo && (
+                        <a href={demo} target="_blank" rel="noopener noreferrer" style={{ fontSize: "11.5px", background: "rgba(59, 130, 246, 0.2)", border: "1px solid rgba(59, 130, 246, 0.4)", color: "#60a5fa", padding: "4px 10px", borderRadius: "8px", textDecoration: "none", fontWeight: "600" }}>
+                          🔗 Live Demo
+                        </a>
+                      )}
+                      {ppt && (
+                        <a href={ppt} target="_blank" rel="noopener noreferrer" style={{ fontSize: "11.5px", background: "rgba(168, 85, 247, 0.2)", border: "1px solid rgba(168, 85, 247, 0.4)", color: "#c084fc", padding: "4px 10px", borderRadius: "8px", textDecoration: "none", fontWeight: "600" }}>
+                          📊 Presentation
+                        </a>
+                      )}
+                      {driveFolder && (
+                        <a href={driveFolder} target="_blank" rel="noopener noreferrer" style={{ fontSize: "11.5px", background: "rgba(34, 197, 94, 0.2)", border: "1px solid rgba(34, 197, 94, 0.4)", color: "#4ade80", padding: "4px 10px", borderRadius: "8px", textDecoration: "none", fontWeight: "600" }}>
+                          📁 Drive
+                        </a>
+                      )}
+                      {link && !link.startsWith("data:") && (
+                        <a href={link} target="_blank" rel="noopener noreferrer" style={{ fontSize: "11.5px", background: "rgba(245, 158, 11, 0.2)", border: "1px solid rgba(245, 158, 11, 0.4)", color: "#fbbf24", padding: "4px 10px", borderRadius: "8px", textDecoration: "none", fontWeight: "600" }}>
+                          🔗 Open Link
+                        </a>
+                      )}
+                    </div>
                   )}
 
                   <div className="team-record-actions">
