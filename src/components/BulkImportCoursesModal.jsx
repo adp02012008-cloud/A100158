@@ -4,28 +4,46 @@ import { apiFetch } from "../utils/api";
 
 const SAMPLE_JSON_TEMPLATE = [
   {
-    courseId: "CRS-REACT-101",
-    name: "React Fundamentals",
-    category: "Web Development",
-    description: "Master JSX, Components, Hooks, and State Management.",
-    clusterAccess: "Both",
-    prerequisites: ["HTML & CSS"],
-    status: "ACTIVE"
+    "Course Name": "Advanced Modelling & Simulation",
+    "Level": "Level 0",
+    "Course ID": "AMS-L0",
+    "Category": "Advanced Modelling & Simulation",
+    "Description": "Introduction to FEA, mathematical framework, meshing...",
+    "Cluster Access": "Both",
+    "Prerequisites": "",
+    "Points": 100,
+    "Status": "ACTIVE"
   },
   {
-    courseId: "CRS-NODE-201",
-    name: "Advanced Node.js & Express",
-    category: "Backend",
-    description: "REST APIs, Authentication, Mongoose, and Performance.",
-    clusterAccess: "Cluster A",
-    prerequisites: ["React Fundamentals"],
-    status: "ACTIVE"
+    "Course Name": "Advanced Modelling & Simulation",
+    "Level": "Level 1",
+    "Course ID": "AMS-L1",
+    "Category": "Advanced Modelling & Simulation",
+    "Description": "Thermal-structural analysis, material properties...",
+    "Cluster Access": "Both",
+    "Prerequisites": "Advanced Modelling & Simulation - Level 0",
+    "Points": 300,
+    "Status": "ACTIVE"
+  },
+  {
+    "Course Name": "Algebra",
+    "Level": "Level 0",
+    "Course ID": "ALG-L0",
+    "Category": "Algebra",
+    "Description": "Variables, constants, algebraic expressions, exponents...",
+    "Cluster Access": "Both",
+    "Prerequisites": "",
+    "Points": 100,
+    "Status": "ACTIVE"
   }
 ];
 
-const SAMPLE_CSV_TEMPLATE = `Course Name,Course ID,Category,Description,Cluster Access,Prerequisites,Status
-React Fundamentals,CRS-REACT-101,Web Development,"Master JSX, Components, Hooks, and State Management.",Both,HTML & CSS,ACTIVE
-Advanced Node.js & Express,CRS-NODE-201,Backend,"REST APIs, Authentication, Mongoose, and Performance.",Cluster A,React Fundamentals,ACTIVE`;
+const SAMPLE_CSV_TEMPLATE = `Course Name,Level,Course ID,Category,Description,Cluster Access,Prerequisites,Points,Status
+Advanced Modelling & Simulation,Level 0,AMS-L0,Advanced Modelling & Simulation,"Introduction to FEA, meshing, elements...",Both,,100,ACTIVE
+Advanced Modelling & Simulation,Level 1,AMS-L1,Advanced Modelling & Simulation,"Introduction to thermal-structural analysis...",Both,Advanced Modelling & Simulation - Level 0,300,ACTIVE
+Algebra,Level 0,ALG-L0,Algebra,"Variables, constants, algebraic expressions...",Both,,100,ACTIVE
+Algebra,Level 1,ALG-L1,Algebra,"Linear equations and inequalities...",Both,Algebra - Level 0,200,ACTIVE
+Algebra,Level 2,ALG-L2,Algebra,"Polynomials, rational expressions...",Both,Algebra - Level 1,300,ACTIVE`;
 
 function parseCSV(text) {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -376,16 +394,18 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
               📌 File &amp; Header Formatting Rules
             </h4>
             <p style={{ margin: "0 0 10px 0", color: "#cbd5e1", lineHeight: "1.5" }}>
-              Your CSV or JSON file can contain the following fields for each course:
+              Your CSV, TSV, or JSON file should contain the following fields for each course level:
             </p>
             <ul style={{ paddingLeft: "20px", margin: "0 0 14px 0", color: "#e2e8f0", lineHeight: "1.6" }}>
-              <li><strong>Course Name</strong> (or <code>name</code>) — <em>Required</em>. Unique course title.</li>
-              <li><strong>Course ID</strong> (or <code>courseId</code>) — <em>Optional</em>. Unique ID (e.g., <code>CRS-REACT-101</code>). Auto-generated if blank.</li>
-              <li><strong>Category</strong> (or <code>category</code>) — <em>Optional</em>. Field/Domain (e.g., <code>Web Dev</code>, <code>Data Science</code>).</li>
-              <li><strong>Description</strong> (or <code>description</code>) — <em>Optional</em>. Course summary.</li>
-              <li><strong>Cluster Access</strong> (or <code>clusterAccess</code>) — <em>Optional</em>. <code>Cluster A</code>, <code>Cluster B</code>, or <code>Both</code>.</li>
-              <li><strong>Prerequisites</strong> (or <code>prerequisites</code>) — <em>Optional</em>. Comma-separated prior courses.</li>
-              <li><strong>Status</strong> (or <code>status</code>) — <em>Optional</em>. <code>ACTIVE</code> or <code>INACTIVE</code>.</li>
+              <li><strong>Course Name</strong> — <em>Required</em>. Main subject title (e.g., <code>Algebra</code>, <code>Advanced Modelling &amp; Simulation</code>).</li>
+              <li><strong>Level</strong> — <em>Required</em>. Level code/name (e.g., <code>Level 0</code>, <code>Level 1</code>, <code>Level 1A</code>, <code>Level 2.0</code>).</li>
+              <li><strong>Points</strong> — <em>Optional</em>. Points awarded for completing this level (e.g., <code>100</code>, <code>200</code>, <code>300</code>).</li>
+              <li><strong>Course ID</strong> — <em>Optional</em>. Unique ID code (e.g., <code>AMS-L0</code>, <code>ALG-L0</code>). Auto-generated if blank.</li>
+              <li><strong>Category</strong> — <em>Optional</em>. Subject category (e.g., <code>Algebra</code>, <code>Analog Electronics</code>).</li>
+              <li><strong>Description</strong> — <em>Optional</em>. Course summary for this level.</li>
+              <li><strong>Cluster Access</strong> — <em>Optional</em>. <code>Cluster A</code>, <code>Cluster B</code>, or <code>Both</code> (default).</li>
+              <li><strong>Prerequisites</strong> — <em>Optional</em>. Prior course requirements.</li>
+              <li><strong>Status</strong> — <em>Optional</em>. <code>ACTIVE</code> or <code>INACTIVE</code>.</li>
             </ul>
 
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "12px" }}>
