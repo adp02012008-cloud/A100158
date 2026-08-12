@@ -225,7 +225,7 @@ export default function MyTasksMember({ search = "" }) {
           className={`tab-pill ${filterTab === "pending" ? "active" : ""}`}
           onClick={() => setFilterTab("pending")}
         >
-          In Progress / Pending
+          Pending
         </button>
         <button
           type="button"
