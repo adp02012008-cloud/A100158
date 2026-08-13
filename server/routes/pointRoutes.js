@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAuthToken, requireAdmin } from "../middleware/authMiddleware.js";
+import { verifyAuthToken } from "../middleware/authMiddleware.js";
 import { getPointRules, updatePointRule, recalculateAllPoints } from "../controllers/pointController.js";
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(verifyAuthToken);
 
 router.get("/rules", getPointRules);
-router.put("/rules/:courseId", requireAdmin, updatePointRule);
-router.post("/recalculate", requireAdmin, recalculateAllPoints);
+router.put("/rules/:courseId", updatePointRule);
+router.post("/recalculate", recalculateAllPoints);
 
 export default router;

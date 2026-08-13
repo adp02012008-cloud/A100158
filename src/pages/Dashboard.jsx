@@ -278,31 +278,35 @@ export default function Dashboard({ search, setPage }) {
           </div>
         </div>
 
-        {isAdminView && (
-          <div className="dashboard-admin-actions">
-            <div className="dashboard-mgmt-group">
+        <div className="dashboard-admin-actions">
+          <div className="dashboard-mgmt-group">
+            {isAdminView && (
               <button
                 className="dashboard-action-btn btn-members"
                 onClick={() => (setPage ? setPage("manage-users") : setShowAddMember(true))}
               >
                 👥 Manage Members
               </button>
+            )}
 
-              <button
-                className="dashboard-action-btn btn-courses"
-                onClick={() => setShowManageCourses(true)}
-              >
-                📚 Manage Courses
-              </button>
+            <button
+              className="dashboard-action-btn btn-courses"
+              onClick={() => setShowManageCourses(true)}
+            >
+              📚 Manage Courses
+            </button>
 
+            {isAdminView && (
               <button
                 className="dashboard-action-btn btn-clusters"
                 onClick={() => setShowManageClusters(true)}
               >
                 🏛️ Manage Clusters
               </button>
-            </div>
+            )}
+          </div>
 
+          {isAdminView && (
             <div className="dashboard-export-group">
               <button
                 className="dashboard-action-btn btn-excel"
@@ -318,8 +322,8 @@ export default function Dashboard({ search, setPage }) {
                 📄 Export PDF
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="stats">
