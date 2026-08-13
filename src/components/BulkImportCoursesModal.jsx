@@ -278,8 +278,7 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
         >
           <span style={{ fontSize: "16px" }}>⚡</span>
           <div>
-            <strong>Automatic Overwrite Enabled:</strong> If a course name or Course ID already exists in your site,
-            it will be <strong>overwritten with the new version</strong> in MongoDB Atlas automatically.
+            <strong>Level-Specific Import Enabled:</strong> Each course row (including the same course with different levels) will be imported as a <strong>distinct course</strong> into MongoDB Atlas.
           </div>
         </div>
 
@@ -455,7 +454,17 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
               <strong>Sample Courses:</strong>{" "}
               {parsedCourses
                 .slice(0, 5)
-                .map((c) => c.name || c["Course Name"] || c["courseName"])
+                .map((c) => {
+                  const name = (c.name || c["Course Name"] || c["courseName"] || "").trim();
+                  const lvl = (c.level || c["Level"] || c["levelName"] || "").trim();
+                  if (lvl) {
+                    const escapedLvl = lvl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    if (!new RegExp(`(?:-|–|_|\\s)\\s*${escapedLvl}`, "i").test(name)) {
+                      return `${name} - ${lvl}`;
+                    }
+                  }
+                  return name;
+                })
                 .filter(Boolean)
                 .join(", ")}
               {parsedCourses.length > 5 ? ` ...and ${parsedCourses.length - 5} more.` : ""}

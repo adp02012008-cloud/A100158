@@ -201,33 +201,38 @@ export async function bulkImportCourses(req, res) {
       return res.status(400).json({ success: false, message: "An array of courses is required" });
     }
 
-    // Map to store grouped base courses: baseCourseName -> Array of level rows
-    const groupedMap = new Map();
+    let createdCount = 0;
+    let updatedCount = 0;
 
     for (let i = 0; i < courses.length; i++) {
       const item = courses[i];
-      const rawName = item["Course Name"] || item.name || item["courseName"] || item["Name"] || "";
-      if (!rawName || typeof rawName !== "string" || !rawName.trim()) {
-        continue;
-      }
+      const rawName = (item["Course Name"] || item.name || item["courseName"] || item["Name"] || "").trim();
+      if (!rawName) continue;
 
+      const rawLevel = (item["Level"] || item.level || item["levelName"] || "").trim();
+      const rawCourseId = (item["Course ID"] || item.courseId || item["CourseId"] || "").trim();
       const rawCategory = (item.category || item["Category"] || "").trim();
-      const baseCourseName = extractBaseCourseName(rawName.trim(), rawCategory);
-      const rawLevel = item["Level"] || item.level || item["levelName"] || "";
-      const levelName = extractLevelName(rawLevel, rawName.trim());
-
       const description = (item.description || item["Description"] || "").trim();
       const clusterAccess = (item.clusterAccess || item["Cluster Access"] || item["cluster"] || "Both").trim();
       const status = (item.status || item["Status"] || "ACTIVE").toUpperCase().trim();
 
-      // Extract explicit points if present in row
-      const rawPoints = item["Points"] || item.points || item["Level Points"] || item.levelPoints;
-      let pointsVal = null;
-      if (rawPoints !== undefined && rawPoints !== null && String(rawPoints).trim() !== "") {
-        const num = Number(String(rawPoints).trim());
-        if (!isNaN(num)) pointsVal = num;
+      // Construct Course Name: If rawName doesn't already include rawLevel, append rawLevel
+      let courseName = rawName;
+      if (rawLevel) {
+        const escapedLvl = rawLevel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const hasLevelInName = new RegExp(`(?:-|–|_|\\s)\\s*${escapedLvl}`, "i").test(rawName);
+        if (!hasLevelInName) {
+          courseName = `${rawName} - ${rawLevel}`;
+        }
       }
 
+      // Construct Course ID: Use rawCourseId if provided, else slugify courseName
+      let courseId = rawCourseId;
+      if (!courseId) {
+        courseId = `CRS-${courseName.toUpperCase().replace(/[^A-Z0-9]/g, "-")}`;
+      }
+
+      // Prerequisites parsing
       let prerequisites = [];
       const rawPrereqs = item.prerequisites || item["Prerequisites"] || item["prerequisite"] || [];
       if (Array.isArray(rawPrereqs)) {
@@ -236,44 +241,25 @@ export async function bulkImportCourses(req, res) {
         prerequisites = rawPrereqs.split(/[,;]/).map((p) => p.trim()).filter(Boolean);
       }
 
-      if (!groupedMap.has(baseCourseName)) {
-        groupedMap.set(baseCourseName, []);
+      // Extract points
+      const rawPoints = item["Points"] || item.points || item["Level Points"] || item.levelPoints;
+      let pointsVal = null;
+      if (rawPoints !== undefined && rawPoints !== null && String(rawPoints).trim() !== "") {
+        const num = Number(String(rawPoints).trim());
+        if (!isNaN(num)) pointsVal = num;
       }
 
-      groupedMap.get(baseCourseName).push({
-        rawName: rawName.trim(),
-        levelName,
-        pointsVal,
-        description,
-        prerequisites,
-        clusterAccess,
-        status,
-        item,
-      });
-    }
+      const levelName = extractLevelName(rawLevel, courseName);
+      if (pointsVal === null) {
+        const levelNumMatch = levelName.match(/\d+/);
+        const levelNum = levelNumMatch ? parseInt(levelNumMatch[0], 10) : i;
+        pointsVal = (levelNum + 1) * 100;
+      }
 
-    let createdCount = 0;
-    let updatedCount = 0;
-    let totalLevelsProcessed = 0;
+      const category = rawCategory || rawName || "General";
 
-    for (const [baseCourseName, levelRows] of groupedMap.entries()) {
-      // 1. Generate clean Course ID for the Base Course
-      const courseId = `CRS-${baseCourseName.toUpperCase().replace(/[^A-Z0-9]/g, "-")}`;
-
-      // Combine descriptions from level rows if available
-      const descriptions = levelRows.map((r) => r.description).filter(Boolean);
-      const combinedDescription = descriptions.length > 0 ? Array.from(new Set(descriptions)).join(" ") : "";
-
-      // Combine prerequisites
-      const allPrereqs = new Set();
-      levelRows.forEach((r) => r.prerequisites.forEach((p) => allPrereqs.add(p)));
-
-      // Cluster access and status from primary row
-      const clusterAccess = levelRows[0]?.clusterAccess || "Both";
-      const status = levelRows[0]?.status || "ACTIVE";
-
-      // 2. Find or create the Base Course in MongoDB
-      const escapedName = baseCourseName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // Find or create Course in MongoDB
+      const escapedName = courseName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       let course = await Course.findOne({
         $or: [
           { courseId: courseId },
@@ -283,9 +269,10 @@ export async function bulkImportCourses(req, res) {
 
       if (course) {
         course.courseId = courseId;
-        course.name = baseCourseName;
-        course.category = baseCourseName;
-        if (combinedDescription) course.description = combinedDescription;
+        course.name = courseName;
+        course.category = category;
+        if (description) course.description = description;
+        if (prerequisites.length > 0) course.prerequisites = prerequisites;
         course.clusterAccess = clusterAccess;
         course.status = status;
         await course.save();
@@ -293,32 +280,22 @@ export async function bulkImportCourses(req, res) {
       } else {
         course = await Course.create({
           courseId,
-          name: baseCourseName,
-          category: baseCourseName,
-          description: combinedDescription,
-          prerequisites: Array.from(allPrereqs),
+          name: courseName,
+          category,
+          description,
+          prerequisites,
           clusterAccess,
           status,
         });
         createdCount++;
       }
 
-      // 3. Build levelPoints map for CoursePointRule
-      const levelPointsMap = {};
-      levelRows.forEach((row, idx) => {
-        const safeKey = String(row.levelName).replace(/\.0\b/g, "").replace(/\./g, "-");
-        if (row.pointsVal !== null) {
-          levelPointsMap[safeKey] = row.pointsVal;
-        } else {
-          // Default points calculation if no points given
-          const levelNumMatch = safeKey.match(/\d+/);
-          const levelNum = levelNumMatch ? parseInt(levelNumMatch[0], 10) : idx;
-          levelPointsMap[safeKey] = (levelNum + 1) * 100;
-        }
-        totalLevelsProcessed++;
-      });
+      // Build levelPoints map for CoursePointRule
+      const levelPointsMap = {
+        [levelName]: pointsVal,
+      };
 
-      // 4. Update CoursePointRule in MongoDB
+      // Update CoursePointRule in MongoDB
       await CoursePointRule.findOneAndUpdate(
         { courseId: course._id },
         {
@@ -329,28 +306,14 @@ export async function bulkImportCourses(req, res) {
         },
         { upsert: true, new: true }
       );
-
-      // 5. Cleanup Obsolete Split Level Courses in MongoDB (e.g. "Algebra - Level 0", "Algebra - Level 1")
-      const splitNameRegex = new RegExp(`^${escapedName}\\s*(?:-|–)?\\s*Level.*`, "i");
-      const splitCoursesToDelete = await Course.find({
-        _id: { $ne: course._id },
-        name: { $regex: splitNameRegex },
-      });
-
-      for (const splitC of splitCoursesToDelete) {
-        await Course.findByIdAndDelete(splitC._id);
-        await CoursePointRule.deleteOne({ courseId: splitC._id });
-        await UserCourseProgress.updateMany({ courseId: splitC._id }, { courseId: course._id });
-      }
     }
 
     return res.json({
       success: true,
-      message: `Bulk import completed! ${groupedMap.size} unified courses merged (${createdCount} created, ${updatedCount} updated). ${totalLevelsProcessed} level rules configured.`,
+      message: `Bulk import completed! ${createdCount + updatedCount} courses processed (${createdCount} created, ${updatedCount} updated).`,
       createdCount,
       updatedCount,
-      totalCourses: groupedMap.size,
-      totalLevelsProcessed,
+      totalCourses: createdCount + updatedCount,
     });
   } catch (err) {
     console.error("Bulk import courses error:", err);
