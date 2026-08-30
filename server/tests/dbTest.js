@@ -28,18 +28,18 @@ export async function testSchemas() {
     priority: "High",
     status: "IN_PROGRESS",
     submissionMode: "COLLABORATIVE",
-    createdBy: "  Admin1@Domain.COM ",
+    createdBy: testUser._id,
   });
   await testTask.validate();
-  if (testTask.createdBy !== "admin1@domain.com") throw new Error("Task createdBy email normalization failed!");
   console.log("✅ Task Schema Validated: Status =", testTask.status, "Mode =", testTask.submissionMode);
 
   // 3. TaskAssignment Model Test
   const testAssign = new TaskAssignment({
     assignmentId: "ASN-101-01",
     taskId: "TSK-101",
+    userId: testUser._id,
     assigneeEmail: " MEMBER.ONE@DOMAIN.COM ",
-    assignedBy: " ADMIN1@DOMAIN.COM ",
+    assignedBy: testUser._id,
     status: "ACTIVE",
   });
   await testAssign.validate();
@@ -53,32 +53,33 @@ export async function testSchemas() {
     submissionGroupId: "GRP-TSK-101-TEAM",
     version: 1,
     submissionType: "COLLABORATIVE",
-    submittedBy: " MEMBER.ONE@DOMAIN.COM ",
-    submittedFor: [" MEMBER.ONE@DOMAIN.COM ", " MEMBER.TWO@DOMAIN.COM "],
+    submittedBy: testUser._id,
+    submittedFor: [testUser._id],
     githubUrl: "https://github.com/test/repo",
     status: "SUBMITTED",
   });
   await testSub.validate();
-  if (testSub.submittedFor[1] !== "member.two@domain.com") throw new Error("SubmittedFor normalization failed!");
   console.log("✅ TaskSubmission Schema Validated: Group =", testSub.submissionGroupId, "Version =", testSub.version);
 
   // 5. TaskReview Model Test
   const testReview = new TaskReview({
     reviewId: "REV-901",
     taskId: "TSK-101",
-    submissionId: "SUB-501",
+    submissionId: testSub._id,
     version: 1,
-    reviewerEmail: " ADMIN1@DOMAIN.COM ",
+    reviewerId: testUser._id,
     decision: "APPROVED",
     feedback: "Great work!",
   });
   await testReview.validate();
-  console.log("✅ TaskReview Schema Validated: Decision =", testReview.decision, "Reviewer =", testReview.reviewerEmail);
+  console.log("✅ TaskReview Schema Validated: Decision =", testReview.decision);
 
   // 6. Notification Model Test
   const testNotif = new Notification({
     notificationId: "NTF-801",
+    targetUserId: testUser._id,
     targetEmail: " MEMBER.ONE@DOMAIN.COM ",
+    type: "TASK_ASSIGNED",
     title: "Task Approved 🎉",
     message: "Your submission was approved",
     eventKey: "EVT-APPROVE-501",
@@ -90,7 +91,7 @@ export async function testSchemas() {
   const testEvent = new TaskEvent({
     eventId: "EVT-1001",
     taskId: "TSK-101",
-    submissionId: "SUB-501",
+    submissionId: testSub._id,
     actorEmail: " ADMIN1@DOMAIN.COM ",
     eventType: "SUBMISSION_APPROVED",
     details: { coverage: "2/2", mode: "COLLABORATIVE" },

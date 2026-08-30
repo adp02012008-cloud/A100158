@@ -11,8 +11,8 @@ export async function getNotifications(req, res) {
     const user = req.user;
     const cleanEmail = user.email ? user.email.toLowerCase().trim() : null;
 
-    // 48-Hour Cutoff for Read Notifications
-    const cutoff48h = new Date(Date.now() - 48 * 3600 * 1000);
+    // 7-Day Cutoff for Read Notifications (disappears 7 days after viewed)
+    const cutoff7d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
 
     const userFilter = [
       { targetUserId: user._id },
@@ -21,7 +21,7 @@ export async function getNotifications(req, res) {
 
     const readStateFilter = [
       { readAt: null },
-      { readAt: { $gte: cutoff48h } },
+      { readAt: { $gte: cutoff7d } },
     ];
 
     const filter = {

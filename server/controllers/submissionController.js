@@ -213,6 +213,38 @@ export async function createDirectProject(req, res) {
 
     await recalculateTaskState(task.taskId);
 
+    // Notify project creator and team contributors
+    const recipientUserIds = new Set([
+      String(submitterId),
+      ...(teamUserIds || []).map((u) => String(u._id || u)),
+    ]);
+
+    for (const recipientId of recipientUserIds) {
+      const recipientUser = await User.findById(recipientId).exec();
+      const eventKey = `NTF-PRJ-APPROVED-${submission._id}-${recipientId}`;
+      const projTitle = title.trim();
+      const titleText = "Project Approved & Published! 🏆";
+      const messageText = `Your project "${projTitle}" was approved and published to the team showcase.`;
+
+      await Notification.findOneAndUpdate(
+        { eventKey },
+        {
+          notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          targetUserId: recipientId,
+          targetEmail: recipientUser ? (recipientUser.email || "").toLowerCase().trim() : null,
+          type: "PROJECT_APPROVED",
+          taskId: task.taskId,
+          submissionId: submission._id,
+          title: titleText,
+          message: messageText,
+          eventKey,
+          readAt: null,
+          createdAt: new Date(),
+        },
+        { upsert: true, new: true }
+      ).exec();
+    }
+
     const populatedRaw = await TaskSubmission.findById(submission._id).populate("submittedBy submittedFor").exec();
     const populated = populatedRaw.toObject();
     populated.taskId = task;
@@ -347,9 +379,18 @@ export async function updateSubmission(req, res) {
     if (notes !== undefined) submission.notes = String(notes).trim();
     if (Array.isArray(files)) submission.files = files.map((f) => String(f.url || f));
 
+    const previousStatus = submission.status;
+    let becameApproved = false;
+
     // Admin-only fields
     if (isUserAdmin) {
-      if (status) submission.status = String(status).toUpperCase();
+      if (status) {
+        const newStatus = String(status).toUpperCase();
+        if (newStatus === "APPROVED" && previousStatus !== "APPROVED") {
+          becameApproved = true;
+        }
+        submission.status = newStatus;
+      }
       if (editHours !== undefined) {
         const hrs = Number(editHours) || 0;
         submission.memberEditUntil = hrs > 0 ? new Date(Date.now() + hrs * 3600 * 1000) : null;
@@ -362,6 +403,38 @@ export async function updateSubmission(req, res) {
 
     if (submission.taskId) {
       await recalculateTaskState(submission.taskId);
+    }
+
+    if (becameApproved) {
+      const recipientUserIds = new Set([
+        String(submission.submittedBy),
+        ...(submission.submittedFor || []).map((u) => String(u._id || u)),
+      ]);
+
+      for (const recipientId of recipientUserIds) {
+        const recipientUser = await User.findById(recipientId).exec();
+        const eventKey = `NTF-PRJ-APPROVED-${submission._id}-${recipientId}`;
+        const titleText = "Project Approved & Published! 🏆";
+        const messageText = `Your project deliverable for "${submission.taskId}" was approved and published.`;
+
+        await Notification.findOneAndUpdate(
+          { eventKey },
+          {
+            notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            targetUserId: recipientId,
+            targetEmail: recipientUser ? (recipientUser.email || "").toLowerCase().trim() : null,
+            type: "PROJECT_APPROVED",
+            taskId: submission.taskId,
+            submissionId: submission._id,
+            title: titleText,
+            message: messageText,
+            eventKey,
+            readAt: null,
+            createdAt: new Date(),
+          },
+          { upsert: true, new: true }
+        ).exec();
+      }
     }
 
     const updatedRaw = await TaskSubmission.findById(id).populate("submittedBy submittedFor").exec();
