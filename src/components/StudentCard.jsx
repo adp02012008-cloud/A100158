@@ -94,13 +94,9 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
               <div className="card-meta-line" style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
                 <span className="badge">{student.POSITION}</span>
                 <span className="cluster-pill">{student.CLUSTER || "Unknown"}</span>
-                {isUserAdmin ? (
+                {isAdminView && isUserAdmin && (
                   <span className="badge" style={{ background: "rgba(234, 179, 8, 0.2)", color: "#eab308", border: "1px solid rgba(234, 179, 8, 0.4)" }}>
                     👑 Admin
-                  </span>
-                ) : (
-                  <span className="badge" style={{ background: "rgba(99, 102, 241, 0.15)", color: "#818cf8" }}>
-                    🎓 Member
                   </span>
                 )}
               </div>
