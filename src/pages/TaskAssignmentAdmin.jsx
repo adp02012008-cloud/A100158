@@ -275,7 +275,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   if (loading) {
     return (
       <div className="section-container">
-        <div className="login-loading">Loading Task Assignments…</div>
+        <div className="loading-circle-container">
+          <div className="circle-spinner" />
+          <div className="login-loading">Loading Task Assignments…</div>
+        </div>
       </div>
     );
   }

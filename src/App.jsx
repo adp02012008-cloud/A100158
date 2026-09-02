@@ -23,14 +23,17 @@ const UserRosterAdmin = lazy(() => import("./pages/UserRosterAdmin"));
 
 function PageLoadingSkeleton() {
   return (
-    <div className="page-skeleton-container" style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-      <div className="skeleton-bar" style={{ height: "40px", width: "30%", borderRadius: "8px", background: "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%)", backgroundSize: "200% 100%", animation: "skeleton-shimmer 1.5s infinite", marginBottom: "20px" }} />
+    <div className="page-skeleton-container" style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto", textAlign: "center" }}>
+      <div className="loading-circle-container" style={{ padding: "0 0 32px 0" }}>
+        <div className="circle-spinner" />
+        <span style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "500" }}>Loading page content…</span>
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
         {[1, 2, 3, 4, 5, 6].map((idx) => (
           <div
             key={idx}
             style={{
-              height: "160px",
+              height: "140px",
               borderRadius: "12px",
               background: "linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%)",
               backgroundSize: "200% 100%",

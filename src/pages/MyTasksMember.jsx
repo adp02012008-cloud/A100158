@@ -194,7 +194,10 @@ export default function MyTasksMember({ search = "" }) {
   if (loading) {
     return (
       <div className="section-container">
-        <div className="login-loading">Loading My Assigned Tasks…</div>
+        <div className="loading-circle-container">
+          <div className="circle-spinner" />
+          <div className="login-loading">Loading My Assigned Tasks…</div>
+        </div>
       </div>
     );
   }

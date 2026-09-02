@@ -306,7 +306,10 @@ export default function LoginGate({ children }) {
   if (checkingSession) {
     return (
       <div className="login-bg">
-        <div className="login-loading">Loading portal…</div>
+        <div className="loading-circle-container">
+          <div className="circle-spinner" />
+          <div className="login-loading">Loading portal…</div>
+        </div>
       </div>
     );
   }
@@ -372,7 +375,14 @@ export default function LoginGate({ children }) {
             type="submit"
             disabled={authLoading}
           >
-            {authLoading ? "Verifying…" : "Sign in"}
+            {authLoading ? (
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <span className="circle-spinner-sm" />
+                <span>Verifying…</span>
+              </span>
+            ) : (
+              "Sign in"
+            )}
           </button>
         </form>
 
