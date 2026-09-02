@@ -11,11 +11,9 @@ import {
   signInWithRedirect,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-import { Capacitor } from "@capacitor/core";
-import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth, googleProvider } from "../firebase";
 import { fetchSheetData } from "../utils/api";
-import { getUserRole, normalizeEmail, findStudentByEmail } from "../utils/roles";
+import { getUserRole, normalizeEmail, findStudentByEmail, isAdminEmail } from "../utils/roles";
 import { useAuth } from "../context/AuthContext";
 
 function getAuthErrorMessage(error, fallback = "Authentication failed. Please try again.") {
@@ -67,19 +65,12 @@ export default function LoginGate({ children }) {
   const [password, setPassword]           = useState("");
   const [keepLoggedIn, setKeepLoggedIn]   = useState(true);
   const [students, setStudents]           = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(!auth.isLoggedIn);
   const [authLoading, setAuthLoading]     = useState(false);
   const [error, setError]                 = useState("");
 
   const clearFirebaseSession = useCallback(async () => {
-    const tasks = [firebaseSignOut(firebaseAuth).catch(() => {})];
-
-    if (Capacitor.isNativePlatform()) {
-      tasks.push(FirebaseAuthentication.signOut().catch(() => {}));
-    }
-
-    await Promise.all(tasks);
+    await firebaseSignOut(firebaseAuth).catch(() => {});
   }, []);
 
   const applyWebPersistence = useCallback(async () => {
@@ -96,6 +87,12 @@ export default function LoginGate({ children }) {
       if (!cleaned) {
         if (!silentAccessDenied) setError("Could not read your account email.");
         return false;
+      }
+
+      // Fast check 1: System Admin emails
+      if (isAdminEmail(cleaned)) {
+        login(cleaned, "admin", null);
+        return true;
       }
 
       let currentRoster = students;
@@ -133,35 +130,28 @@ export default function LoginGate({ children }) {
     [clearFirebaseSession, login, students]
   );
 
+  // Background non-blocking pre-fetch for student roster
   useEffect(() => {
     let cancelled = false;
-
     fetchSheetData("Sheet1")
       .then((data) => {
-        if (!cancelled) setStudents(Array.isArray(data) ? data : []);
+        if (!cancelled && Array.isArray(data)) setStudents(data);
       })
-      .catch(() => {
-        if (!cancelled) setStudents([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .catch(() => {});
 
     return () => {
       cancelled = true;
     };
   }, []);
 
+  // Quick session check on startup
   useEffect(() => {
-    if (loading) return undefined;
-
-    if (auth.isLoggedIn && auth.role !== "public") {
+    if (auth.isLoggedIn) {
       setCheckingSession(false);
       return undefined;
     }
 
     let cancelled = false;
-    setCheckingSession(true);
 
     const finishSessionCheck = async (email) => {
       if (cancelled) return;
@@ -180,41 +170,38 @@ export default function LoginGate({ children }) {
         if (redirectResult?.user?.email) {
           return redirectResult.user.email;
         }
-      } catch (redirectError) {
-        console.error("Firebase redirect result error:", redirectError);
+      } catch {
+        // Ignore redirect check error
       }
 
       return new Promise((resolve) => {
-        let unsubscribe = () => {};
-        unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-          unsubscribe();
-          resolve(user?.email || "");
+        let settled = false;
+        const timer = setTimeout(() => {
+          if (!settled) {
+            settled = true;
+            resolve("");
+          }
+        }, 800);
+
+        const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            unsubscribe();
+            resolve(user?.email || "");
+          }
         });
       });
     };
 
-    const getCurrentSessionEmail = async () => {
-      if (Capacitor.isNativePlatform()) {
-        try {
-          const result = await FirebaseAuthentication.getCurrentUser();
-          const nativeEmail = normalizeEmail(result.user?.email || "");
-          if (nativeEmail) return nativeEmail;
-        } catch {
-          // Fall back to the Firebase JS SDK session below.
-        }
-      }
-
-      return getWebFirebaseEmail();
-    };
-
-    getCurrentSessionEmail()
+    getWebFirebaseEmail()
       .then(finishSessionCheck)
       .catch(() => finishSessionCheck(""));
 
     return () => {
       cancelled = true;
     };
-  }, [auth.isLoggedIn, auth.role, completeRegisteredLogin, loading]);
+  }, [auth.isLoggedIn, completeRegisteredLogin]);
 
   const handlePublicLogin = async () => {
     setError("");
@@ -268,8 +255,8 @@ export default function LoginGate({ children }) {
       setAuthLoading(true);
       await applyWebPersistence();
 
-      if (Capacitor.isNativePlatform()) {
-        const result = await FirebaseAuthentication.signInWithGoogle();
+      try {
+        const result = await signInWithPopup(firebaseAuth, googleProvider);
         const googleEmail = normalizeEmail(result.user?.email || "");
         if (!googleEmail) {
           await clearFirebaseSession();
@@ -277,25 +264,14 @@ export default function LoginGate({ children }) {
           return;
         }
         await completeRegisteredLogin(googleEmail);
-      } else {
-        try {
-          const result = await signInWithPopup(firebaseAuth, googleProvider);
-          const googleEmail = normalizeEmail(result.user?.email || "");
-          if (!googleEmail) {
-            await clearFirebaseSession();
-            setError("Could not read your Google account email.");
-            return;
-          }
-          await completeRegisteredLogin(googleEmail);
-        } catch (popupErr) {
-          if (
-            popupErr?.code === "auth/popup-blocked" ||
-            popupErr?.code === "auth/popup-closed-by-user"
-          ) {
-            await signInWithRedirect(firebaseAuth, googleProvider);
-          } else {
-            throw popupErr;
-          }
+      } catch (popupErr) {
+        if (
+          popupErr?.code === "auth/popup-blocked" ||
+          popupErr?.code === "auth/popup-closed-by-user"
+        ) {
+          await signInWithRedirect(firebaseAuth, googleProvider);
+        } else {
+          throw popupErr;
         }
       }
     } catch (authError) {
@@ -327,7 +303,7 @@ export default function LoginGate({ children }) {
     }
   };
 
-  if (loading || checkingSession) {
+  if (checkingSession) {
     return (
       <div className="login-bg">
         <div className="login-loading">Loading portal…</div>

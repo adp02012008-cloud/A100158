@@ -1,23 +1,48 @@
 // src/App.jsx
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import Navbar from "./components/Navbar";
-import Dashboard from "./pages/Dashboard";
-import Leaderboard from "./pages/Leaderboard";
-import TaskAssignmentAdmin from "./pages/TaskAssignmentAdmin";
-import MyTasksMember from "./pages/MyTasksMember";
-import Hackathons from "./pages/Hackathons";
-import Gallery from "./pages/Gallery";
-import Projects from "./pages/Projects";
-import Certificates from "./pages/Certificates";
-import Opportunities from "./pages/Opportunities";
-import Profile from "./pages/Profile";
-import AdminSubmissionsReview from "./pages/AdminSubmissionsReview";
-import UserRosterAdmin from "./pages/UserRosterAdmin";
 import LoginGate from "./components/LoginGate";
 import InstallPWA from "./components/InstallPWA";
 import { useAuth } from "./context/AuthContext";
 import { TEAM_PAGE_KEYS } from "./config/teamSections";
 import "./App.css";
+
+// Lazy-loaded page components for fast initial load & progressive chunking
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const TaskAssignmentAdmin = lazy(() => import("./pages/TaskAssignmentAdmin"));
+const MyTasksMember = lazy(() => import("./pages/MyTasksMember"));
+const Hackathons = lazy(() => import("./pages/Hackathons"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const Projects = lazy(() => import("./pages/Projects"));
+const Certificates = lazy(() => import("./pages/Certificates"));
+const Opportunities = lazy(() => import("./pages/Opportunities"));
+const Profile = lazy(() => import("./pages/Profile"));
+const AdminSubmissionsReview = lazy(() => import("./pages/AdminSubmissionsReview"));
+const UserRosterAdmin = lazy(() => import("./pages/UserRosterAdmin"));
+
+function PageLoadingSkeleton() {
+  return (
+    <div className="page-skeleton-container" style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+      <div className="skeleton-bar" style={{ height: "40px", width: "30%", borderRadius: "8px", background: "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%)", backgroundSize: "200% 100%", animation: "skeleton-shimmer 1.5s infinite", marginBottom: "20px" }} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+        {[1, 2, 3, 4, 5, 6].map((idx) => (
+          <div
+            key={idx}
+            style={{
+              height: "160px",
+              borderRadius: "12px",
+              background: "linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%)",
+              backgroundSize: "200% 100%",
+              animation: "skeleton-shimmer 1.5s infinite",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const { auth, isTeamMember } = useAuth();
@@ -45,25 +70,27 @@ export default function App() {
         />
 
         <main className="page-content">
-          {visiblePage === "dashboard" && <Dashboard search={search} setPage={changePage} />}
-          {visiblePage === "leaderboard" && <Leaderboard search={search} />}
-          {visiblePage === "profile" && <Profile />}
-          {auth.role === "admin" && visiblePage === "manage-users" && (
-            <UserRosterAdmin search={search} />
-          )}
-          {auth.role === "admin" && visiblePage === "assign-tasks" && (
-            <TaskAssignmentAdmin search={search} />
-          )}
-          {auth.role === "admin" && visiblePage === "review-deliverables" && (
-            <AdminSubmissionsReview search={search} />
-          )}
+          <Suspense fallback={<PageLoadingSkeleton />}>
+            {visiblePage === "dashboard" && <Dashboard search={search} setPage={changePage} />}
+            {visiblePage === "leaderboard" && <Leaderboard search={search} />}
+            {visiblePage === "profile" && <Profile />}
+            {auth.role === "admin" && visiblePage === "manage-users" && (
+              <UserRosterAdmin search={search} />
+            )}
+            {auth.role === "admin" && visiblePage === "assign-tasks" && (
+              <TaskAssignmentAdmin search={search} />
+            )}
+            {auth.role === "admin" && visiblePage === "review-deliverables" && (
+              <AdminSubmissionsReview search={search} />
+            )}
 
-          {isTeamMember && visiblePage === "my-tasks" && <MyTasksMember search={search} />}
-          {isTeamMember && visiblePage === "hackathons" && <Hackathons search={search} />}
-          {isTeamMember && visiblePage === "gallery" && <Gallery search={search} />}
-          {isTeamMember && visiblePage === "projects" && <Projects search={search} />}
-          {isTeamMember && visiblePage === "certificates" && <Certificates search={search} />}
-          {isTeamMember && visiblePage === "opportunities" && <Opportunities search={search} />}
+            {isTeamMember && visiblePage === "my-tasks" && <MyTasksMember search={search} />}
+            {isTeamMember && visiblePage === "hackathons" && <Hackathons search={search} />}
+            {isTeamMember && visiblePage === "gallery" && <Gallery search={search} />}
+            {isTeamMember && visiblePage === "projects" && <Projects search={search} />}
+            {isTeamMember && visiblePage === "certificates" && <Certificates search={search} />}
+            {isTeamMember && visiblePage === "opportunities" && <Opportunities search={search} />}
+          </Suspense>
         </main>
         
         <InstallPWA />
@@ -71,3 +98,4 @@ export default function App() {
     </LoginGate>
   );
 }
+

@@ -1,9 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
 // src/context/AuthContext.jsx
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { signOut } from "firebase/auth";
-import { Capacitor } from "@capacitor/core";
-import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 import { clearUserCache } from "../utils/taskStorage";
 import { fetchMyProfile } from "../utils/api";
@@ -67,7 +64,7 @@ export function AuthProvider({ children }) {
     } else {
       setCurrentUser(null);
     }
-  }, [auth.isLoggedIn, auth.email]);
+  }, [auth.isLoggedIn, auth.email, auth.role]);
 
   useEffect(() => {
     if (auth.isLoggedIn && auth.role === "public") {
@@ -108,17 +105,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       clearUserCache();
-      const signOutTasks = [signOut(firebaseAuth)];
-      if (Capacitor.isNativePlatform()) {
-        signOutTasks.push(FirebaseAuthentication.signOut());
-      }
-
-      const results = await Promise.allSettled(signOutTasks);
-      results.forEach((result) => {
-        if (result.status === "rejected") {
-          console.warn("Firebase logout warning:", result.reason?.message || result.reason);
-        }
-      });
+      await signOut(firebaseAuth);
     } catch (error) {
       console.warn("Firebase logout warning:", error.message);
     } finally {

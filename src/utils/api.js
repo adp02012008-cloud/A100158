@@ -1,7 +1,5 @@
 // src/utils/api.js - Production Render API integration
 import { onAuthStateChanged } from "firebase/auth";
-import { Capacitor } from "@capacitor/core";
-import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 import { auth as firebaseAuth } from "../firebase";
 
 export function getApiBaseUrl() {
@@ -49,15 +47,6 @@ async function waitForFirebaseUser(timeoutMs = 8000) {
 }
 
 export async function getIdToken(forceRefresh = false) {
-  if (Capacitor.isNativePlatform()) {
-    try {
-      const result = await FirebaseAuthentication.getIdToken();
-      if (result?.token) return result.token;
-    } catch {
-      // Fall back to web SDK
-    }
-  }
-
   if (firebaseAuth.currentUser) {
     try {
       return await firebaseAuth.currentUser.getIdToken(forceRefresh);

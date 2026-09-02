@@ -1,33 +1,44 @@
-// src/utils/exportUtils.js
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+// src/utils/exportUtils.js - Lazy loaded on demand to minimize bundle size
 
-export const exportToExcel = (data) => {
-  const formatted = data.map((s, i) => ({
-    Rank: i + 1,
-    Name: s.Name || "",
-    "Enrolment No": s["ENROLMENT NUMBER"] || "",
-    Position: s.POSITION || "",
-    Cluster: s.CLUSTER || "",
-    "Activity Points": s.ACTIVITY || 0,
-    "Reward Points": s.REWARD || 0,
-    Courses: s.COURSE_COUNT || 0,
-  }));
+export const exportToExcel = async (data) => {
+  try {
+    const [{ utils, write }, { saveAs }] = await Promise.all([
+      import("xlsx"),
+      import("file-saver"),
+    ]);
 
-  const worksheet = XLSX.utils.json_to_sheet(formatted);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-  saveAs(
-    new Blob([excelBuffer], { type: "application/octet-stream" }),
-    "BugSlayers_Report.xlsx"
-  );
+    const formatted = data.map((s, i) => ({
+      Rank: i + 1,
+      Name: s.Name || "",
+      "Enrolment No": s["ENROLMENT NUMBER"] || "",
+      Position: s.POSITION || "",
+      Cluster: s.CLUSTER || "",
+      "Activity Points": s.ACTIVITY || 0,
+      "Reward Points": s.REWARD || 0,
+      Courses: s.COURSE_COUNT || 0,
+    }));
+
+    const worksheet = utils.json_to_sheet(formatted);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Students");
+    const excelBuffer = write(workbook, { bookType: "xlsx", type: "array" });
+    saveAs(
+      new Blob([excelBuffer], { type: "application/octet-stream" }),
+      "BugSlayers_Report.xlsx"
+    );
+  } catch (err) {
+    console.error("Excel export error:", err);
+    alert("Failed to export Excel. Please try again.");
+  }
 };
 
-export const exportToPDF = (data) => {
+export const exportToPDF = async (data) => {
   try {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
+
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text("Bug Slayers Dashboard Report", 14, 15);
@@ -54,3 +65,4 @@ export const exportToPDF = (data) => {
     alert("PDF export failed. Check the console for details.");
   }
 };
+
