@@ -1,10 +1,10 @@
-// src/components/Navbar.jsx - Modern, responsive enterprise navigation bar
+// src/components/Navbar.jsx - Executive SaaS Navigation Bar
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 import NotificationCenter from "./NotificationCenter";
 
-// Sleek modern SVG Icons
+// Crisp modern SVG vector icons
 const Icons = {
   Dashboard: () => (
     <svg className="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -22,6 +22,19 @@ const Icons = {
       <path d="M10 14.66V17c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-2.34" />
       <path d="M18 14.66V17c0 .55-.45 1-1 1h-2c-.55 0-1-.45-1-1v-2.34" />
       <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+    </svg>
+  ),
+  TeamHub: () => (
+    <svg className="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  AdminTools: () => (
+    <svg className="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
     </svg>
   ),
   Members: () => (
@@ -113,34 +126,58 @@ const Icons = {
       <polyline points="6 9 12 15 18 9" />
     </svg>
   ),
+  Check: () => (
+    <svg className="nav-check-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
 };
 
 const TEAM_LINKS = [
-  { key: "my-tasks", icon: Icons.MyTasks, label: "Tasks & Deliverables" },
-  { key: "hackathons", icon: Icons.Hackathons, label: "Hackathons" },
-  { key: "gallery", icon: Icons.Gallery, label: "Gallery" },
-  { key: "projects", icon: Icons.Projects, label: "Projects" },
-  { key: "certificates", icon: Icons.Certificates, label: "Certificates" },
-  { key: "opportunities", icon: Icons.Opportunities, label: "Opportunities" },
+  { key: "my-tasks", icon: Icons.MyTasks, label: "Tasks & Deliverables", desc: "View assignments & submission status" },
+  { key: "hackathons", icon: Icons.Hackathons, label: "Hackathons", desc: "Team competitions & track records" },
+  { key: "gallery", icon: Icons.Gallery, label: "Gallery", desc: "Event photos & team memories" },
+  { key: "projects", icon: Icons.Projects, label: "Projects", desc: "Featured student applications & code" },
+  { key: "certificates", icon: Icons.Certificates, label: "Certificates", desc: "Credentials & verified completions" },
+  { key: "opportunities", icon: Icons.Opportunities, label: "Opportunities", desc: "Jobs, internships & referrals" },
+];
+
+const ADMIN_LINKS = [
+  { key: "manage-users", icon: Icons.Members, label: "Manage Members", desc: "User permissions & directory" },
+  { key: "assign-tasks", icon: Icons.Tasks, label: "Assign Tasks", desc: "Create & distribute task assignments" },
+  { key: "review-deliverables", icon: Icons.Reviews, label: "Review Deliverables", desc: "Evaluate student code submissions" },
 ];
 
 export default function Navbar({ page, setPage, search, setSearch }) {
   const { auth, currentUser, isTeamMember, logout, toggleViewMode } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const teamDropdownRef = useRef(null);
+  const adminDropdownRef = useRef(null);
+  const userDropdownRef = useRef(null);
 
   const handleNavClick = (targetPage) => {
     setPage(targetPage);
     setMobileMenuOpen(false);
     setTeamDropdownOpen(false);
+    setAdminDropdownOpen(false);
+    setUserDropdownOpen(false);
   };
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (teamDropdownRef.current && !teamDropdownRef.current.contains(e.target)) {
         setTeamDropdownOpen(false);
+      }
+      if (adminDropdownRef.current && !adminDropdownRef.current.contains(e.target)) {
+        setAdminDropdownOpen(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
+        setUserDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -153,15 +190,26 @@ export default function Navbar({ page, setPage, search, setSearch }) {
   const isTeamPageActive = TEAM_LINKS.some((l) => l.key === page);
   const currentTeamLink = TEAM_LINKS.find((l) => l.key === page);
 
+  const isAdminPageActive = ADMIN_LINKS.some((l) => l.key === page);
+  const currentAdminLink = ADMIN_LINKS.find((l) => l.key === page);
+
+  const displayName = currentUser?.name || auth.email?.split("@")[0] || "User";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   const pageSearchLabels = {
     dashboard: "Search students, courses…",
     leaderboard: "Search leaderboard…",
-    "manage-users": "Search team members…",
+    "manage-users": "Search members…",
     "assign-tasks": "Search tasks…",
     "review-deliverables": "Search submissions…",
     "my-tasks": "Search assigned tasks…",
     hackathons: "Search hackathons…",
-    gallery: "Search gallery events…",
+    gallery: "Search gallery…",
     projects: "Search projects…",
     certificates: "Search certificates…",
     opportunities: "Search opportunities…",
@@ -170,9 +218,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
   return (
     <header className="navbar-sticky-wrapper">
       <div className={`navbar-card ${mobileMenuOpen ? "menu-open" : ""}`}>
-        {/* Main Bar */}
         <div className="nav-main-bar">
-          {/* Brand Left */}
+          {/* Left: Brand Identity */}
           <div className="nav-brand-section">
             <div
               className="logo-wrap"
@@ -188,13 +235,13 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                   Bug <span className="highlight-text">Slayers</span>
                 </span>
                 <span className={`brand-badge ${isAdmin ? "admin" : isTeamMember ? "member" : "public"}`}>
-                  {isAdmin ? "Admin" : isTeamMember ? "Team Member" : "Public"}
+                  {isAdmin ? (auth.viewMode === "admin" ? "Admin" : "Member View") : isTeamMember ? "Member" : "Public"}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Desktop Navigation Center */}
+          {/* Center: Desktop Navigation Tabs */}
           <nav className="nav-links-center" aria-label="Primary Navigation">
             <button
               type="button"
@@ -214,79 +261,108 @@ export default function Navbar({ page, setPage, search, setSearch }) {
               <span>Leaderboard</span>
             </button>
 
-            {/* Admin Management Links */}
-            {isAdminView && (
-              <div className="admin-nav-group">
-                <button
-                  type="button"
-                  className={`nav-tab-btn ${page === "manage-users" ? "active" : ""}`}
-                  onClick={() => handleNavClick("manage-users")}
-                >
-                  <Icons.Members />
-                  <span>Members</span>
-                </button>
-                <button
-                  type="button"
-                  className={`nav-tab-btn ${page === "assign-tasks" ? "active" : ""}`}
-                  onClick={() => handleNavClick("assign-tasks")}
-                >
-                  <Icons.Tasks />
-                  <span>Assign Tasks</span>
-                </button>
-                <button
-                  type="button"
-                  className={`nav-tab-btn ${page === "review-deliverables" ? "active" : ""}`}
-                  onClick={() => handleNavClick("review-deliverables")}
-                >
-                  <Icons.Reviews />
-                  <span>Reviews</span>
-                </button>
-              </div>
-            )}
-
-            {/* Team Hub Dropdown on Desktop */}
+            {/* Team Hub Dropdown */}
             {isTeamMember && (
-              <div className="nav-dropdown-wrap" ref={dropdownRef}>
+              <div className="nav-dropdown-wrap" ref={teamDropdownRef}>
                 <button
                   type="button"
                   className={`nav-tab-btn dropdown-trigger ${isTeamPageActive ? "active" : ""}`}
-                  onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}
+                  onClick={() => {
+                    setTeamDropdownOpen(!teamDropdownOpen);
+                    setAdminDropdownOpen(false);
+                    setUserDropdownOpen(false);
+                  }}
+                  aria-expanded={teamDropdownOpen}
                 >
-                  {isTeamPageActive && currentTeamLink ? (
-                    <currentTeamLink.icon />
-                  ) : (
-                    <Icons.MyTasks />
-                  )}
+                  <Icons.TeamHub />
                   <span>{isTeamPageActive && currentTeamLink ? currentTeamLink.label : "Team Hub"}</span>
                   <Icons.ChevronDown />
                 </button>
 
                 {teamDropdownOpen && (
-                  <div className="nav-dropdown-menu">
-                    <div className="dropdown-header">Private Team Hub</div>
-                    {TEAM_LINKS.map((link) => {
-                      const IconComp = link.icon;
-                      return (
-                        <button
-                          key={link.key}
-                          type="button"
-                          className={`dropdown-item ${page === link.key ? "active" : ""}`}
-                          onClick={() => handleNavClick(link.key)}
-                        >
-                          <IconComp />
-                          <span>{link.label}</span>
-                        </button>
-                      );
-                    })}
+                  <div className="nav-dropdown-menu luxury-dropdown">
+                    <div className="dropdown-header">Private Team Workspace</div>
+                    <div className="dropdown-menu-list">
+                      {TEAM_LINKS.map((link) => {
+                        const IconComp = link.icon;
+                        const isCurrent = page === link.key;
+                        return (
+                          <button
+                            key={link.key}
+                            type="button"
+                            className={`luxury-dropdown-item ${isCurrent ? "active" : ""}`}
+                            onClick={() => handleNavClick(link.key)}
+                          >
+                            <div className="dropdown-icon-box">
+                              <IconComp />
+                            </div>
+                            <div className="dropdown-item-meta">
+                              <span className="dropdown-item-label">{link.label}</span>
+                              <span className="dropdown-item-desc">{link.desc}</span>
+                            </div>
+                            {isCurrent && <Icons.Check />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Admin Tools Dropdown (when in Admin mode) */}
+            {isAdminView && (
+              <div className="nav-dropdown-wrap" ref={adminDropdownRef}>
+                <button
+                  type="button"
+                  className={`nav-tab-btn dropdown-trigger ${isAdminPageActive ? "active" : ""}`}
+                  onClick={() => {
+                    setAdminDropdownOpen(!adminDropdownOpen);
+                    setTeamDropdownOpen(false);
+                    setUserDropdownOpen(false);
+                  }}
+                  aria-expanded={adminDropdownOpen}
+                >
+                  <Icons.AdminTools />
+                  <span>{isAdminPageActive && currentAdminLink ? currentAdminLink.label : "Admin Tools"}</span>
+                  <Icons.ChevronDown />
+                </button>
+
+                {adminDropdownOpen && (
+                  <div className="nav-dropdown-menu luxury-dropdown">
+                    <div className="dropdown-header">System Administration</div>
+                    <div className="dropdown-menu-list">
+                      {ADMIN_LINKS.map((link) => {
+                        const IconComp = link.icon;
+                        const isCurrent = page === link.key;
+                        return (
+                          <button
+                            key={link.key}
+                            type="button"
+                            className={`luxury-dropdown-item ${isCurrent ? "active" : ""}`}
+                            onClick={() => handleNavClick(link.key)}
+                          >
+                            <div className="dropdown-icon-box admin-box">
+                              <IconComp />
+                            </div>
+                            <div className="dropdown-item-meta">
+                              <span className="dropdown-item-label">{link.label}</span>
+                              <span className="dropdown-item-desc">{link.desc}</span>
+                            </div>
+                            {isCurrent && <Icons.Check />}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
             )}
           </nav>
 
-          {/* Right Actions & Utilities */}
+          {/* Right: Actions, Search, Notifications & User Avatar Menu */}
           <div className="nav-actions-right">
-            {/* Search Box */}
+            {/* Search Input */}
             <div className="search-wrap">
               <span className="search-icon">
                 <Icons.Search />
@@ -310,53 +386,103 @@ export default function Navbar({ page, setPage, search, setSearch }) {
               )}
             </div>
 
-            {/* Notification Bell */}
+            {/* Notification Center */}
             {auth.isLoggedIn && (
               <div className="nav-notif-wrap">
                 <NotificationCenter onSelectTask={() => handleNavClick("my-tasks")} />
               </div>
             )}
 
-            {/* Admin Switcher Toggle (Desktop) */}
-            {isAdmin && (
-              <button
-                type="button"
-                className={`view-mode-pill-btn ${auth.viewMode === "admin" ? "is-admin" : "is-member"}`}
-                onClick={toggleViewMode}
-                title="Switch between Admin and Member workspace"
-              >
-                <Icons.SwitchView />
-                <span>{auth.viewMode === "admin" ? "Admin Mode" : "Member Mode"}</span>
-              </button>
-            )}
-
-            {/* User Profile Tab */}
+            {/* User Profile Avatar Menu */}
             {auth.isLoggedIn && (
-              <button
-                type="button"
-                className={`profile-action-btn ${page === "profile" ? "active" : ""}`}
-                onClick={() => handleNavClick("profile")}
-                title={auth.email}
-              >
-                <Icons.Profile />
-                <span className="profile-btn-text">Profile</span>
-              </button>
+              <div className="nav-dropdown-wrap" ref={userDropdownRef}>
+                <button
+                  type="button"
+                  className={`user-avatar-btn ${userDropdownOpen ? "active" : ""}`}
+                  onClick={() => {
+                    setUserDropdownOpen(!userDropdownOpen);
+                    setTeamDropdownOpen(false);
+                    setAdminDropdownOpen(false);
+                  }}
+                  title={auth.email}
+                  aria-label="User Account Menu"
+                >
+                  <span className="avatar-initials">{initials}</span>
+                  <div className="avatar-status-dot" />
+                </button>
+
+                {userDropdownOpen && (
+                  <div className="nav-dropdown-menu user-profile-dropdown">
+                    {/* User Summary Card */}
+                    <div className="dropdown-user-header">
+                      <div className="dropdown-user-avatar">{initials}</div>
+                      <div className="dropdown-user-details">
+                        <strong className="dropdown-user-name">{displayName}</strong>
+                        <span className="dropdown-user-email">{auth.email}</span>
+                      </div>
+                    </div>
+
+                    <div className="dropdown-divider" />
+
+                    {/* Menu Actions */}
+                    <div className="dropdown-menu-list">
+                      <button
+                        type="button"
+                        className={`luxury-dropdown-item ${page === "profile" ? "active" : ""}`}
+                        onClick={() => handleNavClick("profile")}
+                      >
+                        <div className="dropdown-icon-box">
+                          <Icons.Profile />
+                        </div>
+                        <div className="dropdown-item-meta">
+                          <span className="dropdown-item-label">My Profile & Portfolio</span>
+                          <span className="dropdown-item-desc">Showcase, courses & credentials</span>
+                        </div>
+                      </button>
+
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          className="luxury-dropdown-item"
+                          onClick={() => {
+                            toggleViewMode();
+                            setUserDropdownOpen(false);
+                          }}
+                        >
+                          <div className="dropdown-icon-box mode-box">
+                            <Icons.SwitchView />
+                          </div>
+                          <div className="dropdown-item-meta">
+                            <span className="dropdown-item-label">
+                              {auth.viewMode === "admin" ? "Switch to Member View" : "Switch to Admin View"}
+                            </span>
+                            <span className="dropdown-item-desc">
+                              {auth.viewMode === "admin" ? "Preview student dashboard experience" : "Access admin controls and grading"}
+                            </span>
+                          </div>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="dropdown-divider" />
+
+                    <button
+                      type="button"
+                      className="dropdown-logout-action"
+                      onClick={() => {
+                        logout();
+                        setUserDropdownOpen(false);
+                      }}
+                    >
+                      <Icons.Logout />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
-            {/* Logout Action */}
-            {auth.isLoggedIn && (
-              <button
-                type="button"
-                className="nav-logout-btn"
-                onClick={logout}
-                title="Sign out"
-              >
-                <Icons.Logout />
-                <span className="logout-btn-text">Logout</span>
-              </button>
-            )}
-
-            {/* Mobile Hamburger Button */}
+            {/* Mobile Animated Hamburger */}
             <button
               type="button"
               className={`mobile-hamburger-btn ${mobileMenuOpen ? "active" : ""}`}
@@ -370,51 +496,24 @@ export default function Navbar({ page, setPage, search, setSearch }) {
           </div>
         </div>
 
-        {/* Desktop Secondary Tab Bar for Team Hub (shown when active) */}
-        {isTeamMember && isTeamPageActive && (
-          <div className="desktop-subnav-strip">
-            <div className="subnav-label">Team Hub</div>
-            <div className="subnav-links-scroll">
-              {TEAM_LINKS.map((link) => {
-                const IconComp = link.icon;
-                return (
-                  <button
-                    key={link.key}
-                    type="button"
-                    className={`subnav-tab ${page === link.key ? "active" : ""}`}
-                    onClick={() => handleNavClick(link.key)}
-                  >
-                    <IconComp />
-                    <span>{link.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Mobile Slide-Out Drawer */}
         {mobileMenuOpen && (
           <div className="mobile-drawer-overlay">
-            {/* User Details Box */}
+            {/* User Profile Card */}
             <div className="mobile-user-card">
-              <div className="mobile-avatar">
-                {currentUser?.name ? currentUser.name[0].toUpperCase() : auth.email ? auth.email[0].toUpperCase() : "U"}
-              </div>
+              <div className="mobile-avatar">{initials}</div>
               <div className="mobile-user-info">
-                <strong className="mobile-user-name">
-                  {currentUser?.name || auth.email?.split("@")[0] || "Team Member"}
-                </strong>
+                <strong className="mobile-user-name">{displayName}</strong>
                 <span className="mobile-user-email">{auth.email}</span>
               </div>
               <span className={`brand-badge ${isAdmin ? "admin" : isTeamMember ? "member" : "public"}`}>
-                {isAdmin ? "Admin" : isTeamMember ? "Member" : "Public"}
+                {isAdmin ? (auth.viewMode === "admin" ? "Admin" : "Member View") : isTeamMember ? "Member" : "Public"}
               </span>
             </div>
 
-            {/* Mobile Navigation Groups */}
+            {/* Mobile Navigation Content */}
             <div className="mobile-drawer-content">
-              {/* Section 1: Main Pages */}
+              {/* Main Section */}
               <div className="mobile-nav-group">
                 <div className="mobile-group-title">Main Portal</div>
                 <button
@@ -445,10 +544,10 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                 )}
               </div>
 
-              {/* Section 2: Team Hub */}
+              {/* Team Workspace */}
               {isTeamMember && (
                 <div className="mobile-nav-group">
-                  <div className="mobile-group-title">Private Team Hub</div>
+                  <div className="mobile-group-title">Private Team Workspace</div>
                   <div className="mobile-subgrid">
                     {TEAM_LINKS.map((link) => {
                       const IconComp = link.icon;
@@ -468,39 +567,29 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                 </div>
               )}
 
-              {/* Section 3: Admin Suite (If Admin) */}
+              {/* Admin Tools (If Admin) */}
               {isAdmin && (
                 <div className="mobile-nav-group">
-                  <div className="mobile-group-title">Admin Management</div>
-                  <button
-                    type="button"
-                    className={`mobile-nav-item ${page === "manage-users" ? "active" : ""}`}
-                    onClick={() => handleNavClick("manage-users")}
-                  >
-                    <Icons.Members />
-                    <span>Manage Members</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`mobile-nav-item ${page === "assign-tasks" ? "active" : ""}`}
-                    onClick={() => handleNavClick("assign-tasks")}
-                  >
-                    <Icons.Tasks />
-                    <span>Assign Tasks</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`mobile-nav-item ${page === "review-deliverables" ? "active" : ""}`}
-                    onClick={() => handleNavClick("review-deliverables")}
-                  >
-                    <Icons.Reviews />
-                    <span>Review Deliverables</span>
-                  </button>
+                  <div className="mobile-group-title">System Administration</div>
+                  {ADMIN_LINKS.map((link) => {
+                    const IconComp = link.icon;
+                    return (
+                      <button
+                        key={link.key}
+                        type="button"
+                        className={`mobile-nav-item ${page === link.key ? "active" : ""}`}
+                        onClick={() => handleNavClick(link.key)}
+                      >
+                        <IconComp />
+                        <span>{link.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            {/* Mobile Footer Actions */}
+            {/* Mobile Footer */}
             <div className="mobile-drawer-footer">
               {isAdmin && (
                 <button
