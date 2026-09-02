@@ -12,6 +12,7 @@ import AddCourseModal from "../components/AddCourseModal";
 import AddClusterModal from "../components/AddClusterModal";
 import ManageCoursesModal from "../components/ManageCoursesModal";
 import ManageClustersModal from "../components/ManageClustersModal";
+import UnifiedLoader from "../components/UnifiedLoader";
 
 const normalize = (str) => String(str || "").toLowerCase().replace(/\s+/g, "").trim();
 
@@ -261,6 +262,16 @@ export default function Dashboard({ search, setPage }) {
 
   const isAdminView = auth.role === "admin" && auth.viewMode === "admin";
 
+  if (!dataLoaded) {
+    return (
+      <UnifiedLoader
+        title="Loading Dashboard…"
+        subtitle="Fetching team metrics and student course progress"
+        minHeight="450px"
+      />
+    );
+  }
+
   return (
     <div>
       <div className="dashboard-toolbar">
@@ -347,12 +358,7 @@ export default function Dashboard({ search, setPage }) {
         </div>
       </div>
 
-      {!dataLoaded ? (
-        <div className="empty-state">
-          <div className="empty-icon">⏳</div>
-          <h3>Loading students…</h3>
-        </div>
-      ) : filtered.length > 0 ? (
+      {filtered.length > 0 ? (
         <div className="grid">
           {filtered.map((s, i) => (
             <StudentCard

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import UnifiedLoader from "../components/UnifiedLoader";
 
 export default function AdminSubmissionsReview({ search = "" }) {
   const { auth } = useAuth();
@@ -259,9 +260,11 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
       {/* Submissions List */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: "60px 0", color: "#94a3b8" }}>
-          ⏳ Loading project deliverables for review…
-        </div>
+        <UnifiedLoader
+          title="Loading Deliverables for Review…"
+          subtitle="Fetching project submissions and feedback records"
+          minHeight="300px"
+        />
       ) : filteredSubmissions.length === 0 ? (
         <div
           style={{

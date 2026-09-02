@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { fetchMyProfile, updateMyProfile, apiFetch, fetchSheetData } from "../utils/api";
 import { normalizeEmail } from "../utils/roles";
+import UnifiedLoader from "../components/UnifiedLoader";
 
 export default function Profile() {
   const { auth } = useAuth();
@@ -276,10 +277,11 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "80px 20px" }}>
-        <div style={{ fontSize: "36px", marginBottom: "16px" }}>🔄</div>
-        <p style={{ color: "#94a3b8", fontSize: "15px", fontWeight: "600" }}>Loading member profile & showcase portfolio...</p>
-      </div>
+      <UnifiedLoader
+        title="Loading Member Profile…"
+        subtitle="Fetching profile details and showcase portfolio"
+        minHeight="380px"
+      />
     );
   }
 

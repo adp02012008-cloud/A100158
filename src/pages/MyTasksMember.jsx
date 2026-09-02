@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { fetchSheetData } from "../utils/api";
 import { isUserAssignedToTask, normalizeEmail } from "../utils/roles";
+import UnifiedLoader from "../components/UnifiedLoader";
 import {
   getReviews,
   getSubmissions,
@@ -193,12 +194,11 @@ export default function MyTasksMember({ search = "" }) {
 
   if (loading) {
     return (
-      <div className="section-container">
-        <div className="loading-circle-container">
-          <div className="circle-spinner" />
-          <div className="login-loading">Loading My Assigned Tasks…</div>
-        </div>
-      </div>
+      <UnifiedLoader
+        title="Loading My Assigned Tasks…"
+        subtitle="Fetching your assigned tasks and submission status"
+        minHeight="380px"
+      />
     );
   }
 

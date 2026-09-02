@@ -4,6 +4,7 @@ import { fetchSheetData } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { extractStudentEmails, getAllAssignableUsers, normalizeEmail } from "../utils/roles";
 import { formatDateForInput } from "../utils/dateUtils";
+import UnifiedLoader from "../components/UnifiedLoader";
 import {
   createReview,
   deleteTask,
@@ -274,12 +275,11 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
   if (loading) {
     return (
-      <div className="section-container">
-        <div className="loading-circle-container">
-          <div className="circle-spinner" />
-          <div className="login-loading">Loading Task Assignments…</div>
-        </div>
-      </div>
+      <UnifiedLoader
+        title="Loading Task Assignments…"
+        subtitle="Fetching assignment records and team deliverables"
+        minHeight="380px"
+      />
     );
   }
 

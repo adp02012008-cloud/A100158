@@ -4,6 +4,7 @@ import { apiFetch } from "../utils/api";
 import EditCourseModal from "./EditCourseModal";
 import AddCourseModal from "./AddCourseModal";
 import BulkImportCoursesModal from "./BulkImportCoursesModal";
+import UnifiedLoader from "./UnifiedLoader";
 
 export default function ManageCoursesModal({ onClose }) {
   const [courses, setCourses] = useState([]);
@@ -273,10 +274,11 @@ export default function ManageCoursesModal({ onClose }) {
         {error && <div className="error-banner" style={{ color: "#ef4444", marginBottom: "16px" }}>⚠️ {error}</div>}
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "50px 20px" }}>
-            <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
-            <p style={{ color: "#94a3b8", fontSize: "14px" }}>Loading courses from database...</p>
-          </div>
+          <UnifiedLoader
+            title="Loading Courses…"
+            subtitle="Fetching courses and point criteria from database"
+            minHeight="220px"
+          />
         ) : courses.length === 0 ? (
           <div style={{ textAlign: "center", padding: "50px 20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
             <div style={{ fontSize: "40px", marginBottom: "12px" }}>📚</div>

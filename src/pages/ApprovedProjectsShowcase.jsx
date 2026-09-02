@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import UnifiedLoader from "../components/UnifiedLoader";
 
 export default function ApprovedProjectsShowcase({ search = "" }) {
   const { auth, currentUser } = useAuth();
@@ -285,9 +286,11 @@ export default function ApprovedProjectsShowcase({ search = "" }) {
 
       {/* Projects Grid */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: "60px 0", color: "#94a3b8" }}>
-          🚀 Loading published team projects…
-        </div>
+        <UnifiedLoader
+          title="Loading Published Projects…"
+          subtitle="Fetching showcase portfolio and live project demos"
+          minHeight="300px"
+        />
       ) : filteredProjects.length === 0 ? (
         <div
           style={{

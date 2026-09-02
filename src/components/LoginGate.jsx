@@ -15,6 +15,7 @@ import { auth as firebaseAuth, googleProvider } from "../firebase";
 import { fetchSheetData } from "../utils/api";
 import { getUserRole, normalizeEmail, findStudentByEmail, isAdminEmail } from "../utils/roles";
 import { useAuth } from "../context/AuthContext";
+import UnifiedLoader from "./UnifiedLoader";
 
 function getAuthErrorMessage(error, fallback = "Authentication failed. Please try again.") {
   const code = error?.code || "";
@@ -306,10 +307,11 @@ export default function LoginGate({ children }) {
   if (checkingSession) {
     return (
       <div className="login-bg">
-        <div className="loading-circle-container">
-          <div className="circle-spinner" />
-          <div className="login-loading">Loading portal…</div>
-        </div>
+        <UnifiedLoader
+          title="Loading Bug Slayers Portal…"
+          subtitle="Verifying session and security credentials"
+          minHeight="280px"
+        />
       </div>
     );
   }

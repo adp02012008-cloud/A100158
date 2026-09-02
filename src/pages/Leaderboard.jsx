@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../utils/api";
 import { isSuperAdminEmail } from "../utils/roles";
+import UnifiedLoader from "../components/UnifiedLoader";
 
 function getInitials(name = "") {
   return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
@@ -91,15 +92,11 @@ export default function Leaderboard({ search }) {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "80px 20px", background: "rgba(15, 23, 42, 0.4)", borderRadius: "20px", border: "1px solid rgba(255, 255, 255, 0.08)", margin: "20px 0" }}>
-          <div style={{ fontSize: "40px", marginBottom: "16px", animation: "spin 1.5s linear infinite" }}>⚡</div>
-          <h3 style={{ color: "#f8fafc", fontSize: "18px", fontWeight: "800", margin: "0 0 8px 0" }}>
-            Loading Leaderboard Rankings…
-          </h3>
-          <p style={{ color: "#94a3b8", fontSize: "14px", margin: 0 }}>
-            Calculating activity and reward points performance data. Please wait a moment.
-          </p>
-        </div>
+        <UnifiedLoader
+          title="Loading Leaderboard Rankings…"
+          subtitle="Calculating activity and reward points performance data"
+          minHeight="320px"
+        />
       ) : (
         <>
           {/* Top 3 podium */}

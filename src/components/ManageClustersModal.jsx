@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import EditClusterModal from "./EditClusterModal";
 import AddClusterModal from "./AddClusterModal";
+import UnifiedLoader from "./UnifiedLoader";
 
 export default function ManageClustersModal({ onClose, onClustersUpdated }) {
   const [clusters, setClusters] = useState([]);
@@ -86,10 +87,11 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
         {error && <div className="error-banner" style={{ color: "#ef4444", marginBottom: "12px" }}>⚠️ {error}</div>}
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "40px 20px" }}>
-            <div style={{ fontSize: "28px", marginBottom: "10px" }}>⏳</div>
-            <p style={{ color: "#94a3b8" }}>Loading clusters from MongoDB Atlas...</p>
-          </div>
+          <UnifiedLoader
+            title="Loading Clusters…"
+            subtitle="Fetching cluster tracks from database"
+            minHeight="200px"
+          />
         ) : clusters.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
             <div style={{ fontSize: "36px", marginBottom: "10px" }}>🏛️</div>

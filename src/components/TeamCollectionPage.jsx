@@ -8,6 +8,7 @@ import {
   apiFetch,
 } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
+import UnifiedLoader from "./UnifiedLoader";
 
 function formatValue(val) {
   if (val === undefined || val === null) return "";
@@ -1223,9 +1224,11 @@ export default function TeamCollectionPage({ config, search = "" }) {
       {error && <div className="team-notice error">{error}</div>}
 
       {loading ? (
-        <div className="team-empty-state">
-          Loading {config.pageTitle.toLowerCase()}…
-        </div>
+        <UnifiedLoader
+          title={`Loading ${config.pageTitle}…`}
+          subtitle="Fetching team records"
+          minHeight="320px"
+        />
       ) : filteredRecords.length === 0 ? (
         <div className="team-empty-state">
           <div className="team-empty-icon">{config.icon}</div>

@@ -21,31 +21,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const AdminSubmissionsReview = lazy(() => import("./pages/AdminSubmissionsReview"));
 const UserRosterAdmin = lazy(() => import("./pages/UserRosterAdmin"));
 
-function PageLoadingSkeleton() {
-  return (
-    <div className="page-skeleton-container" style={{ padding: "40px 24px", maxWidth: "1200px", margin: "0 auto", textAlign: "center" }}>
-      <div className="loading-circle-container" style={{ padding: "0 0 32px 0" }}>
-        <div className="circle-spinner" />
-        <span style={{ color: "#94a3b8", fontSize: "14px", fontWeight: "500" }}>Loading page content…</span>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-        {[1, 2, 3, 4, 5, 6].map((idx) => (
-          <div
-            key={idx}
-            style={{
-              height: "140px",
-              borderRadius: "12px",
-              background: "linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%)",
-              backgroundSize: "200% 100%",
-              animation: "skeleton-shimmer 1.5s infinite",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+import UnifiedLoader from "./components/UnifiedLoader";
 
 export default function App() {
   const { auth, isTeamMember } = useAuth();
@@ -73,7 +49,7 @@ export default function App() {
         />
 
         <main className="page-content">
-          <Suspense fallback={<PageLoadingSkeleton />}>
+          <Suspense fallback={<UnifiedLoader title="Loading…" subtitle="" minHeight="420px" />}>
             {visiblePage === "dashboard" && <Dashboard search={search} setPage={changePage} />}
             {visiblePage === "leaderboard" && <Leaderboard search={search} />}
             {visiblePage === "profile" && <Profile />}

@@ -4,6 +4,7 @@ import { apiFetch } from "../utils/api";
 import { isSuperAdminEmail } from "../utils/roles";
 import EditModal from "../components/EditModal";
 import AddMemberModal from "../components/AddMemberModal";
+import UnifiedLoader from "../components/UnifiedLoader";
 
 export default function UserRosterAdmin({ search = "" }) {
   const [users, setUsers] = useState([]);
@@ -204,10 +205,11 @@ export default function UserRosterAdmin({ search = "" }) {
       )}
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "70px 20px" }}>
-          <div style={{ fontSize: "36px", marginBottom: "14px" }}>⏳</div>
-          <p style={{ color: "#94a3b8", fontSize: "14px" }}>Loading system user records from database...</p>
-        </div>
+        <UnifiedLoader
+          title="Loading User Roster…"
+          subtitle="Fetching system user records from database"
+          minHeight="320px"
+        />
       ) : filteredUsers.length === 0 ? (
         <div style={{ padding: "50px 20px", textAlign: "center", background: "rgba(30, 27, 75, 0.35)", borderRadius: "20px", border: "1px dashed rgba(255,255,255,0.12)" }}>
           <div style={{ fontSize: "42px", marginBottom: "14px" }}>🔍</div>
