@@ -57,7 +57,10 @@ export async function updateCluster(req, res) {
     const { id } = req.params;
     const { name, description, status } = req.body;
 
-    let cluster = await Cluster.findById(id);
+    let cluster = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      cluster = await Cluster.findById(id);
+    }
     if (!cluster) cluster = await Cluster.findOne({ clusterId: id });
     if (!cluster) return res.status(404).json({ success: false, message: "Cluster not found" });
 
@@ -89,7 +92,10 @@ export async function deleteCluster(req, res) {
     }
 
     const { id } = req.params;
-    let cluster = await Cluster.findById(id);
+    let cluster = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      cluster = await Cluster.findById(id);
+    }
     if (!cluster) cluster = await Cluster.findOne({ clusterId: id });
     if (!cluster) return res.status(404).json({ success: false, message: "Cluster not found" });
 

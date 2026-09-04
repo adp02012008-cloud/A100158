@@ -318,7 +318,8 @@ export async function updateUserProfile(req, res) {
       status,
     } = req.body;
 
-    const user = await User.findById(id);
+    let user = (id && String(id).match(/^[0-9a-fA-F]{24}$/)) ? await User.findById(id) : null;
+    if (!user) user = await User.findOne({ userId: id });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     if (!isAdmin(req.user) && String(user._id) !== String(req.user._id)) {
@@ -431,7 +432,8 @@ export async function updateUserRole(req, res) {
       return res.status(400).json({ success: false, message: "Invalid role. Allowed values: ADMIN, MEMBER" });
     }
 
-    const user = await User.findById(id);
+    let user = (id && String(id).match(/^[0-9a-fA-F]{24}$/)) ? await User.findById(id) : null;
+    if (!user) user = await User.findOne({ userId: id });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     if (isSuperAdminEmail(user.email)) {
@@ -486,7 +488,8 @@ export async function updateUserStatus(req, res) {
       return res.status(400).json({ success: false, message: "Invalid status. Allowed values: ACTIVE, INACTIVE" });
     }
 
-    const user = await User.findById(id);
+    let user = (id && String(id).match(/^[0-9a-fA-F]{24}$/)) ? await User.findById(id) : null;
+    if (!user) user = await User.findOne({ userId: id });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     if (isSuperAdminEmail(user.email)) {
@@ -532,7 +535,7 @@ export async function deleteUser(req, res) {
     }
 
     const { id } = req.params;
-    let user = await User.findById(id);
+    let user = (id && String(id).match(/^[0-9a-fA-F]{24}$/)) ? await User.findById(id) : null;
     if (!user) {
       user = await User.findOne({ userId: id });
     }

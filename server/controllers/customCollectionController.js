@@ -77,7 +77,10 @@ export async function updateCustomCollection(req, res) {
     const { id } = req.params;
     const { name, description, fields, visibility, status } = req.body;
 
-    let collection = await CustomCollection.findById(id);
+    let collection = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      collection = await CustomCollection.findById(id);
+    }
     if (!collection) {
       collection = await CustomCollection.findOne({ collectionId: id });
     }

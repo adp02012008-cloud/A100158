@@ -26,7 +26,13 @@ export async function createOpportunity(req, res) {
 export async function updateOpportunity(req, res) {
   try {
     const { id } = req.params;
-    const opportunity = await Opportunity.findByIdAndUpdate(id, req.body, { new: true });
+    let opportunity = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      opportunity = await Opportunity.findByIdAndUpdate(id, req.body, { new: true });
+    }
+    if (!opportunity) {
+      opportunity = await Opportunity.findOneAndUpdate({ opportunityId: id }, req.body, { new: true });
+    }
     if (!opportunity) return res.status(404).json({ success: false, message: "Opportunity not found" });
     return res.json({ success: true, opportunity });
   } catch (err) {
@@ -37,7 +43,13 @@ export async function updateOpportunity(req, res) {
 export async function deleteOpportunity(req, res) {
   try {
     const { id } = req.params;
-    const opportunity = await Opportunity.findByIdAndDelete(id);
+    let opportunity = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      opportunity = await Opportunity.findByIdAndDelete(id);
+    }
+    if (!opportunity) {
+      opportunity = await Opportunity.findOneAndDelete({ opportunityId: id });
+    }
     if (!opportunity) return res.status(404).json({ success: false, message: "Opportunity not found" });
     return res.json({ success: true, message: "Opportunity deleted" });
   } catch (err) {

@@ -43,7 +43,10 @@ export async function updateCourse(req, res) {
     const { id } = req.params;
     const { name, description, category, clusterAccess, levelPoints } = req.body;
 
-    let course = await Course.findById(id);
+    let course = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      course = await Course.findById(id);
+    }
     if (!course) course = await Course.findOne({ courseId: id });
     if (!course) return res.status(404).json({ success: false, message: "Course not found" });
 
@@ -82,7 +85,10 @@ export async function updateCourse(req, res) {
 export async function deleteCourse(req, res) {
   try {
     const { id } = req.params;
-    let course = await Course.findById(id);
+    let course = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      course = await Course.findById(id);
+    }
     if (!course) course = await Course.findOne({ courseId: id });
     if (!course) return res.status(404).json({ success: false, message: "Course not found" });
 

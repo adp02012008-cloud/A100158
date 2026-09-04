@@ -40,7 +40,10 @@ export async function createCertificate(req, res) {
 export async function updateCertificate(req, res) {
   try {
     const { id } = req.params;
-    let certificate = await Certificate.findById(id);
+    let certificate = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      certificate = await Certificate.findById(id);
+    }
     if (!certificate) {
       certificate = await Certificate.findOne({ certificateId: id });
     }
@@ -71,14 +74,20 @@ export async function updateCertificate(req, res) {
 export async function deleteCertificate(req, res) {
   try {
     const { id } = req.params;
-    const certificate = await Certificate.findById(id);
+    let certificate = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      certificate = await Certificate.findById(id);
+    }
+    if (!certificate) {
+      certificate = await Certificate.findOne({ certificateId: id });
+    }
     if (!certificate) return res.status(404).json({ success: false, message: "Certificate not found" });
 
     if (!isAdmin(req.user) && String(certificate.userId) !== String(req.user._id)) {
       return res.status(403).json({ success: false, message: "Access denied." });
     }
 
-    await Certificate.findByIdAndDelete(id);
+    await Certificate.deleteOne({ _id: certificate._id });
     return res.json({ success: true, message: "Certificate deleted" });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
