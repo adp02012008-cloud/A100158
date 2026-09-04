@@ -14,7 +14,7 @@ export async function createSubmission(req, res) {
   try {
     const result = await withTransaction(async (session) => {
       const user = req.user;
-      const { taskId, githubUrl, demoUrl, notes, files, submitForAll, submissionGroupId: reqGroupId, submittedFor } = req.body;
+      const { taskId, githubUrl, demoUrl, presentationUrl, pptUrl, images, notes, files, submitForAll, submissionGroupId: reqGroupId, submittedFor } = req.body;
 
       if (!taskId) return { statusCode: 400, body: { success: false, message: "TaskId is required." } };
 
@@ -69,6 +69,11 @@ export async function createSubmission(req, res) {
       const subId = `SUB-${Date.now().toString().slice(-6)}-V${nextVersion}`;
       const submissionType = finalSubmittedForUserIds.length > 1 ? "COLLABORATIVE" : "INDIVIDUAL";
 
+      const finalPresentationUrl = (presentationUrl || pptUrl || "").trim();
+      const finalImages = Array.isArray(images)
+        ? images.map((img) => String(img.url || img)).filter(Boolean)
+        : (req.body.image ? [String(req.body.image).trim()] : []);
+
       const [newSubmission] = await TaskSubmission.create(
         [
           {
@@ -82,6 +87,8 @@ export async function createSubmission(req, res) {
             submittedFor: finalSubmittedForUserIds,
             githubUrl: (githubUrl || "").trim(),
             demoUrl: (demoUrl || "").trim(),
+            presentationUrl: finalPresentationUrl,
+            images: finalImages,
             notes: (notes || "").trim(),
             files: Array.isArray(files) ? files.map((f) => String(f.url || f)) : [],
             status: "SUBMITTED",
@@ -163,7 +170,7 @@ export async function createDirectProject(req, res) {
       return res.status(403).json({ success: false, message: "Access denied. Only Admins can directly publish projects." });
     }
 
-    const { title, domain, githubUrl, demoUrl, notes, submittedBy, submittedFor } = req.body;
+    const { title, domain, githubUrl, demoUrl, presentationUrl, pptUrl, images, image, notes, submittedBy, submittedFor } = req.body;
 
     if (!title) {
       return res.status(400).json({ success: false, message: "Project title is required." });
@@ -183,6 +190,11 @@ export async function createDirectProject(req, res) {
     const submitterId = submittedBy || user._id;
     const teamUserIds = Array.isArray(submittedFor) && submittedFor.length > 0 ? submittedFor : [submitterId];
 
+    const finalPresentationUrl = (presentationUrl || pptUrl || "").trim();
+    const finalImages = Array.isArray(images)
+      ? images.map((img) => String(img.url || img)).filter(Boolean)
+      : (image ? [String(image).trim()] : []);
+
     const subId = `SUB-DIR-${Date.now().toString().slice(-6)}-V1`;
     const submission = await TaskSubmission.create({
       submissionId: subId,
@@ -194,6 +206,8 @@ export async function createDirectProject(req, res) {
       submittedFor: teamUserIds,
       githubUrl: (githubUrl || "").trim(),
       demoUrl: (demoUrl || "").trim(),
+      presentationUrl: finalPresentationUrl,
+      images: finalImages,
       notes: (notes || "").trim(),
       status: "APPROVED",
       submittedAt: new Date(),
@@ -353,7 +367,7 @@ export async function updateSubmission(req, res) {
   try {
     const { id } = req.params;
     const user = req.user;
-    const { githubUrl, demoUrl, notes, files, status, memberEditUntil, editHours } = req.body;
+    const { githubUrl, demoUrl, presentationUrl, pptUrl, images, notes, files, status, memberEditUntil, editHours } = req.body;
 
     const submission = await TaskSubmission.findById(id).exec();
     if (!submission) {
@@ -376,6 +390,14 @@ export async function updateSubmission(req, res) {
 
     if (githubUrl !== undefined) submission.githubUrl = String(githubUrl).trim();
     if (demoUrl !== undefined) submission.demoUrl = String(demoUrl).trim();
+    if (presentationUrl !== undefined || pptUrl !== undefined) {
+      submission.presentationUrl = String(presentationUrl || pptUrl || "").trim();
+    }
+    if (images !== undefined) {
+      submission.images = Array.isArray(images)
+        ? images.map((img) => String(img.url || img)).filter(Boolean)
+        : (req.body.image ? [String(req.body.image).trim()] : []);
+    }
     if (notes !== undefined) submission.notes = String(notes).trim();
     if (Array.isArray(files)) submission.files = files.map((f) => String(f.url || f));
 

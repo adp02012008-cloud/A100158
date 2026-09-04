@@ -479,7 +479,43 @@ export default function AdminSubmissionsReview({ search = "" }) {
                       📦 GitHub Repository
                     </a>
                   )}
+
+                  {(sub.presentationUrl || sub.pptUrl) && (
+                    <a
+                      href={(sub.presentationUrl || sub.pptUrl).startsWith("http") ? (sub.presentationUrl || sub.pptUrl) : `https://${sub.presentationUrl || sub.pptUrl}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="review-link-btn"
+                      style={{
+                        background: "linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%)",
+                        border: "1px solid rgba(245, 158, 11, 0.4)",
+                        color: "#fbbf24",
+                        fontWeight: "700",
+                      }}
+                    >
+                      📊 Presentation / PPT Deck
+                    </a>
+                  )}
                 </div>
+
+                {Array.isArray(sub.images) && sub.images.length > 0 && (
+                  <div style={{ marginTop: "12px", background: "rgba(15, 23, 42, 0.5)", padding: "10px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#38bdf8", marginBottom: "8px" }}>
+                      📷 Attached Screenshots ({sub.images.length}):
+                    </div>
+                    <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
+                      {sub.images.map((img, idx) => (
+                        <a key={idx} href={img} target="_blank" rel="noreferrer">
+                          <img
+                            src={img}
+                            alt={`Preview ${idx + 1}`}
+                            style={{ width: "80px", height: "50px", objectFit: "cover", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.2)" }}
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Review History */}
                 {subRevs.length > 0 && (

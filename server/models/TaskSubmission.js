@@ -60,6 +60,17 @@ const taskSubmissionSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    presentationUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    images: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
     notes: {
       type: String,
       default: "",

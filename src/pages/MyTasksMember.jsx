@@ -26,6 +26,7 @@ export default function MyTasksMember({ search = "" }) {
   const [activeTask, setActiveTask] = useState(null);
   const [githubUrl, setGithubUrl] = useState("");
   const [demoUrl, setDemoUrl] = useState("");
+  const [presentationUrl, setPresentationUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("Submitted");
   const [files, setFiles] = useState([]);
@@ -116,18 +117,20 @@ export default function MyTasksMember({ search = "" }) {
     });
   }, [tasks, submissions, reviews, userEmail, students, auth.role, search, filterTab]);
 
-  const openSubmitModal = (task, existingSub = null) => {
+  const handleOpenModal = (task, existingSub = null) => {
     setActiveTask(task);
     if (existingSub) {
       setGithubUrl(existingSub.githubUrl || "");
       setDemoUrl(existingSub.demoUrl || "");
+      setPresentationUrl(existingSub.presentationUrl || existingSub.pptUrl || "");
       setNotes(existingSub.notes || "");
       setStatus("Submitted");
       setFiles(existingSub.files || []);
-      setSubmitForAll(task.submissionMode === "COLLABORATIVE");
+      setSubmitForAll(existingSub.submissionType === "COLLABORATIVE");
     } else {
       setGithubUrl("");
       setDemoUrl("");
+      setPresentationUrl("");
       setNotes("");
       setStatus("Submitted");
       setFiles([]);
@@ -171,12 +174,18 @@ export default function MyTasksMember({ search = "" }) {
     setSubmitting(true);
     setSubmitError("");
     try {
+      const imageFiles = files
+        .filter((f) => f.type && f.type.startsWith("image/"))
+        .map((f) => f.dataUrl || f.url || f);
+
       await saveSubmission({
         taskId: activeTask.id,
         studentEmail: userEmail,
         studentName: auth.email ? auth.email.split("@")[0] : "Member",
         githubUrl: githubUrl.trim(),
         demoUrl: demoUrl.trim(),
+        presentationUrl: presentationUrl.trim(),
+        images: imageFiles,
         notes: notes.trim(),
         status,
         files,
@@ -502,6 +511,17 @@ export default function MyTasksMember({ search = "" }) {
                   placeholder="https://your-app.vercel.app or demo link"
                   value={demoUrl}
                   onChange={(e) => setDemoUrl(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>📊 Presentation / PPT Slides URL (Google Slides, PowerPoint, Canva - Optional)</label>
+                <input
+                  type="url"
+                  className="login-form-input"
+                  placeholder="https://docs.google.com/presentation/d/... or PPTX link"
+                  value={presentationUrl}
+                  onChange={(e) => setPresentationUrl(e.target.value)}
                 />
               </div>
 

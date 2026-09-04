@@ -233,6 +233,8 @@ export async function submitDeliverable(subData) {
     taskId: subData.taskId || subData.id,
     githubUrl: subData.githubUrl || "",
     demoUrl: subData.demoUrl || "",
+    presentationUrl: subData.presentationUrl || subData.pptUrl || "",
+    images: Array.isArray(subData.images) ? subData.images : (subData.image ? [subData.image] : []),
     notes: subData.notes || "",
     files: subData.files || [],
     submitForAll: Boolean(subData.submitForAll),
