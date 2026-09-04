@@ -1,4 +1,6 @@
 import { Opportunity } from "../models/Opportunity.js";
+import { Notification } from "../models/Notification.js";
+import { User } from "../models/User.js";
 import { isAdmin } from "../services/authorizationService.js";
 
 function resolveQuery(id) {
@@ -52,6 +54,36 @@ export async function createOpportunity(req, res) {
       interestedUsers: [],
       thoughts: [],
     });
+
+    // Broadcast notification to all active team users
+    try {
+      const activeUsers = await User.find({ status: "ACTIVE" }).select("_id email").lean();
+      const oppTitle = opportunity.title;
+      const org = opportunity.organizer || opportunity.company || "Innovation Hub";
+      const oppType = opportunity.type || "Opportunity";
+
+      const notifsToInsert = activeUsers
+        .filter((u) => String(u._id) !== String(req.user?._id))
+        .map((u) => ({
+          notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          targetUserId: u._id,
+          targetEmail: (u.email || "").toLowerCase().trim(),
+          type: "OPPORTUNITY_NEW",
+          targetPage: "opportunities",
+          referenceId: opportunity.opportunityId,
+          title: `🚀 New ${oppType}: "${oppTitle}"`,
+          message: `${org} announced a new ${oppType}. Check eligibility, guidelines, and squad up!`,
+          eventKey: `NTF-OPP-NEW-${opportunity.opportunityId}-${u._id}`,
+          readAt: null,
+          createdAt: new Date(),
+        }));
+
+      if (notifsToInsert.length > 0) {
+        await Notification.insertMany(notifsToInsert, { ordered: false });
+      }
+    } catch (notifErr) {
+      console.warn("Opportunity broadcast notification error:", notifErr?.message);
+    }
 
     return res.status(201).json({ success: true, opportunity });
   } catch (err) {
@@ -193,6 +225,44 @@ export async function addThought(req, res) {
 
     opportunity.thoughts.push(newThought);
     await opportunity.save();
+
+    // Notify users who marked "Interested" in this opportunity
+    try {
+      const interestedList = opportunity.interestedUsers || [];
+      const currentUserId = String(req.user?._id || "");
+      const currentUserEmail = (req.user?.email || "").toLowerCase().trim();
+      const authorName = newThought.userName;
+      const snippet = content.length > 70 ? content.slice(0, 67) + "..." : content;
+
+      const notifsToNotify = [];
+      for (const item of interestedList) {
+        const targetUId = item.userId ? String(item.userId._id || item.userId) : null;
+        const targetEmail = (item.email || "").toLowerCase().trim();
+
+        if (targetUId && targetUId === currentUserId) continue;
+        if (targetEmail && targetEmail === currentUserEmail) continue;
+
+        notifsToNotify.push({
+          notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          targetUserId: targetUId,
+          targetEmail: targetEmail,
+          type: "OPPORTUNITY_THOUGHT",
+          targetPage: "opportunities",
+          referenceId: opportunity.opportunityId,
+          title: `💬 Teammate Discussion: ${authorName}`,
+          message: `${authorName} posted on "${opportunity.title}": "${snippet}"`,
+          eventKey: `NTF-OPP-THOUGHT-${opportunity.opportunityId}-${targetEmail || targetUId}-${Date.now()}`,
+          readAt: null,
+          createdAt: new Date(),
+        });
+      }
+
+      if (notifsToNotify.length > 0) {
+        await Notification.insertMany(notifsToNotify, { ordered: false });
+      }
+    } catch (notifErr) {
+      console.warn("Thought notification error:", notifErr?.message);
+    }
 
     return res.status(201).json({
       success: true,

@@ -366,8 +366,11 @@ export async function updateUserProfile(req, res) {
         }
       }
 
+      const prevActivity = user.activityPoints || 0;
+      const prevReward = user.rewardPoints || 0;
       if (activityPts !== undefined) user.activityPoints = Number(activityPts) || 0;
       if (rewardPts !== undefined) user.rewardPoints = Number(rewardPts) || 0;
+      const pointsDiff = (user.activityPoints - prevActivity) + (user.rewardPoints - prevReward);
     }
 
     await user.save();
@@ -379,12 +382,28 @@ export async function updateUserProfile(req, res) {
         targetUserId: user._id,
         targetEmail: (user.email || "").toLowerCase().trim(),
         type: "ACCOUNT_UPDATED",
+        targetPage: "profile",
         title: "Account Profile Updated 👤",
         message: `Admin ${req.user.name || "Administrator"} updated your account details (Role: ${user.role}, Position: ${user.position}).`,
         eventKey,
         readAt: null,
         createdAt: new Date(),
       });
+
+      if (typeof pointsDiff !== "undefined" && pointsDiff > 0) {
+        await Notification.create({
+          notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          targetUserId: user._id,
+          targetEmail: (user.email || "").toLowerCase().trim(),
+          type: "POINTS_AWARDED",
+          targetPage: "leaderboard",
+          title: "⭐ Points Awarded! 🎉",
+          message: `Admin ${req.user.name || "Administrator"} awarded you +${pointsDiff} points! Check your new standing on the Leaderboard.`,
+          eventKey: `NTF-POINTS-${user._id}-${Date.now()}`,
+          readAt: null,
+          createdAt: new Date(),
+        });
+      }
     }
 
     if (COURSE_UPDATES && typeof COURSE_UPDATES === "object") {

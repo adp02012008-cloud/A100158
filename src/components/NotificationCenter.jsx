@@ -7,7 +7,35 @@ import {
   markNotificationRead,
 } from "../utils/taskStorage";
 
-export default function NotificationCenter({ onSelectTask }) {
+function getNotifCategoryIcon(type) {
+  switch (type) {
+    case "OPPORTUNITY_NEW":
+      return "🚀";
+    case "OPPORTUNITY_THOUGHT":
+      return "💬";
+    case "CERTIFICATE_ISSUED":
+      return "🎓";
+    case "POINTS_AWARDED":
+      return "⭐";
+    case "TASK_DEADLINE_APPROACHING":
+      return "⏰";
+    case "TASK_ASSIGNED":
+      return "🎯";
+    case "NEW_SUBMISSION":
+    case "RESUBMISSION_DELIVERED":
+      return "📥";
+    case "REVIEW_DECISION":
+      return "📝";
+    case "PROJECT_APPROVED":
+      return "🏆";
+    case "ACCOUNT_UPDATED":
+      return "👤";
+    default:
+      return "🔔";
+  }
+}
+
+export default function NotificationCenter({ onSelectTask, onNavigate }) {
   const { auth } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -68,14 +96,14 @@ export default function NotificationCenter({ onSelectTask }) {
   };
 
   const handleItemClick = async (notif) => {
-    const notifId = notif.id || notif.notificationId;
+    const notifId = notif.id || notif._id || notif.notificationId;
     if (!notif.read && !notif.readAt) {
       const previousState = [...notifications];
       const nowStr = new Date().toISOString();
 
       // Immediately update local state optimistically
       setNotifications((prev) =>
-        prev.map((n) => ((n.id === notifId || n.notificationId === notifId) ? { ...n, read: true, readAt: n.readAt || nowStr } : n))
+        prev.map((n) => ((n.id === notifId || n._id === notifId || n.notificationId === notifId) ? { ...n, read: true, readAt: n.readAt || nowStr } : n))
       );
 
       try {
@@ -86,7 +114,14 @@ export default function NotificationCenter({ onSelectTask }) {
       }
     }
     setOpen(false);
-    if (onSelectTask && notif.taskId) {
+
+    // Deep link navigation
+    const targetPage = notif.targetPage || (notif.taskId ? "my-tasks" : null);
+    const refId = notif.referenceId || notif.taskId;
+
+    if (onNavigate && targetPage) {
+      onNavigate(targetPage, refId);
+    } else if (onSelectTask && notif.taskId) {
       onSelectTask(notif.taskId);
     }
   };
@@ -152,13 +187,33 @@ export default function NotificationCenter({ onSelectTask }) {
                   className={`notif-item ${!n.read && !n.readAt ? "unread" : ""}`}
                   onClick={() => handleItemClick(n)}
                 >
-                  <div className="notif-item-title">{n.title}</div>
-                  <div className="notif-item-msg">{n.message}</div>
-                  <div className="notif-item-time">
-                    {new Date(n.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                  <div className="notif-item-flex" style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                    <div
+                      className="notif-category-icon"
+                      style={{
+                        fontSize: "1.2rem",
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "10px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(255, 255, 255, 0.08)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {getNotifCategoryIcon(n.type)}
+                    </div>
+                    <div className="notif-item-body" style={{ flex: 1, minWidth: 0 }}>
+                      <div className="notif-item-title">{n.title}</div>
+                      <div className="notif-item-msg">{n.message}</div>
+                      <div className="notif-item-time">
+                        {new Date(n.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))

@@ -389,7 +389,10 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             {/* Notification Center */}
             {auth.isLoggedIn && (
               <div className="nav-notif-wrap">
-                <NotificationCenter onSelectTask={() => handleNavClick("my-tasks")} />
+                <NotificationCenter
+                  onSelectTask={() => handleNavClick("my-tasks")}
+                  onNavigate={(targetPage) => handleNavClick(targetPage)}
+                />
               </div>
             )}
 

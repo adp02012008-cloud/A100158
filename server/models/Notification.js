@@ -45,6 +45,21 @@ const notificationSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    targetPage: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    referenceId: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    actionUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
     eventKey: {
       type: String,
       required: true,
