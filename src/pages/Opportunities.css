@@ -276,14 +276,30 @@
 }
 
 .opp-sort-select {
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 8px 14px;
+  background: #17112c !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   border-radius: 10px;
-  color: #e2e8f0;
+  color: #f1f5f9 !important;
   font-size: 13px;
+  font-weight: 500;
   outline: none;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+}
+
+.opp-sort-select:hover,
+.opp-sort-select:focus {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  background: #1e1539 !important;
+}
+
+.opp-sort-select option {
+  background-color: #17112c !important;
+  color: #f1f5f9 !important;
+  padding: 10px 14px;
+  font-size: 13px;
 }
 
 /* ── Opportunity Cards Grid ── */
@@ -1171,25 +1187,393 @@
   margin: 0 0 20px 0;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* ── Teammate Modal Tabs Bar ── */
+.opp-teammate-tabs-bar {
+  display: flex;
+  background: rgba(10, 6, 22, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 24px 0;
+  gap: 12px;
+}
+
+.opp-teammate-tab {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 16px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.opp-teammate-tab:hover {
+  color: #f1f5f9;
+}
+
+.opp-teammate-tab.active {
+  color: #f59e0b;
+  border-bottom-color: #f59e0b;
+  font-weight: 700;
+}
+
+/* Modal RSVP Top Banner */
+.opp-modal-rsvp-banner {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.14) 0%, rgba(99, 102, 241, 0.12) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.opp-rsvp-banner-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #34d399;
+  margin-bottom: 2px;
+}
+
+.opp-rsvp-banner-subtitle {
+  font-size: 12.5px;
+  color: #94a3b8;
+}
+
+/* Inline Error Banner */
+.opp-thought-error-banner {
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+/* ── Interested Members Directory ── */
+.opp-interested-directory {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.opp-directory-header {
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.opp-members-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.opp-member-row-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.opp-member-row-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(52, 211, 153, 0.35);
+  transform: translateX(2px);
+}
+
+.opp-member-info-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.opp-member-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.opp-member-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.opp-me-pill {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #34d399;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.opp-member-email {
+  font-size: 12.5px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.opp-member-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.opp-copy-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.opp-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.opp-copy-btn.copied {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #34d399;
+}
+
+.opp-contact-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.opp-contact-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.opp-empty-feed {
+  text-align: center;
+  padding: 36px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* ── FULL DEVICE RESPONSIVENESS (MOBILE, TABLET, LAPTOP, DESKTOP) ── */
+/* ══════════════════════════════════════════════════════════════════════ */
+
+/* Large Desktops (> 1440px) */
+@media (min-width: 1441px) {
+  .opportunities-hub-container {
+    max-width: 1440px;
+  }
+  .opp-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Laptops & Desktops (1024px – 1440px) */
+@media (max-width: 1440px) and (min-width: 1025px) {
+  .opp-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+}
+
+/* Tablets & Small Laptops (768px – 1024px) */
+@media (max-width: 1024px) {
+  .opportunities-hub-container {
+    padding: 10px 16px 60px;
+  }
   .opp-hero {
-    padding: 24px 20px;
+    padding: 26px 28px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .opp-hero-actions {
+    width: 100%;
+  }
+  .opp-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+  }
+  .opp-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile Devices & Small Tablets (< 768px) */
+@media (max-width: 768px) {
+  .opportunities-hub-container {
+    padding: 8px 12px 60px;
+  }
+  .opp-hero {
+    padding: 20px 18px;
+    border-radius: 18px;
+    margin-bottom: 18px;
   }
   .opp-hero-title {
-    font-size: 24px;
+    font-size: 22px;
+  }
+  .opp-hero-desc {
+    font-size: 13.5px;
+  }
+  .opp-hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .opp-primary-btn,
+  .opp-secondary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .opp-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .opp-metric-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .opp-metric-value {
+    font-size: 18px;
   }
   .opp-cards-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
   .opp-filter-bar {
     flex-direction: column;
     align-items: stretch;
+    padding: 12px 14px;
+    gap: 12px;
+  }
+  .opp-category-pills {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .opp-pill {
+    flex-shrink: 0;
   }
   .opp-search-controls {
+    flex-direction: column;
     width: 100%;
+    gap: 8px;
   }
   .opp-search-box {
     width: 100%;
+    min-width: 0;
+  }
+  .opp-sort-select {
+    width: 100%;
+  }
+  .opp-modal-box {
+    max-height: 94vh;
+    border-radius: 18px;
+  }
+  .opp-modal-header {
+    padding: 16px 18px;
+  }
+  .opp-modal-body {
+    padding: 16px 18px;
+  }
+  .opp-modal-footer {
+    padding: 14px 18px;
+  }
+  .opp-quick-links-row {
+    flex-direction: column;
+  }
+  .opp-link-btn {
+    width: 100%;
+  }
+  .opp-card-social-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .opp-card-social-footer > div {
+    justify-content: space-between;
+  }
+}
+
+/* Extra Small Phones (< 480px) */
+@media (max-width: 480px) {
+  .opp-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .opp-specs-grid {
+    grid-template-columns: 1fr;
+  }
+  .opp-teammate-tabs-bar {
+    padding: 6px 12px 0;
+    gap: 4px;
+  }
+  .opp-teammate-tab {
+    padding: 8px 10px 10px;
+    font-size: 12px;
+  }
+  .opp-member-row-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .opp-member-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }

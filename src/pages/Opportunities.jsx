@@ -53,10 +53,26 @@ export default function Opportunities({ search: navbarSearch = "" }) {
   const [showImporter, setShowImporter] = useState(false);
   const [importerSuccess, setImporterSuccess] = useState("");
 
-  // Thoughts modal input state
+  // Thoughts modal state & tabs
+  const [thoughtsTab, setThoughtsTab] = useState("discussion"); // 'discussion' | 'interested'
   const [newThoughtText, setNewThoughtText] = useState("");
   const [newThoughtTag, setNewThoughtTag] = useState("Looking for Team");
   const [submittingThought, setSubmittingThought] = useState(false);
+  const [thoughtError, setThoughtError] = useState("");
+  const [copiedEmail, setCopiedEmail] = useState("");
+
+  const handleCopyEmail = (email) => {
+    if (!email) return;
+    try {
+      navigator.clipboard.writeText(email);
+      setCopiedEmail(email);
+      setTimeout(() => setCopiedEmail(""), 2500);
+    } catch {
+      // Fallback
+      setCopiedEmail(email);
+      setTimeout(() => setCopiedEmail(""), 2500);
+    }
+  };
 
   // Current user info
   const userEmail = currentUser?.email || auth?.email || "";
@@ -387,11 +403,13 @@ export default function Opportunities({ search: navbarSearch = "" }) {
 
     const id = thoughtsOpp._id || thoughtsOpp.id || thoughtsOpp.opportunityId;
     setSubmittingThought(true);
+    setThoughtError("");
 
     try {
       const res = await apiFetch(`/opportunities/${id}/thoughts`, {
         method: "POST",
         body: JSON.stringify({
+          content: newThoughtText.trim(),
           text: newThoughtText.trim(),
           tag: newThoughtTag,
         }),
@@ -409,7 +427,7 @@ export default function Opportunities({ search: navbarSearch = "" }) {
       setNewThoughtText("");
     } catch (err) {
       console.error("Failed to post thought:", err);
-      alert(`Could not post message: ${err.message}`);
+      setThoughtError(err.message || "Failed to post message. Please try again.");
     } finally {
       setSubmittingThought(false);
     }
@@ -818,7 +836,17 @@ export default function Opportunities({ search: navbarSearch = "" }) {
 
                     {/* Facepile of interested users */}
                     {interestedList.length > 0 && (
-                      <div className="opp-facepile" title={`${interestedList.length} squad members interested`}>
+                      <div
+                        className="opp-facepile"
+                        style={{ cursor: "pointer" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setThoughtsOpp(opp);
+                          setThoughtsTab("interested");
+                          setThoughtError("");
+                        }}
+                        title={`${interestedList.length} squad members interested — Click to view names & contact info`}
+                      >
                         {interestedList.slice(0, 3).map((u, idx) => (
                           <div key={idx} className="opp-avatar-bubble">
                             {(u.name || u.email || "?").charAt(0).toUpperCase()}
@@ -836,7 +864,11 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <button
                       className="opp-thoughts-btn"
-                      onClick={() => setThoughtsOpp(opp)}
+                      onClick={() => {
+                        setThoughtsOpp(opp);
+                        setThoughtsTab("discussion");
+                        setThoughtError("");
+                      }}
                       title="Squad thoughts & teammate finder discussion"
                     >
                       <span>💬</span>
@@ -1477,24 +1509,32 @@ export default function Opportunities({ search: navbarSearch = "" }) {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── MODAL 3: SQUAD THOUGHTS & TEAMMATE FINDER DISCUSSION ── */}
+      {/* ── MODAL 3: SQUAD TEAMMATE FINDER & COMMUNITY HUB ── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {thoughtsOpp && (
         <div className="opp-modal-overlay" onClick={() => setThoughtsOpp(null)}>
           <div
             className="opp-modal-box"
-            style={{ maxWidth: 640 }}
+            style={{ maxWidth: 680 }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="opp-modal-header">
               <div className="opp-modal-title-wrap">
-                <div className="opp-modal-icon" style={{ background: "rgba(99, 102, 241, 0.2)", color: "#818cf8" }}>
-                  💬
+                <div
+                  className="opp-modal-icon"
+                  style={{
+                    background: thoughtsTab === "interested" ? "rgba(16, 185, 129, 0.2)" : "rgba(99, 102, 241, 0.2)",
+                    color: thoughtsTab === "interested" ? "#34d399" : "#818cf8",
+                  }}
+                >
+                  {thoughtsTab === "interested" ? "👥" : "💬"}
                 </div>
                 <div>
-                  <h2 className="opp-modal-title">Squad Teammate Finder</h2>
+                  <h2 className="opp-modal-title">
+                    {thoughtsTab === "interested" ? "Interested Squad Members" : "Squad Teammate Finder"}
+                  </h2>
                   <p className="opp-modal-subtitle">
-                    {thoughtsOpp.title} • Connect & brainstorm with teammates
+                    {thoughtsOpp.title} • Connect & brainstorm with peers
                   </p>
                 </div>
               </div>
@@ -1506,26 +1546,35 @@ export default function Opportunities({ search: navbarSearch = "" }) {
               </button>
             </div>
 
-            <div className="opp-modal-body">
-              {/* RSVP Banner */}
-              <div
-                style={{
-                  background: "rgba(16, 185, 129, 0.12)",
-                  border: "1px solid rgba(16, 185, 129, 0.25)",
-                  borderRadius: 14,
-                  padding: "12px 16px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 18,
-                }}
+            {/* Modal Navigation Tabs */}
+            <div className="opp-teammate-tabs-bar">
+              <button
+                type="button"
+                className={`opp-teammate-tab ${thoughtsTab === "discussion" ? "active" : ""}`}
+                onClick={() => setThoughtsTab("discussion")}
               >
+                <span>💬</span> Squad Discussion ({ (thoughtsOpp.thoughts || []).length })
+              </button>
+              <button
+                type="button"
+                className={`opp-teammate-tab ${thoughtsTab === "interested" ? "active" : ""}`}
+                onClick={() => setThoughtsTab("interested")}
+              >
+                <span>👥</span> Interested Members ({ (thoughtsOpp.interestedUsers || []).length })
+              </button>
+            </div>
+
+            <div className="opp-modal-body">
+              {/* RSVP Top Banner */}
+              <div className="opp-modal-rsvp-banner">
                 <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#34d399" }}>
-                    {(thoughtsOpp.interestedUsers || []).length} Squad Members Interested
+                  <div className="opp-rsvp-banner-title">
+                    👥 {(thoughtsOpp.interestedUsers || []).length} Squad Members Interested
                   </div>
-                  <div style={{ fontSize: 12, color: "#94a3b8" }}>
-                    Looking to team up? RSVP so peers know you are available.
+                  <div className="opp-rsvp-banner-subtitle">
+                    {thoughtsTab === "discussion"
+                      ? "Looking to team up? RSVP to let peers know you are available."
+                      : "Directly connect with peers who want to participate."}
                   </div>
                 </div>
 
@@ -1536,127 +1585,216 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                       : ""
                   }`}
                   onClick={(e) => handleToggleInterest(thoughtsOpp, e)}
+                  title="Toggle your RSVP status"
                 >
-                  {(thoughtsOpp.interestedUsers || []).some((u) => (u.email || u) === userEmail)
-                    ? "✅ RSVP'd"
-                    : "🙋 I'm Interested"}
+                  <span>{(thoughtsOpp.interestedUsers || []).some((u) => (u.email || u) === userEmail) ? "✅" : "🙋"}</span>
+                  <span>{(thoughtsOpp.interestedUsers || []).some((u) => (u.email || u) === userEmail) ? "RSVP'd" : "I'm Interested"}</span>
                 </button>
               </div>
 
-              {/* Thoughts List */}
-              <div className="opp-thoughts-list">
-                {(thoughtsOpp.thoughts || []).length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "30px 20px", color: "#94a3b8" }}>
-                    <div style={{ fontSize: 32, marginBottom: 8 }}>💡</div>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: "#f1f5f9" }}>
-                      No discussions yet
-                    </div>
-                    <div style={{ fontSize: 12.5, marginTop: 4 }}>
-                      Be the first to post! Looking for teammates? Have an idea? Share below!
-                    </div>
-                  </div>
-                ) : (
-                  thoughtsOpp.thoughts.map((item) => {
-                    const tagClass =
-                      item.tag === "Looking for Team"
-                        ? "looking"
-                        : item.tag === "Idea / Proposal"
-                        ? "idea"
-                        : item.tag === "Question"
-                        ? "question"
-                        : "comment";
+              {/* ── TAB 1: SQUAD DISCUSSION ── */}
+              {thoughtsTab === "discussion" && (
+                <>
+                  <div className="opp-thoughts-list">
+                    {(thoughtsOpp.thoughts || []).length === 0 ? (
+                      <div className="opp-empty-feed">
+                        <div style={{ fontSize: 36, marginBottom: 8 }}>💡</div>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: "#f1f5f9" }}>
+                          No discussions yet
+                        </div>
+                        <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>
+                          Looking for teammates? Have an idea? Post below to start the conversation!
+                        </div>
+                      </div>
+                    ) : (
+                      thoughtsOpp.thoughts.map((item) => {
+                        const tagClass =
+                          item.tag === "Looking for Team"
+                            ? "looking"
+                            : item.tag === "Idea / Proposal"
+                            ? "idea"
+                            : item.tag === "Question"
+                            ? "question"
+                            : "comment";
 
-                    const isMine = item.userEmail === userEmail || isAdmin;
+                        const isMine = item.userEmail === userEmail || isAdmin;
+                        const thoughtContent = item.content || item.text || "";
 
-                    return (
-                      <div key={item._id || item.id} className="opp-thought-card">
-                        <div className="opp-thought-header">
-                          <div className="opp-thought-user">
-                            <div className="opp-thought-avatar">
-                              {(item.userName || item.userEmail || "?").charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="opp-thought-name">
-                                {item.userName || item.userEmail}
+                        return (
+                          <div key={item._id || item.id} className="opp-thought-card">
+                            <div className="opp-thought-header">
+                              <div className="opp-thought-user">
+                                <div className="opp-thought-avatar">
+                                  {(item.userName || item.userEmail || "?").charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                  <div className="opp-thought-name">
+                                    {item.userName || item.userEmail}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span className={`opp-thought-tag ${tagClass}`}>
+                                  {item.tag || "Comment"}
+                                </span>
+                                {isMine && (
+                                  <button
+                                    className="opp-icon-btn danger"
+                                    style={{ padding: "2px 6px" }}
+                                    title="Delete comment"
+                                    onClick={() => handleDeleteThought(item._id || item.id)}
+                                  >
+                                    ✕
+                                  </button>
+                                )}
                               </div>
                             </div>
-                          </div>
 
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <span className={`opp-thought-tag ${tagClass}`}>
-                              {item.tag || "Comment"}
+                            <p className="opp-thought-text">{thoughtContent}</p>
+
+                            <span className="opp-thought-time">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
                             </span>
-                            {isMine && (
-                              <button
-                                className="opp-icon-btn danger"
-                                style={{ padding: "2px 6px" }}
-                                title="Delete"
-                                onClick={() => handleDeleteThought(item._id || item.id)}
-                              >
-                                ✕
-                              </button>
-                            )}
                           </div>
-                        </div>
+                        );
+                      })
+                    )}
+                  </div>
 
-                        <p className="opp-thought-text">{item.text}</p>
+                  {/* Inline Error if any */}
+                  {thoughtError && (
+                    <div className="opp-thought-error-banner">
+                      ⚠️ {thoughtError}
+                    </div>
+                  )}
 
-                        <span className="opp-thought-time">
-                          {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
-                        </span>
+                  {/* New Thought Form */}
+                  <form className="opp-new-thought-box" onSubmit={handlePostThought}>
+                    <div className="opp-intent-selector">
+                      {[
+                        "Looking for Team",
+                        "Idea / Proposal",
+                        "General Thought",
+                        "Question",
+                      ].map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          className={`opp-intent-btn ${newThoughtTag === tag ? "active" : ""}`}
+                          onClick={() => setNewThoughtTag(tag)}
+                        >
+                          {tag === "Looking for Team" && "🙋 "}
+                          {tag === "Idea / Proposal" && "💡 "}
+                          {tag === "General Thought" && "💬 "}
+                          {tag === "Question" && "❓ "}
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+
+                    <textarea
+                      className="opp-form-textarea"
+                      style={{ minHeight: 75, marginBottom: 10 }}
+                      placeholder={
+                        newThoughtTag === "Looking for Team"
+                          ? "e.g. Looking for 2 teammates skilled in Linux / Python for Track 1! Ping me on email."
+                          : "Share your thought, idea or pitch..."
+                      }
+                      value={newThoughtText}
+                      onChange={(e) => {
+                        setNewThoughtText(e.target.value);
+                        if (thoughtError) setThoughtError("");
+                      }}
+                    />
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 12, color: "#64748b" }}>
+                        Press Post to share with all squad members
+                      </span>
+                      <button
+                        type="submit"
+                        className="opp-primary-btn"
+                        disabled={submittingThought || !newThoughtText.trim()}
+                        style={{ padding: "8px 18px", fontSize: 13 }}
+                      >
+                        {submittingThought ? "Posting..." : "Post Thought"}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+
+              {/* ── TAB 2: INTERESTED SQUAD MEMBERS DIRECTORY ── */}
+              {thoughtsTab === "interested" && (
+                <div className="opp-interested-directory">
+                  <div className="opp-directory-header">
+                    <span style={{ fontSize: 13, color: "#cbd5e1" }}>
+                      Showing members who indicated they want to participate in this opportunity:
+                    </span>
+                  </div>
+
+                  {(thoughtsOpp.interestedUsers || []).length === 0 ? (
+                    <div className="opp-empty-feed">
+                      <div style={{ fontSize: 36, marginBottom: 8 }}>🙋</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: "#f1f5f9" }}>
+                        No members RSVP'd yet
                       </div>
-                    );
-                  })
-                )}
-              </div>
+                      <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>
+                        Click "I'm Interested" above to be the first to RSVP!
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="opp-members-roster">
+                      {(thoughtsOpp.interestedUsers || []).map((u, idx) => {
+                        const name = u.name || u.email?.split("@")[0] || "Squad Member";
+                        const email = u.email || "";
+                        const isMe = email && email.toLowerCase() === userEmail.toLowerCase();
+                        const isCopied = copiedEmail === email;
 
-              {/* New Thought Box */}
-              <form className="opp-new-thought-box" onSubmit={handlePostThought}>
-                <div className="opp-intent-selector">
-                  {[
-                    "Looking for Team",
-                    "Idea / Proposal",
-                    "General Thought",
-                    "Question",
-                  ].map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      className={`opp-intent-btn ${newThoughtTag === tag ? "active" : ""}`}
-                      onClick={() => setNewThoughtTag(tag)}
-                    >
-                      {tag === "Looking for Team" && "🙋 "}
-                      {tag === "Idea / Proposal" && "💡 "}
-                      {tag === "General Thought" && "💬 "}
-                      {tag === "Question" && "❓ "}
-                      {tag}
-                    </button>
-                  ))}
+                        return (
+                          <div key={idx} className="opp-member-row-card">
+                            <div className="opp-member-info-wrap">
+                              <div className="opp-member-avatar">
+                                {name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="opp-member-name">
+                                  {name}
+                                  {isMe && <span className="opp-me-pill">You</span>}
+                                </div>
+                                <div className="opp-member-email">{email || "No email listed"}</div>
+                              </div>
+                            </div>
+
+                            <div className="opp-member-actions">
+                              {email && (
+                                <>
+                                  <button
+                                    type="button"
+                                    className={`opp-copy-btn ${isCopied ? "copied" : ""}`}
+                                    onClick={() => handleCopyEmail(email)}
+                                    title="Copy email address"
+                                  >
+                                    {isCopied ? "✓ Copied" : "📋 Copy"}
+                                  </button>
+                                  <a
+                                    href={`mailto:${email}?subject=${encodeURIComponent(`Teaming up for ${thoughtsOpp.title}`)}&body=${encodeURIComponent(`Hi ${name},\n\nI saw your interest in "${thoughtsOpp.title}" on the Squad Dashboard. Would you like to connect and form a team?`)}`}
+                                    className="opp-contact-btn"
+                                    title="Send email to team up"
+                                  >
+                                    ✉️ Email
+                                  </a>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-
-                <textarea
-                  className="opp-form-textarea"
-                  style={{ minHeight: 70, marginBottom: 10 }}
-                  placeholder={
-                    newThoughtTag === "Looking for Team"
-                      ? "e.g. Looking for 2 teammates skilled in Linux / Python for Track 1! Ping me."
-                      : "Share your thought, question or pitch..."
-                  }
-                  value={newThoughtText}
-                  onChange={(e) => setNewThoughtText(e.target.value)}
-                />
-
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <button
-                    type="submit"
-                    className="opp-primary-btn"
-                    disabled={submittingThought || !newThoughtText.trim()}
-                    style={{ padding: "8px 16px", fontSize: 13 }}
-                  >
-                    {submittingThought ? "Posting..." : "Post Thought"}
-                  </button>
-                </div>
-              </form>
+              )}
             </div>
           </div>
         </div>

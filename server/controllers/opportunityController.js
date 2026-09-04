@@ -125,9 +125,12 @@ export async function toggleInterest(req, res) {
     const opportunity = await Opportunity.findOne(query);
     if (!opportunity) return res.status(404).json({ success: false, message: "Opportunity not found" });
 
-    const userIdStr = String(req.user._id);
+    const userIdStr = req.user?._id ? String(req.user._id) : "";
+    const userEmailStr = (req.user?.email || "").toLowerCase().trim();
     const existingIndex = (opportunity.interestedUsers || []).findIndex(
-      (u) => String(u.userId?._id || u.userId) === userIdStr
+      (u) =>
+        (userIdStr && String(u.userId?._id || u.userId) === userIdStr) ||
+        (userEmailStr && (u.email || "").toLowerCase().trim() === userEmailStr)
     );
 
     let isInterested = false;
@@ -136,9 +139,9 @@ export async function toggleInterest(req, res) {
       isInterested = false;
     } else {
       opportunity.interestedUsers.push({
-        userId: req.user._id,
-        name: req.user.name || req.user.email.split("@")[0],
-        email: req.user.email,
+        userId: req.user?._id,
+        name: req.user?.name || req.user?.Name || req.user?.email?.split("@")[0] || "Squad Member",
+        email: req.user?.email || "",
         createdAt: new Date(),
       });
       isInterested = true;
@@ -163,8 +166,11 @@ export async function toggleInterest(req, res) {
 export async function addThought(req, res) {
   try {
     const { id } = req.params;
-    const { content, tag } = req.body;
-    if (!content || !content.trim()) {
+    const body = req.body || {};
+    const content = (body.content || body.text || "").trim();
+    const tag = body.tag || "Looking for Team";
+
+    if (!content) {
       return res.status(400).json({ success: false, message: "Thought content cannot be empty." });
     }
 
@@ -173,13 +179,17 @@ export async function addThought(req, res) {
     if (!opportunity) return res.status(404).json({ success: false, message: "Opportunity not found" });
 
     const newThought = {
-      userId: req.user._id,
-      userName: req.user.name || req.user.email.split("@")[0],
-      userEmail: req.user.email,
-      content: content.trim(),
-      tag: tag || "General",
+      userId: req.user?._id,
+      userName: req.user?.name || req.user?.Name || req.user?.email?.split("@")[0] || "Squad Member",
+      userEmail: req.user?.email || "",
+      content,
+      tag,
       createdAt: new Date(),
     };
+
+    if (!Array.isArray(opportunity.thoughts)) {
+      opportunity.thoughts = [];
+    }
 
     opportunity.thoughts.push(newThought);
     await opportunity.save();
