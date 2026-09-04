@@ -662,7 +662,20 @@ export default function Opportunities({ search: navbarSearch = "" }) {
             const thoughtsList = opp.thoughts || [];
 
             return (
-              <div key={oppId} className="opp-card">
+              <div
+                key={oppId}
+                className="opp-card opp-card-interactive"
+                onClick={() => setDetailsOpp(opp)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setDetailsOpp(opp);
+                  }
+                }}
+                title="Click anywhere to view full event details, timeline & rules"
+              >
                 {/* Header ribbon */}
                 <div className="opp-card-header">
                   <div className="opp-card-tags">
@@ -674,9 +687,14 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                         🇮🇳 {opp.eventLevel}
                       </span>
                     )}
+                    {opp.deadline && (
+                      <span className="opp-tag-deadline" title={`Deadline: ${opp.deadline}`}>
+                        ⏳ {opp.deadline}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="opp-card-actions-menu">
+                  <div className="opp-card-actions-menu" onClick={(e) => e.stopPropagation()}>
                     <button
                       className="opp-icon-btn"
                       title="Edit Opportunity"
@@ -698,10 +716,7 @@ export default function Opportunities({ search: navbarSearch = "" }) {
 
                 {/* Body Content */}
                 <div className="opp-card-body">
-                  <h3
-                    className="opp-card-title"
-                    onClick={() => setDetailsOpp(opp)}
-                  >
+                  <h3 className="opp-card-title">
                     {opp.title}
                   </h3>
 
@@ -727,31 +742,37 @@ export default function Opportunities({ search: navbarSearch = "" }) {
 
                   <p className="opp-card-desc">{opp.description}</p>
 
-                  {/* Specs Grid */}
-                  <div className="opp-specs-grid">
-                    <div className="opp-spec-item" title="Team Size">
-                      <span className="opp-spec-icon">👥</span>
-                      <span className="opp-spec-value">{opp.teamSize || "Any Size"}</span>
+                  {/* Specs Box with Multi-Item Row and Eligibility Bar */}
+                  <div className="opp-specs-box">
+                    <div className="opp-specs-chips-row">
+                      <div className="opp-spec-chip" title="Team Size">
+                        <span className="opp-spec-icon">👥</span>
+                        <span className="opp-spec-value">{opp.teamSize || "Any Size"}</span>
+                      </div>
+
+                      <div className="opp-spec-chip" title="Registration Fee">
+                        <span className="opp-spec-icon">🎟️</span>
+                        <span className="opp-spec-value">{opp.registrationFee || "Free"}</span>
+                      </div>
+
+                      {opp.deadline && (
+                        <div className="opp-spec-chip" title="Deadline">
+                          <span className="opp-spec-icon">⏳</span>
+                          <span className="opp-spec-value" style={{ color: "#fbbf24" }}>
+                            {opp.deadline}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="opp-spec-item" title="Registration Fee">
-                      <span className="opp-spec-icon">🎟️</span>
-                      <span className="opp-spec-value">{opp.registrationFee || "Free"}</span>
-                    </div>
-
-                    <div className="opp-spec-item" title="PSkill / Eligibility">
-                      <span className="opp-spec-icon">🎯</span>
-                      <span className="opp-spec-value">
-                        {opp.pskillEligibility || "Open to all"}
-                      </span>
-                    </div>
-
-                    <div className="opp-spec-item" title="Deadline">
-                      <span className="opp-spec-icon">⏳</span>
-                      <span className="opp-spec-value" style={{ color: "#fbbf24" }}>
-                        {opp.deadline ? opp.deadline : "Open"}
-                      </span>
-                    </div>
+                    {opp.pskillEligibility && (
+                      <div className="opp-spec-eligibility-row" title="Eligibility Criteria">
+                        <span className="opp-spec-icon" style={{ color: "#38bdf8" }}>🎯</span>
+                        <span className="opp-spec-eligibility-text">
+                          <strong>Eligibility:</strong> {opp.pskillEligibility}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Tracks row if present */}
@@ -771,20 +792,24 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                   )}
 
                   {/* Quick Action Links Row */}
-                  <div className="opp-quick-links-row">
+                  <div className="opp-quick-links-row" onClick={(e) => e.stopPropagation()}>
                     {opp.link ? (
                       <a
                         href={opp.link}
                         target="_blank"
                         rel="noreferrer"
                         className="opp-link-btn primary"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <span>🌐</span> Register / Apply
                       </a>
                     ) : (
                       <button
                         className="opp-link-btn primary"
-                        onClick={() => setDetailsOpp(opp)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDetailsOpp(opp);
+                        }}
                       >
                         <span>ℹ️</span> View Details
                       </button>
@@ -797,6 +822,7 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                         rel="noreferrer"
                         className="opp-link-btn secondary"
                         title="College internal tracking form"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <span>📋</span> Internal Form
                       </a>
@@ -809,6 +835,7 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                         rel="noreferrer"
                         className="opp-link-btn guidelines"
                         title="View Official Guidelines"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <span>📄</span> Guidelines
                       </a>
@@ -817,7 +844,7 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                 </div>
 
                 {/* Social & Community Teammate Footer */}
-                <div className="opp-card-social-footer">
+                <div className="opp-card-social-footer" onClick={(e) => e.stopPropagation()}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <button
                       className={`opp-interest-toggle-btn ${
@@ -864,7 +891,8 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <button
                       className="opp-thoughts-btn"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setThoughtsOpp(opp);
                         setThoughtsTab("discussion");
                         setThoughtError("");
@@ -877,7 +905,10 @@ export default function Opportunities({ search: navbarSearch = "" }) {
 
                     <button
                       className="opp-details-btn"
-                      onClick={() => setDetailsOpp(opp)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDetailsOpp(opp);
+                      }}
                     >
                       Details
                     </button>
