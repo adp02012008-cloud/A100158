@@ -28,8 +28,8 @@ export async function createOpportunity(req, res) {
     const opportunity = await Opportunity.create({
       opportunityId,
       title: b.title || b.TITLE || "Upcoming Hackathon / Opportunity",
-      type: b.type || b.TYPE || "Hackathon",
-      company: b.company || b.COMPANY || "",
+      company: b.company || b.organizer || b.COMPANY || b.ORGANIZER || "",
+      organizer: b.organizer || b.company || b.ORGANIZER || b.COMPANY || "",
       description: b.description || b.DESCRIPTION || "",
       eligibility: b.eligibility || b.ELIGIBILITY || "",
       pskillEligibility: b.pskillEligibility || b.PSKILL_ELIGIBILITY || "",
@@ -69,7 +69,11 @@ export async function updateOpportunity(req, res) {
     const b = req.body || {};
     if (b.title !== undefined || b.TITLE !== undefined) opportunity.title = b.title || b.TITLE || "";
     if (b.type !== undefined || b.TYPE !== undefined) opportunity.type = b.type || b.TYPE || "Hackathon";
-    if (b.company !== undefined || b.COMPANY !== undefined) opportunity.company = b.company || b.COMPANY || "";
+    const orgName = b.organizer || b.company || b.ORGANIZER || b.COMPANY || "";
+    if (b.company !== undefined || b.organizer !== undefined || b.COMPANY !== undefined || b.ORGANIZER !== undefined) {
+      opportunity.company = orgName;
+      opportunity.organizer = orgName;
+    }
     if (b.description !== undefined || b.DESCRIPTION !== undefined) opportunity.description = b.description || b.DESCRIPTION || "";
     if (b.eligibility !== undefined || b.ELIGIBILITY !== undefined) opportunity.eligibility = b.eligibility || b.ELIGIBILITY || "";
     if (b.pskillEligibility !== undefined || b.PSKILL_ELIGIBILITY !== undefined) opportunity.pskillEligibility = b.pskillEligibility || b.PSKILL_ELIGIBILITY || "";
