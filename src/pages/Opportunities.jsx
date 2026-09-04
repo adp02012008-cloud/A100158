@@ -1337,56 +1337,69 @@ export default function Opportunities({ search: navbarSearch = "" }) {
               </div>
 
               {/* Tracks */}
-              {Array.isArray(detailsOpp.tracks) && detailsOpp.tracks.length > 0 && (
-                <div style={{ marginBottom: 20 }}>
-                  <h4 style={{ margin: "0 0 10px 0", color: "#818cf8", fontSize: 13, textTransform: "uppercase" }}>
-                    ⚡ Hackathon Tracks & Problem Statements
-                  </h4>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {detailsOpp.tracks.map((track, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          background: "rgba(99, 102, 241, 0.12)",
-                          border: "1px solid rgba(99, 102, 241, 0.25)",
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          fontSize: 13.5,
-                          color: "#e0e7ff",
-                        }}
-                      >
-                        {track}
-                      </div>
-                    ))}
+              {/* Tracks */}
+              {(() => {
+                const trackList = Array.isArray(detailsOpp.tracks)
+                  ? detailsOpp.tracks
+                  : (detailsOpp.tracks ? detailsOpp.tracks.split("\n").filter(Boolean) : []);
+                if (trackList.length === 0) return null;
+                return (
+                  <div style={{ marginBottom: 20 }}>
+                    <h4 style={{ margin: "0 0 10px 0", color: "#818cf8", fontSize: 13, textTransform: "uppercase" }}>
+                      ⚡ Hackathon Tracks & Problem Statements
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {trackList.map((track, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            background: "rgba(99, 102, 241, 0.12)",
+                            border: "1px solid rgba(99, 102, 241, 0.25)",
+                            borderRadius: 10,
+                            padding: "10px 14px",
+                            fontSize: 13.5,
+                            color: "#e0e7ff",
+                          }}
+                        >
+                          {track}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Schedule */}
-              {Array.isArray(detailsOpp.schedule) && detailsOpp.schedule.length > 0 && (
-                <div style={{ marginBottom: 20 }}>
-                  <h4 style={{ margin: "0 0 10px 0", color: "#34d399", fontSize: 13, textTransform: "uppercase" }}>
-                    📅 Event Schedule & Rounds
-                  </h4>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {detailsOpp.schedule.map((step, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          background: "rgba(16, 185, 129, 0.1)",
-                          border: "1px solid rgba(16, 185, 129, 0.25)",
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          fontSize: 13.5,
-                          color: "#d1fae5",
-                        }}
-                      >
-                        {step}
-                      </div>
-                    ))}
+              {(() => {
+                const scheduleList = Array.isArray(detailsOpp.schedule)
+                  ? detailsOpp.schedule
+                  : (detailsOpp.schedule ? detailsOpp.schedule.split("\n").filter(Boolean) : []);
+                if (scheduleList.length === 0) return null;
+                return (
+                  <div style={{ marginBottom: 20 }}>
+                    <h4 style={{ margin: "0 0 10px 0", color: "#34d399", fontSize: 13, textTransform: "uppercase" }}>
+                      📅 Event Schedule & Rounds
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {scheduleList.map((step, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            background: "rgba(16, 185, 129, 0.1)",
+                            border: "1px solid rgba(16, 185, 129, 0.25)",
+                            borderRadius: 10,
+                            padding: "10px 14px",
+                            fontSize: 13.5,
+                            color: "#d1fae5",
+                          }}
+                        >
+                          {step}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Prizes & Points */}
               {(detailsOpp.prizes || detailsOpp.rewardPoints) && (

@@ -74,16 +74,13 @@ const opportunitySchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    tracks: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    tracks: {
+      type: mongoose.Schema.Types.Mixed,
+      default: [],
+    },
     schedule: {
-      type: String,
+      type: mongoose.Schema.Types.Mixed,
       default: "",
-      trim: true,
     },
     prizes: {
       type: String,
