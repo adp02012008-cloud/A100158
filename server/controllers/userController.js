@@ -303,6 +303,8 @@ export async function updateUserProfile(req, res) {
       GITHUB,
       "ACTIVITY POINT": activityPts,
       "REWARD POINT": rewardPts,
+      activityPoints,
+      rewardPoints,
       Name,
       POSITION,
       CLUSTER,
@@ -312,6 +314,8 @@ export async function updateUserProfile(req, res) {
       position,
       linkedin,
       github,
+      joinedDate,
+      clusterName,
       ROLE,
       role,
       STATUS,
@@ -322,16 +326,65 @@ export async function updateUserProfile(req, res) {
     if (!user) user = await User.findOne({ userId: id });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    if (!isAdmin(req.user) && String(user._id) !== String(req.user._id)) {
+    const isOwner =
+      String(user._id) === String(req.user._id) ||
+      (user.email && req.user.email && user.email.toLowerCase().trim() === req.user.email.toLowerCase().trim()) ||
+      (user.userId && req.user.userId && user.userId === req.user.userId);
+
+    if (!isAdmin(req.user) && !isOwner) {
       return res.status(403).json({ success: false, message: "Access denied. Cannot update another user's profile." });
     }
 
-    if (Name || name) user.name = (Name || name).trim();
-    if (POSITION || position) user.position = (POSITION || position).trim();
-    if (LINKEDIN || linkedin) user.linkedin = (LINKEDIN || linkedin).trim();
-    if (GITHUB || github) user.github = (GITHUB || github).trim();
-    if (JOINED !== undefined || joinedDate !== undefined) user.joinedDate = String(JOINED !== undefined ? JOINED : joinedDate).trim();
-    if (CLUSTER) user.clusterName = CLUSTER.trim();
+    const finalName = Name !== undefined ? Name : name;
+    if (finalName !== undefined) {
+      const trimmed = String(finalName).trim();
+      if (!trimmed) {
+        return res.status(400).json({ success: false, message: "Name cannot be empty." });
+      }
+      user.name = trimmed;
+    }
+
+    const finalPosition = POSITION !== undefined ? POSITION : position;
+    if (finalPosition !== undefined) {
+      user.position = String(finalPosition).trim();
+    }
+
+    const finalLinkedin = LINKEDIN !== undefined ? LINKEDIN : linkedin;
+    if (finalLinkedin !== undefined) {
+      user.linkedin = String(finalLinkedin).trim();
+    }
+
+    const finalGithub = GITHUB !== undefined ? GITHUB : github;
+    if (finalGithub !== undefined) {
+      user.github = String(finalGithub).trim();
+    }
+
+    const finalJoinedDate = JOINED !== undefined ? JOINED : joinedDate;
+    if (finalJoinedDate !== undefined && finalJoinedDate !== null) {
+      user.joinedDate = String(finalJoinedDate).trim();
+    }
+
+    const finalCluster = CLUSTER !== undefined ? CLUSTER : clusterName;
+    if (finalCluster !== undefined && finalCluster !== null) {
+      const trimmedCluster = String(finalCluster).trim();
+      user.clusterName = trimmedCluster;
+      const matchedCluster = await Cluster.findOne({
+        name: new RegExp(`^${trimmedCluster}$`, "i"),
+      });
+      if (matchedCluster) {
+        user.clusterId = matchedCluster._id;
+      }
+    }
+
+    let pointsDiff = 0;
+    const finalActPts = activityPts !== undefined ? activityPts : activityPoints;
+    const finalRwdPts = rewardPts !== undefined ? rewardPts : rewardPoints;
+
+    const prevActivity = user.activityPoints || 0;
+    const prevReward = user.rewardPoints || 0;
+    if (finalActPts !== undefined && finalActPts !== "") user.activityPoints = Number(finalActPts) || 0;
+    if (finalRwdPts !== undefined && finalRwdPts !== "") user.rewardPoints = Number(finalRwdPts) || 0;
+    pointsDiff = (user.activityPoints - prevActivity) + (user.rewardPoints - prevReward);
 
     if (isAdmin(req.user)) {
       if (ROLE || role) {
@@ -365,12 +418,6 @@ export async function updateUserProfile(req, res) {
           user.status = newStatus;
         }
       }
-
-      const prevActivity = user.activityPoints || 0;
-      const prevReward = user.rewardPoints || 0;
-      if (activityPts !== undefined) user.activityPoints = Number(activityPts) || 0;
-      if (rewardPts !== undefined) user.rewardPoints = Number(rewardPts) || 0;
-      const pointsDiff = (user.activityPoints - prevActivity) + (user.rewardPoints - prevReward);
     }
 
     await user.save();
@@ -390,7 +437,7 @@ export async function updateUserProfile(req, res) {
         createdAt: new Date(),
       });
 
-      if (typeof pointsDiff !== "undefined" && pointsDiff > 0) {
+      if (pointsDiff > 0) {
         await Notification.create({
           notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
           targetUserId: user._id,

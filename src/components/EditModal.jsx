@@ -11,18 +11,21 @@ export default function EditModal({ student, onClose, onSaved }) {
   const { auth } = useAuth();
   const isAdmin = auth.role === "admin" && auth.viewMode === "admin";
 
+  const [personalForm, setPersonalForm] = useState({
+    Name: student.Name || student.name || "",
+    POSITION: student.POSITION || student.position || "",
+    CLUSTER: student.CLUSTER || student.clusterName || "Core",
+    JOINED: formatDateForInput(student.JOINED || student.joinedDate || ""),
+  });
+
   const [form, setForm] = useState({
     LINKEDIN: student.LINKEDIN || student.linkedin || "",
     GITHUB: student.GITHUB || student.github || "",
-    "ACTIVITY POINT": student.ACTIVITY ?? student.activityPoints ?? "",
-    "REWARD POINT": student.REWARD ?? student.rewardPoints ?? "",
+    "ACTIVITY POINT": student.ACTIVITY ?? student["ACTIVITY POINT"] ?? student.activityPoints ?? "",
+    "REWARD POINT": student.REWARD ?? student["REWARD POINT"] ?? student.rewardPoints ?? "",
   });
 
   const [adminForm, setAdminForm] = useState({
-    Name: student.Name || student.name || "",
-    POSITION: student.POSITION || student.position || "",
-    CLUSTER: student.CLUSTER || student.clusterName || "",
-    JOINED: formatDateForInput(student.JOINED || student.joinedDate || ""),
     ROLE: student.ROLE || student.role || "MEMBER",
     STATUS: student.STATUS || student.status || "ACTIVE",
   });
@@ -113,10 +116,11 @@ export default function EditModal({ student, onClose, onSaved }) {
   const [deleting, setDeleting] = useState(false);
 
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
+  const setPersonal = (key, val) => setPersonalForm((p) => ({ ...p, [key]: val }));
   const setAdmin = (key, val) => setAdminForm((p) => ({ ...p, [key]: val }));
 
   const handleDeleteUser = async () => {
-    const userName = student.Name || student.name || "this user";
+    const userName = personalForm.Name || student.Name || student.name || "this user";
     if (!window.confirm(`⚠️ ARE YOU SURE?\n\nThis will permanently delete ${userName} from MongoDB.\n\nThis action cannot be undone.`)) {
       return;
     }
@@ -135,15 +139,36 @@ export default function EditModal({ student, onClose, onSaved }) {
   };
 
   const handleSave = async () => {
+    if (!personalForm.Name.trim()) {
+      alert("Please enter a valid name.");
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
         "ENROLMENT NUMBER": student["ENROLMENT NUMBER"] || student.enrolmentNumber,
-        LINKEDIN: form.LINKEDIN,
-        GITHUB: form.GITHUB,
-        "ACTIVITY POINT": form["ACTIVITY POINT"],
-        "REWARD POINT": form["REWARD POINT"],
-        ...(isAdmin ? adminForm : {}),
+        Name: personalForm.Name.trim(),
+        name: personalForm.Name.trim(),
+        POSITION: personalForm.POSITION.trim(),
+        position: personalForm.POSITION.trim(),
+        CLUSTER: personalForm.CLUSTER.trim(),
+        clusterName: personalForm.CLUSTER.trim(),
+        JOINED: personalForm.JOINED,
+        joinedDate: personalForm.JOINED,
+        LINKEDIN: form.LINKEDIN.trim(),
+        linkedin: form.LINKEDIN.trim(),
+        GITHUB: form.GITHUB.trim(),
+        github: form.GITHUB.trim(),
+        "ACTIVITY POINT": form["ACTIVITY POINT"] === "" ? 0 : Number(form["ACTIVITY POINT"]),
+        "REWARD POINT": form["REWARD POINT"] === "" ? 0 : Number(form["REWARD POINT"]),
+        activityPoints: form["ACTIVITY POINT"] === "" ? 0 : Number(form["ACTIVITY POINT"]),
+        rewardPoints: form["REWARD POINT"] === "" ? 0 : Number(form["REWARD POINT"]),
+        ...(isAdmin ? {
+          ROLE: adminForm.ROLE,
+          role: adminForm.ROLE,
+          STATUS: adminForm.STATUS,
+          status: adminForm.STATUS,
+        } : {}),
         COURSE_UPDATES: courseEdits,
       };
 
@@ -153,7 +178,7 @@ export default function EditModal({ student, onClose, onSaved }) {
         body: JSON.stringify(payload),
       });
 
-      onSaved({ ...payload, COURSE_UPDATES: courseEdits });
+      if (onSaved) onSaved({ ...student, ...payload, COURSE_UPDATES: courseEdits });
       onClose();
     } catch (err) {
       alert("Failed to save changes: " + err.message);
@@ -177,60 +202,64 @@ export default function EditModal({ student, onClose, onSaved }) {
         <button className="close-btn" onClick={onClose}>✕</button>
 
         <h3 className="edit-modal-title">
-          {isAdmin ? `✏️ Edit — ${student.Name || student.name}` : "✏️ Update My Profile"}
+          {isAdmin ? `✏️ Edit — ${personalForm.Name || student.Name || student.name}` : "✏️ Update My Profile"}
         </h3>
 
-        {isAdmin && (
-          <div className="edit-section">
-            <h4 className="edit-section-title">Identity & Administrative Settings</h4>
-            <div className="edit-grid">
-              <EditField label="Name" value={adminForm.Name} onChange={(v) => setAdmin("Name", v)} />
-              <EditField label="Position (e.g. Member 1, Team Lead, Admin)" value={adminForm.POSITION} onChange={(v) => setAdmin("POSITION", v)} />
-              <div className="edit-field">
-                <label className="edit-label">Cluster</label>
-                <select
-                  className="edit-input"
-                  style={{ background: "#0f172a", color: "#f8fafc" }}
-                  value={adminForm.CLUSTER}
-                  onChange={(e) => setAdmin("CLUSTER", e.target.value)}
-                >
-                  {clusterOptions.map((cName) => (
-                    <option key={cName} value={cName}>
-                      {cName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <EditField label="Joined Date" type="date" value={adminForm.JOINED} onChange={(v) => setAdmin("JOINED", v)} />
-              
-              <div className="edit-field">
-                <label className="edit-label">Role (Permission)</label>
-                <select
-                  className="edit-input"
-                  style={{ background: "#0f172a", color: "#f8fafc" }}
-                  value={adminForm.ROLE}
-                  onChange={(e) => setAdmin("ROLE", e.target.value)}
-                >
-                  <option value="MEMBER">🎓 MEMBER (Team Member)</option>
-                  <option value="ADMIN">👑 ADMIN (System Administrator)</option>
-                </select>
-              </div>
-
-              <div className="edit-field">
-                <label className="edit-label">Account Status</label>
-                <select
-                  className="edit-input"
-                  style={{ background: "#0f172a", color: "#f8fafc" }}
-                  value={adminForm.STATUS}
-                  onChange={(e) => setAdmin("STATUS", e.target.value)}
-                >
-                  <option value="ACTIVE">✅ ACTIVE</option>
-                  <option value="INACTIVE">⛔ INACTIVE (Deactivated)</option>
-                </select>
-              </div>
+        <div className="edit-section">
+          <h4 className="edit-section-title">
+            {isAdmin ? "Identity & Administrative Settings" : "Identity & Personal Information"}
+          </h4>
+          <div className="edit-grid">
+            <EditField label="Name" value={personalForm.Name} onChange={(v) => setPersonal("Name", v)} />
+            <EditField label="Position (e.g. Member 1, Team Lead, Admin)" value={personalForm.POSITION} onChange={(v) => setPersonal("POSITION", v)} />
+            <div className="edit-field">
+              <label className="edit-label">Cluster</label>
+              <select
+                className="edit-input"
+                style={{ background: "#0f172a", color: "#f8fafc" }}
+                value={personalForm.CLUSTER}
+                onChange={(e) => setPersonal("CLUSTER", e.target.value)}
+              >
+                {clusterOptions.map((cName) => (
+                  <option key={cName} value={cName}>
+                    {cName}
+                  </option>
+                ))}
+              </select>
             </div>
+            <EditField label="Joined Date" type="date" value={personalForm.JOINED} onChange={(v) => setPersonal("JOINED", v)} />
+            
+            {isAdmin && (
+              <>
+                <div className="edit-field">
+                  <label className="edit-label">Role (Permission)</label>
+                  <select
+                    className="edit-input"
+                    style={{ background: "#0f172a", color: "#f8fafc" }}
+                    value={adminForm.ROLE}
+                    onChange={(e) => setAdmin("ROLE", e.target.value)}
+                  >
+                    <option value="MEMBER">🎓 MEMBER (Team Member)</option>
+                    <option value="ADMIN">👑 ADMIN (System Administrator)</option>
+                  </select>
+                </div>
+
+                <div className="edit-field">
+                  <label className="edit-label">Account Status</label>
+                  <select
+                    className="edit-input"
+                    style={{ background: "#0f172a", color: "#f8fafc" }}
+                    value={adminForm.STATUS}
+                    onChange={(e) => setAdmin("STATUS", e.target.value)}
+                  >
+                    <option value="ACTIVE">✅ ACTIVE</option>
+                    <option value="INACTIVE">⛔ INACTIVE (Deactivated)</option>
+                  </select>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="edit-section">
           <h4 className="edit-section-title">Social Links</h4>
