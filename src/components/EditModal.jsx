@@ -33,15 +33,56 @@ export default function EditModal({ student, onClose, onSaved }) {
   const [courseEdits, setCourseEdits] = useState(() => {
     const init = {};
     (student.COURSE_DETAILS || []).forEach((c) => {
-      init[c.courseName] = c.currentLevel || "";
+      if (c && c.courseName) {
+        init[c.courseName] = c.currentLevel || "COMPLETED";
+      }
+    });
+    (student.COURSES || []).forEach((cStr) => {
+      if (typeof cStr === "string" && cStr.trim()) {
+        const cleanName = cStr.replace(/\s*-\s*LEVEL\s*[^\-]+$/i, "").trim();
+        if (!init[cleanName] && !init[cStr.trim()]) {
+          const match = cStr.match(/Level\s*([0-9A-Za-z]+)/i);
+          init[cleanName] = match ? `LEVEL ${match[1].toUpperCase()}` : "COMPLETED";
+        }
+      }
     });
     return init;
   });
 
   const [pointsRows, setPointsRows] = useState([]);
+  const [allCoursesList, setAllCoursesList] = useState([]);
   const [pointsLoading, setPointsLoading] = useState(true);
 
   const [clusterOptions, setClusterOptions] = useState(["Core", "Computer Cluster"]);
+
+  // Fetch real-time progress records for student directly from MongoDB
+  useEffect(() => {
+    const targetId = student._id || student.userId;
+    if (!targetId) return;
+
+    let isMounted = true;
+    apiFetch(`/courses/progress?userId=${targetId}`)
+      .then((res) => {
+        if (!isMounted) return;
+        if (res?.progress && Array.isArray(res.progress)) {
+          setCourseEdits((prev) => {
+            const updated = { ...prev };
+            res.progress.forEach((p) => {
+              const cName = p.courseId?.name;
+              if (cName && (updated[cName] === undefined || updated[cName] === "")) {
+                updated[cName] = p.currentLevel || "COMPLETED";
+              }
+            });
+            return updated;
+          });
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [student._id, student.userId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -78,12 +119,32 @@ export default function EditModal({ student, onClose, onSaved }) {
   }, [student]);
 
   useEffect(() => {
-    apiFetch("/points/rules")
-      .then((res) => {
-        const rules = res.rules || [];
+    Promise.allSettled([
+      apiFetch("/points/rules"),
+      apiFetch("/courses"),
+    ])
+      .then(([rulesRes, coursesRes]) => {
+        const rules =
+          rulesRes.status === "fulfilled" && Array.isArray(rulesRes.value?.rules)
+            ? rulesRes.value.rules
+            : [];
         setPointsRows(rules);
+
+        const namesSet = new Set();
+        rules.forEach((r) => {
+          const n = r.courseName || r.courseId?.name;
+          if (n) namesSet.add(n.trim());
+        });
+
+        if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
+          coursesRes.value.courses.forEach((c) => {
+            if (c?.name) namesSet.add(c.name.trim());
+          });
+        }
+
+        setAllCoursesList(Array.from(namesSet).sort((a, b) => a.localeCompare(b)));
       })
-      .catch(() => setPointsRows([]))
+      .catch(() => {})
       .finally(() => setPointsLoading(false));
   }, []);
 
@@ -96,20 +157,59 @@ export default function EditModal({ student, onClose, onSaved }) {
     if (levels.length > 0) courseLevelOptions[courseName] = levels;
   });
 
-  const allKnownCourses = pointsRows
-    .map((row) => row.courseName || row.courseId?.name)
-    .filter(Boolean);
+  const normalizeCourseName = (name = "") =>
+    String(name)
+      .toLowerCase()
+      .trim()
+      .replace(/[\s\-_]+/g, " ");
 
-  const enrolledCourseNames = (student.COURSE_DETAILS || []).map((c) => c.courseName);
+  const enrolledCourseNames = [
+    ...Object.keys(courseEdits).filter(
+      (k) => courseEdits[k] && !["", "NULL", "NIL"].includes(String(courseEdits[k]).toUpperCase())
+    ),
+    ...(student.COURSE_DETAILS || []).map((c) => c?.courseName).filter(Boolean),
+    ...(student.COURSES || []).map((c) => {
+      if (typeof c === "string") return c.replace(/\s*-\s*LEVEL\s*[^\-]+$/i, "").trim();
+      return "";
+    }).filter(Boolean),
+  ];
 
-  const [newCourseName, setNewCourseName] = useState("");
-  const [newCourseLevel, setNewCourseLevel] = useState("");
+  const normalizedEnrolledSet = new Set(
+    enrolledCourseNames.map((n) => normalizeCourseName(n))
+  );
 
-  const handleAddCourse = () => {
-    if (!newCourseName || !newCourseLevel) return;
-    setCourseEdits((prev) => ({ ...prev, [newCourseName]: newCourseLevel }));
-    setNewCourseName("");
-    setNewCourseLevel("");
+  const isCourseEnrolled = (courseName) => {
+    const norm = normalizeCourseName(courseName);
+    if (normalizedEnrolledSet.has(norm)) return true;
+    for (const enrolled of normalizedEnrolledSet) {
+      if (enrolled === norm || enrolled.startsWith(norm) || norm.startsWith(enrolled)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const displayedCourses = Object.keys(courseEdits).filter(
+    (k) => courseEdits[k] && !["", "NULL", "NIL"].includes(String(courseEdits[k]).toUpperCase())
+  );
+
+  const addableCourses = allCoursesList.filter((c) => !isCourseEnrolled(c));
+
+  const handleAddCourseDirect = (selectedCourse) => {
+    if (!selectedCourse) return;
+
+    // Automatically resolve level (no level selection dropdown required)
+    const levels = courseLevelOptions[selectedCourse] || [];
+    let autoLevel = levels.length > 0 ? levels[0] : "";
+    if (!autoLevel) {
+      const match = selectedCourse.match(/Level\s*([0-9A-Za-z]+)/i);
+      autoLevel = match ? `LEVEL ${match[1].toUpperCase()}` : "LEVEL 1";
+    }
+
+    setCourseEdits((prev) => ({
+      ...prev,
+      [selectedCourse]: autoLevel,
+    }));
   };
 
   const [saving, setSaving] = useState(false);
@@ -186,15 +286,6 @@ export default function EditModal({ student, onClose, onSaved }) {
       setSaving(false);
     }
   };
-
-  const displayedCourses = [
-    ...new Set([
-      ...enrolledCourseNames,
-      ...Object.keys(courseEdits).filter((k) => courseEdits[k] !== ""),
-    ]),
-  ];
-
-  const addableCourses = allKnownCourses.filter((c) => !displayedCourses.includes(c));
 
   return (
     <div className="modal" onClick={onClose}>
@@ -288,70 +379,97 @@ export default function EditModal({ student, onClose, onSaved }) {
         </div>
 
         <div className="edit-section">
-          <h4 className="edit-section-title">Course Levels</h4>
+          <h4 className="edit-section-title">Enrolled Courses</h4>
 
           {pointsLoading ? (
             <p className="edit-note">Loading course data…</p>
           ) : (
             <>
-              {displayedCourses.length === 0 && (
-                <p className="edit-note">No courses enrolled yet. Add one below.</p>
+              {displayedCourses.length === 0 ? (
+                <p className="edit-note">No courses enrolled yet. Choose an available course below.</p>
+              ) : (
+                <div className="course-edit-list">
+                  {displayedCourses.map((courseName) => {
+                    const currentLevel = courseEdits[courseName] || "COMPLETED";
+                    return (
+                      <div
+                        key={courseName}
+                        className="course-edit-row"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "10px 14px",
+                          background: "rgba(15, 23, 42, 0.6)",
+                          border: "1px solid rgba(255, 255, 255, 0.08)",
+                          borderRadius: "10px",
+                          marginBottom: "8px",
+                          gap: "10px",
+                        }}
+                      >
+                        <span
+                          className="course-edit-name"
+                          style={{ color: "#f8fafc", fontWeight: "600", fontSize: "13.5px" }}
+                          title={courseName}
+                        >
+                          {courseName}
+                        </span>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: "700",
+                              color: "#38bdf8",
+                              background: "rgba(56, 189, 248, 0.15)",
+                              border: "1px solid rgba(56, 189, 248, 0.3)",
+                              padding: "3px 8px",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            {currentLevel}
+                          </span>
+                          <button
+                            type="button"
+                            style={{
+                              background: "rgba(239, 68, 68, 0.15)",
+                              border: "1px solid rgba(239, 68, 68, 0.35)",
+                              color: "#f87171",
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                              fontSize: "12px",
+                              fontWeight: "600",
+                              cursor: "pointer",
+                              transition: "all 0.2s ease",
+                            }}
+                            onClick={() =>
+                              setCourseEdits((prev) => ({ ...prev, [courseName]: "" }))
+                            }
+                            title="Remove course"
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
 
-              <div className="course-edit-list">
-                {displayedCourses.map((courseName) => {
-                  const levels = courseLevelOptions[courseName] || ["LEVEL-0", "LEVEL-1", "LEVEL-2", "LEVEL-3"];
-                  const currentVal = courseEdits[courseName] ?? "";
-                  return (
-                    <div key={courseName} className="course-edit-row">
-                      <span className="course-edit-name" title={courseName}>{courseName}</span>
-                      <select
-                        className="course-edit-select"
-                        value={currentVal}
-                        onChange={(e) =>
-                          setCourseEdits((prev) => ({ ...prev, [courseName]: e.target.value }))
-                        }
-                      >
-                        <option value="">— No level / Remove —</option>
-                        {levels.map((l) => (
-                          <option key={l} value={l}>{l}</option>
-                        ))}
-                      </select>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="course-add-row">
+              <div className="course-add-row" style={{ marginTop: "12px" }}>
                 <select
                   className="course-edit-select"
-                  value={newCourseName}
-                  onChange={(e) => { setNewCourseName(e.target.value); setNewCourseLevel(""); }}
+                  value=""
+                  onChange={(e) => handleAddCourseDirect(e.target.value)}
+                  style={{ width: "100%" }}
                 >
                   <option value="">+ Add a course…</option>
                   {addableCourses.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
-
-                {newCourseName && (
-                  <select
-                    className="course-edit-select"
-                    value={newCourseLevel}
-                    onChange={(e) => setNewCourseLevel(e.target.value)}
-                  >
-                    <option value="">Select level…</option>
-                    {(courseLevelOptions[newCourseName] || ["LEVEL-0", "LEVEL-1", "LEVEL-2", "LEVEL-3"]).map((l) => (
-                      <option key={l} value={l}>{l}</option>
-                    ))}
-                  </select>
-                )}
-
-                {newCourseName && newCourseLevel && (
-                  <button className="course-add-btn" type="button" onClick={handleAddCourse}>
-                    Add
-                  </button>
-                )}
               </div>
 
               <p className="edit-note" style={{ marginTop: "10px" }}>

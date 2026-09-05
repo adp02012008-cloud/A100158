@@ -21,7 +21,32 @@ export async function getAllUsers(req, res) {
     }
     const rawUsers = await User.find({}).populate("clusterId").sort({ name: 1 }).exec();
     const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email));
-    return res.json({ success: true, count: users.length, users });
+
+    const allProgress = await UserCourseProgress.find({}).populate("courseId").exec();
+    const progressByUser = new Map();
+    allProgress.forEach((p) => {
+      const uId = String(p.userId);
+      if (!progressByUser.has(uId)) progressByUser.set(uId, []);
+      progressByUser.get(uId).push(p);
+    });
+
+    const enrichedUsers = users.map((u) => {
+      const uDoc = u.toObject ? u.toObject() : { ...u };
+      const uProgress = progressByUser.get(String(u._id)) || [];
+      const courseDetails = uProgress.map((p) => ({
+        courseName: p.courseId?.name || "Unknown Course",
+        currentLevel: p.currentLevel,
+        display: `${p.courseId?.name || "Unknown"} - ${p.currentLevel}`,
+      }));
+      return {
+        ...uDoc,
+        COURSE_DETAILS: courseDetails,
+        COURSES: courseDetails.map((c) => c.display),
+        COURSE_COUNT: courseDetails.length,
+      };
+    });
+
+    return res.json({ success: true, count: enrichedUsers.length, users: enrichedUsers });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -457,7 +482,10 @@ export async function updateUserProfile(req, res) {
       await withTransaction(async (session) => {
         const opts = session ? { session } : {};
         for (const [courseName, level] of Object.entries(COURSE_UPDATES)) {
-          const course = await Course.findOne({ name: courseName.trim() }, null, opts);
+          let course = await Course.findOne({ name: courseName.trim() }, null, opts);
+          if (!course) {
+            course = await Course.findOne({ name: new RegExp(`^${courseName.trim()}$`, "i") }, null, opts);
+          }
           if (course) {
             if (!level || ["NULL", "NIL", ""].includes(String(level).toUpperCase())) {
               await UserCourseProgress.deleteOne({ userId: user._id, courseId: course._id }, opts);
