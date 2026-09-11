@@ -134,7 +134,7 @@ const Icons = {
 };
 
 const TEAM_LINKS = [
-  { key: "my-tasks", icon: Icons.MyTasks, label: "Tasks & Deliverables", desc: "View assignments & submission status" },
+  { key: "my-tasks", icon: Icons.MyTasks, label: "My Tasks", desc: "View assignments & submission status" },
   { key: "hackathons", icon: Icons.Hackathons, label: "Hackathons", desc: "Team competitions & track records" },
   { key: "gallery", icon: Icons.Gallery, label: "Gallery", desc: "Event photos & team memories" },
   { key: "projects", icon: Icons.Projects, label: "Projects", desc: "Featured student applications & code" },
@@ -207,7 +207,7 @@ export default function Navbar({ page, setPage, search, setSearch }) {
     "manage-users": "Search members…",
     "assign-tasks": "Search tasks…",
     "review-deliverables": "Search submissions…",
-    "my-tasks": "Search assigned tasks…",
+    "my-tasks": "Search my tasks…",
     hackathons: "Search hackathons…",
     gallery: "Search gallery…",
     projects: "Search projects…",

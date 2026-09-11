@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  browserLocalPersistence,
   browserSessionPersistence,
   getRedirectResult,
   onAuthStateChanged,
@@ -64,7 +63,6 @@ export default function LoginGate({ children }) {
 
   const [typedEmail, setTypedEmail]       = useState("");
   const [password, setPassword]           = useState("");
-  const [keepLoggedIn, setKeepLoggedIn]   = useState(true);
   const [students, setStudents]           = useState([]);
   const [checkingSession, setCheckingSession] = useState(!auth.isLoggedIn);
   const [authLoading, setAuthLoading]     = useState(false);
@@ -75,11 +73,8 @@ export default function LoginGate({ children }) {
   }, []);
 
   const applyWebPersistence = useCallback(async () => {
-    await setPersistence(
-      firebaseAuth,
-      keepLoggedIn ? browserLocalPersistence : browserSessionPersistence
-    );
-  }, [keepLoggedIn]);
+    await setPersistence(firebaseAuth, browserSessionPersistence);
+  }, []);
 
   const completeRegisteredLogin = useCallback(
     async (email, { silentAccessDenied = false } = {}) => {
@@ -92,6 +87,7 @@ export default function LoginGate({ children }) {
 
       // Fast check 1: System Admin emails
       if (isAdminEmail(cleaned)) {
+        sessionStorage.setItem("bugslayers_tab_active", "true");
         login(cleaned, "admin", null);
         return true;
       }
@@ -116,6 +112,7 @@ export default function LoginGate({ children }) {
       const ownedEnrolment = ownedStudent?.["ENROLMENT NUMBER"] || null;
 
       if (role === "public") {
+        sessionStorage.removeItem("bugslayers_tab_active");
         await clearFirebaseSession();
         if (!silentAccessDenied) {
           setError(
@@ -125,6 +122,7 @@ export default function LoginGate({ children }) {
         return false;
       }
 
+      sessionStorage.setItem("bugslayers_tab_active", "true");
       login(cleaned, role, ownedEnrolment);
       return true;
     },
@@ -145,7 +143,7 @@ export default function LoginGate({ children }) {
     };
   }, []);
 
-  // Quick session check on startup
+  // Session check on startup - require login on each visit unless in an active tab session
   useEffect(() => {
     if (auth.isLoggedIn) {
       setCheckingSession(false);
@@ -154,58 +152,87 @@ export default function LoginGate({ children }) {
 
     let cancelled = false;
 
-    const finishSessionCheck = async (email) => {
-      if (cancelled) return;
+    const checkStartupSession = async () => {
+      // 1. Check if returning from a Google redirect sign-in flow
+      try {
+        const redirectResult = await getRedirectResult(firebaseAuth);
+        if (redirectResult?.user?.email) {
+          const redirectEmail = normalizeEmail(redirectResult.user.email);
+          if (redirectEmail && !cancelled) {
+            sessionStorage.setItem("bugslayers_tab_active", "true");
+            await completeRegisteredLogin(redirectEmail, { silentAccessDenied: true });
+            if (!cancelled) setCheckingSession(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Redirect result check warning:", err?.message);
+      }
 
-      const cleaned = normalizeEmail(email);
-      if (cleaned) {
-        await completeRegisteredLogin(cleaned, { silentAccessDenied: true });
+      // 2. Only allow active in-tab session restore (e.g. user refreshed the page while working)
+      const hasActiveTabSession = sessionStorage.getItem("bugslayers_tab_active") === "true";
+      if (!hasActiveTabSession) {
+        // Fresh visit to the site: clear any lingering persistent credentials so user always logs in fresh
+        try {
+          localStorage.removeItem("bugSlayersAuth");
+        } catch {
+          // Ignore
+        }
+        await clearFirebaseSession();
+        if (!cancelled) setCheckingSession(false);
+        return;
+      }
+
+      // 3. In-tab session refresh: restore current Firebase user
+      const getInTabUserEmail = () => {
+        if (firebaseAuth.currentUser?.email) {
+          return Promise.resolve(firebaseAuth.currentUser.email);
+        }
+        return new Promise((resolve) => {
+          let settled = false;
+          const timer = setTimeout(() => {
+            if (!settled) {
+              settled = true;
+              resolve("");
+            }
+          }, 800);
+
+          const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+            if (!settled) {
+              settled = true;
+              clearTimeout(timer);
+              unsubscribe();
+              resolve(user?.email || "");
+            }
+          });
+        });
+      };
+
+      try {
+        const activeEmail = await getInTabUserEmail();
+        const cleaned = normalizeEmail(activeEmail);
+        if (cleaned && !cancelled) {
+          await completeRegisteredLogin(cleaned, { silentAccessDenied: true });
+        } else if (!cancelled) {
+          sessionStorage.removeItem("bugslayers_tab_active");
+        }
+      } catch {
+        sessionStorage.removeItem("bugslayers_tab_active");
       }
 
       if (!cancelled) setCheckingSession(false);
     };
 
-    const getWebFirebaseEmail = async () => {
-      try {
-        const redirectResult = await getRedirectResult(firebaseAuth);
-        if (redirectResult?.user?.email) {
-          return redirectResult.user.email;
-        }
-      } catch {
-        // Ignore redirect check error
-      }
-
-      return new Promise((resolve) => {
-        let settled = false;
-        const timer = setTimeout(() => {
-          if (!settled) {
-            settled = true;
-            resolve("");
-          }
-        }, 800);
-
-        const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-          if (!settled) {
-            settled = true;
-            clearTimeout(timer);
-            unsubscribe();
-            resolve(user?.email || "");
-          }
-        });
-      });
-    };
-
-    getWebFirebaseEmail()
-      .then(finishSessionCheck)
-      .catch(() => finishSessionCheck(""));
+    checkStartupSession();
 
     return () => {
       cancelled = true;
     };
-  }, [auth.isLoggedIn, completeRegisteredLogin]);
+  }, [auth.isLoggedIn, clearFirebaseSession, completeRegisteredLogin]);
 
   const handlePublicLogin = async () => {
     setError("");
+    sessionStorage.setItem("bugslayers_tab_active", "true");
     await clearFirebaseSession();
     login("public@viewer.com", "public", null);
   };
@@ -352,16 +379,7 @@ export default function LoginGate({ children }) {
             />
           </div>
 
-          <div className="login-options-row">
-            <label className="login-keep-me">
-              <input
-                type="checkbox"
-                checked={keepLoggedIn}
-                onChange={(event) => setKeepLoggedIn(event.target.checked)}
-              />
-              <span>Keep me logged in</span>
-            </label>
-
+          <div className="login-options-row" style={{ justifyContent: "flex-end" }}>
             <button
               type="button"
               className="login-forgot-link"

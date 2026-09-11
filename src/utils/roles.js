@@ -79,7 +79,14 @@ export function findStudentByEmail(email, students = []) {
 // Check if a user's email (or any associated email/name for that student) is in the assignedEmails array
 export function parseAssignedEmails(raw) {
   if (Array.isArray(raw)) {
-    return raw.map(normalizeEmail).filter(Boolean);
+    return raw
+      .map((item) => {
+        if (typeof item === "object" && item !== null) {
+          return normalizeEmail(item.email || item.name || "");
+        }
+        return normalizeEmail(item);
+      })
+      .filter(Boolean);
   }
   if (!raw || typeof raw !== "string") return [];
   const trimmed = raw.trim();
@@ -87,7 +94,14 @@ export function parseAssignedEmails(raw) {
     try {
       const parsed = JSON.parse(trimmed);
       if (Array.isArray(parsed)) {
-        return parsed.map(normalizeEmail).filter(Boolean);
+        return parsed
+          .map((item) => {
+            if (typeof item === "object" && item !== null) {
+              return normalizeEmail(item.email || item.name || "");
+            }
+            return normalizeEmail(item);
+          })
+          .filter(Boolean);
       }
     } catch {
       // Fall through to regex email matching
@@ -114,11 +128,27 @@ export function isUserAssignedToTask(userEmail, taskAssignedEmails, students = [
   // 1. Direct user email match
   if (taskEmails.includes(cleanUser)) return true;
 
+  // Check prefix / username match (e.g. user@bitsathy.ac.in vs user)
+  const userPrefix = cleanUser.includes("@") ? cleanUser.split("@")[0] : cleanUser;
+  if (taskEmails.some((e) => {
+    const ePrefix = e.includes("@") ? e.split("@")[0] : e;
+    return e === cleanUser || e === userPrefix || ePrefix === userPrefix;
+  })) {
+    return true;
+  }
+
   // 2. Student email alias match (PERSONAL MAIL, BIT MAIL, etc.)
   const student = findStudentByEmail(cleanUser, students);
   if (student) {
     const studentEmails = extractStudentEmails(student);
-    if (studentEmails.some((e) => taskEmails.includes(e))) {
+    if (studentEmails.some((e) => {
+      const eClean = normalizeEmail(e);
+      const ePrefix = eClean.split("@")[0];
+      return taskEmails.some((te) => {
+        const tePrefix = te.includes("@") ? te.split("@")[0] : te;
+        return te === eClean || te === ePrefix || tePrefix === ePrefix;
+      });
+    })) {
       return true;
     }
 
@@ -126,7 +156,10 @@ export function isUserAssignedToTask(userEmail, taskAssignedEmails, students = [
     const studentName = String(student.Name || "").trim().toLowerCase();
     if (studentName) {
       const rawAssigned = Array.isArray(taskAssignedEmails)
-        ? taskAssignedEmails.join(" ").toLowerCase()
+        ? taskAssignedEmails
+            .map((x) => (typeof x === "object" && x !== null ? (x.email || x.name || "") : x))
+            .join(" ")
+            .toLowerCase()
         : String(taskAssignedEmails || "").toLowerCase();
       if (rawAssigned.includes(studentName)) {
         return true;

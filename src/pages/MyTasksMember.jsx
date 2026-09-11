@@ -83,9 +83,8 @@ export default function MyTasksMember({ search = "" }) {
   // Filter tasks assigned to current logged-in member
   const myTasks = useMemo(() => {
     return tasks.filter((t) => {
-      // Admins see all tasks in Member View so they can test/review deliverables for any assigned member
-      const isAdmin = auth.role === "admin";
-      const isAssigned = isAdmin || isUserAssignedToTask(userEmail, t.assignedEmails, students);
+      // Only show tasks assigned to this member/user (do not display other people's tasks to admins in their personal view)
+      const isAssigned = isUserAssignedToTask(userEmail, t.assignedEmails, students);
       if (!isAssigned) return false;
 
       const matchSearch =
@@ -216,7 +215,7 @@ export default function MyTasksMember({ search = "" }) {
       {/* Header */}
       <div className="section-header-row">
         <div>
-          <h2 className="section-title">📥 My Assigned Tasks & Deliverables</h2>
+          <h2 className="section-title">📥 My Tasks</h2>
           <p className="section-subtitle">
             View your project domains, track deadlines, and submit your GitHub code, photos, and deliverables.
           </p>
