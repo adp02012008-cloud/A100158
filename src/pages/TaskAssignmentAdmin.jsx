@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { extractStudentEmails, getAllAssignableUsers, normalizeEmail } from "../utils/roles";
 import { formatDateForInput } from "../utils/dateUtils";
 import UnifiedLoader from "../components/UnifiedLoader";
+import UnsavedChangesModal from "../components/UnsavedChangesModal";
 import {
   createReview,
   deleteTask,
@@ -65,6 +66,33 @@ export default function TaskAssignmentAdmin({ search = "" }) {
   const [formSubmissionMode, setFormSubmissionMode] = useState("FLEXIBLE");
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+  const [showTaskUnsavedModal, setShowTaskUnsavedModal] = useState(false);
+
+  const isTaskDirty = useMemo(() => {
+    if (!modalOpen) return false;
+    if (!editingTask) {
+      return Boolean(formTitle.trim() || formDescription.trim() || formAssigned.length > 0 || formDueDate || formCustomDomain.trim());
+    }
+    if (formTitle.trim() !== (editingTask.title || "").trim()) return true;
+    if (formDescription.trim() !== (editingTask.description || "").trim()) return true;
+    if (formPriority !== (editingTask.priority || "Medium")) return true;
+    if (formDueDate !== formatDateForInput(editingTask.dueDate || "")) return true;
+    if (formSubmissionMode !== (editingTask.submissionMode || "FLEXIBLE")) return true;
+    const origAssigned = (editingTask.assignedEmails || []).map(normalizeEmail);
+    if (formAssigned.length !== origAssigned.length) return true;
+    for (const em of formAssigned) {
+      if (!origAssigned.includes(em)) return true;
+    }
+    return false;
+  }, [modalOpen, editingTask, formTitle, formDescription, formAssigned, formDueDate, formPriority, formSubmissionMode, formCustomDomain]);
+
+  const handleCloseTaskModal = () => {
+    if (isTaskDirty) {
+      setShowTaskUnsavedModal(true);
+    } else {
+      setModalOpen(false);
+    }
+  };
 
   // Review State
   const [reviewingSubId, setReviewingSubId] = useState(null);
@@ -601,14 +629,14 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
       {/* Create / Edit Task Modal */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+        <div className="modal-overlay" onClick={handleCloseTaskModal}>
           <div className="modal-content task-modal task-admin-modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{editingTask ? "✏️ Edit Task Assignment" : "➕ Assign New Task / Domain"}</h3>
               <button
                 type="button"
                 className="close-btn"
-                onClick={() => setModalOpen(false)}
+                onClick={handleCloseTaskModal}
               >
                 ✕
               </button>
@@ -746,7 +774,7 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                 <button
                   type="button"
                   className="btn-secondary"
-                  onClick={() => setModalOpen(false)}
+                  onClick={handleCloseTaskModal}
                 >
                   Cancel
                 </button>
@@ -756,6 +784,20 @@ export default function TaskAssignmentAdmin({ search = "" }) {
               </div>
             </form>
           </div>
+
+          <UnsavedChangesModal
+            isOpen={showTaskUnsavedModal}
+            onKeepEditing={() => setShowTaskUnsavedModal(false)}
+            onDiscard={() => {
+              setShowTaskUnsavedModal(false);
+              setModalOpen(false);
+            }}
+            onSave={(e) => {
+              setShowTaskUnsavedModal(false);
+              handleSaveTask(e);
+            }}
+            saving={saving}
+          />
         </div>
       )}
 

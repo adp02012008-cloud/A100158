@@ -1,6 +1,7 @@
 // src/components/EditCourseModal.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { apiFetch } from "../utils/api";
+import UnsavedChangesModal from "./UnsavedChangesModal";
 
 export default function EditCourseModal({ course, pointRule, onClose, onSaved }) {
   const [name, setName] = useState(course?.name || "");
@@ -34,6 +35,32 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+
+  const initialSnapshotRef = useRef({
+    name: course?.name || "",
+    description: course?.description || "",
+    category: course?.category || "Development",
+    levelRowsJson: JSON.stringify(levelRows),
+  });
+
+  const isDirty = useMemo(() => {
+    const init = initialSnapshotRef.current;
+    if (!init) return false;
+    if (name !== init.name) return true;
+    if (description !== init.description) return true;
+    if (category !== init.category) return true;
+    if (JSON.stringify(levelRows) !== init.levelRowsJson) return true;
+    return false;
+  }, [name, description, category, levelRows]);
+
+  const handleRequestClose = () => {
+    if (isDirty) {
+      setShowUnsavedModal(true);
+    } else {
+      onClose();
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -223,9 +250,9 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
   };
 
   return (
-    <div className="modal" onClick={onClose}>
+    <div className="modal" onClick={handleRequestClose}>
       <div className="modal-box edit-modal-box" style={{ maxWidth: "620px" }} onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button className="close-btn" onClick={handleRequestClose}>✕</button>
 
         <h3 className="edit-modal-title">✏️ Edit Course — {course?.name}</h3>
 
@@ -446,7 +473,7 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
             </button>
 
             <div style={{ display: "flex", gap: "10px" }}>
-              <button className="edit-cancel-btn" type="button" onClick={onClose} disabled={saving || deleting}>
+              <button className="edit-cancel-btn" type="button" onClick={handleRequestClose} disabled={saving || deleting}>
                 Cancel
               </button>
               <button className="edit-save-btn" type="submit" disabled={saving || deleting}>
@@ -456,6 +483,20 @@ export default function EditCourseModal({ course, pointRule, onClose, onSaved })
           </div>
         </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showUnsavedModal}
+        onKeepEditing={() => setShowUnsavedModal(false)}
+        onDiscard={() => {
+          setShowUnsavedModal(false);
+          onClose();
+        }}
+        onSave={(e) => {
+          setShowUnsavedModal(false);
+          handleSubmit(e);
+        }}
+        saving={saving}
+      />
     </div>
   );
 }

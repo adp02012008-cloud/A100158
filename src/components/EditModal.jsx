@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { formatDateForInput } from "../utils/dateUtils";
+import AddCourseModal from "./AddCourseModal";
+import ManageCoursesModal from "./ManageCoursesModal";
+import UnsavedChangesModal from "./UnsavedChangesModal";
 
 function getLevelColumns(row) {
   return Object.keys(row || {}).filter((k) => k.toLowerCase().startsWith("level"));
@@ -55,6 +58,55 @@ export default function EditModal({ student, onClose, onSaved }) {
 
   const [clusterOptions, setClusterOptions] = useState(["Core", "Computer Cluster"]);
 
+  // Sub-modals & UI state
+  const [showAddCourseModal, setShowAddCourseModal] = useState(false);
+  const [showManageCoursesModal, setShowManageCoursesModal] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [courseFilterSearch, setCourseFilterSearch] = useState("");
+
+  // Snapshot for dirty-state comparison
+  const initialSnapshotRef = useRef({
+    personal: { ...personalForm },
+    form: { ...form },
+    admin: { ...adminForm },
+    courseEdits: { ...courseEdits },
+  });
+
+  const isDirty = useMemo(() => {
+    const init = initialSnapshotRef.current;
+    if (!init) return false;
+
+    if (personalForm.Name !== init.personal.Name) return true;
+    if (personalForm.POSITION !== init.personal.POSITION) return true;
+    if (personalForm.CLUSTER !== init.personal.CLUSTER) return true;
+    if (personalForm.JOINED !== init.personal.JOINED) return true;
+
+    if (form.LINKEDIN !== init.form.LINKEDIN) return true;
+    if (form.GITHUB !== init.form.GITHUB) return true;
+    if (String(form["ACTIVITY POINT"]) !== String(init.form["ACTIVITY POINT"])) return true;
+    if (String(form["REWARD POINT"]) !== String(init.form["REWARD POINT"])) return true;
+
+    if (adminForm.ROLE !== init.admin.ROLE) return true;
+    if (adminForm.STATUS !== init.admin.STATUS) return true;
+
+    const curKeys = Object.keys(courseEdits);
+    const initKeys = Object.keys(init.courseEdits);
+    if (curKeys.length !== initKeys.length) return true;
+    for (const k of curKeys) {
+      if (courseEdits[k] !== init.courseEdits[k]) return true;
+    }
+
+    return false;
+  }, [personalForm, form, adminForm, courseEdits]);
+
+  const handleRequestClose = () => {
+    if (isDirty) {
+      setShowUnsavedModal(true);
+    } else {
+      onClose();
+    }
+  };
+
   // Fetch real-time progress records for student directly from MongoDB
   useEffect(() => {
     const targetId = student._id || student.userId;
@@ -73,6 +125,7 @@ export default function EditModal({ student, onClose, onSaved }) {
                 updated[cName] = p.currentLevel || "COMPLETED";
               }
             });
+            initialSnapshotRef.current.courseEdits = { ...updated };
             return updated;
           });
         }
@@ -118,44 +171,66 @@ export default function EditModal({ student, onClose, onSaved }) {
     };
   }, [student]);
 
-  useEffect(() => {
-    Promise.allSettled([
-      apiFetch("/points/rules"),
-      apiFetch("/courses"),
-    ])
-      .then(([rulesRes, coursesRes]) => {
-        const rules =
-          rulesRes.status === "fulfilled" && Array.isArray(rulesRes.value?.rules)
-            ? rulesRes.value.rules
-            : [];
-        setPointsRows(rules);
+  const loadCoursesData = useCallback(async () => {
+    try {
+      const [rulesRes, coursesRes] = await Promise.allSettled([
+        apiFetch("/points/rules"),
+        apiFetch("/courses"),
+      ]);
+      const rules =
+        rulesRes.status === "fulfilled" && Array.isArray(rulesRes.value?.rules)
+          ? rulesRes.value.rules
+          : [];
+      setPointsRows(rules);
 
-        const namesSet = new Set();
-        rules.forEach((r) => {
-          const n = r.courseName || r.courseId?.name;
-          if (n) namesSet.add(n.trim());
+      const namesSet = new Set();
+      rules.forEach((r) => {
+        const n = r.courseName || r.courseId?.name;
+        if (n) namesSet.add(n.trim());
+      });
+
+      if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
+        coursesRes.value.courses.forEach((c) => {
+          if (c?.name) namesSet.add(c.name.trim());
         });
+      }
 
-        if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
-          coursesRes.value.courses.forEach((c) => {
-            if (c?.name) namesSet.add(c.name.trim());
-          });
-        }
-
-        setAllCoursesList(Array.from(namesSet).sort((a, b) => a.localeCompare(b)));
-      })
-      .catch(() => {})
-      .finally(() => setPointsLoading(false));
+      setAllCoursesList(Array.from(namesSet).sort((a, b) => a.localeCompare(b)));
+    } catch {
+      // Ignore
+    } finally {
+      setPointsLoading(false);
+    }
   }, []);
 
-  const courseLevelOptions = {};
-  pointsRows.forEach((row) => {
-    const courseName = row.courseName || row.courseId?.name || "";
-    if (!courseName) return;
-    const levelMap = row.levelPoints || {};
-    const levels = Object.keys(levelMap).filter((l) => Number(levelMap[l] || 0) > 0);
-    if (levels.length > 0) courseLevelOptions[courseName] = levels;
-  });
+  useEffect(() => {
+    loadCoursesData();
+  }, [loadCoursesData]);
+
+  const courseLevelOptions = useMemo(() => {
+    const map = {};
+    pointsRows.forEach((row) => {
+      const courseName = row.courseName || row.courseId?.name || "";
+      if (!courseName) return;
+      const levelMap = row.levelPoints || {};
+      const levels = Object.keys(levelMap).filter((l) => Number(levelMap[l] || 0) > 0);
+      if (levels.length > 0) map[courseName] = levels;
+    });
+    return map;
+  }, [pointsRows]);
+
+  const getLevelsForCourse = (courseName) => {
+    const opts = courseLevelOptions[courseName];
+    const cur = courseEdits[courseName] || "COMPLETED";
+    const set = new Set();
+    if (Array.isArray(opts) && opts.length > 0) {
+      opts.forEach((l) => set.add(l));
+    } else {
+      ["LEVEL 0", "LEVEL 1", "LEVEL 2", "LEVEL 3", "COMPLETED"].forEach((l) => set.add(l));
+    }
+    if (cur) set.add(cur);
+    return Array.from(set);
+  };
 
   const normalizeCourseName = (name = "") =>
     String(name)
@@ -193,12 +268,18 @@ export default function EditModal({ student, onClose, onSaved }) {
     (k) => courseEdits[k] && !["", "NULL", "NIL"].includes(String(courseEdits[k]).toUpperCase())
   );
 
+  const filteredDisplayedCourses = useMemo(() => {
+    if (!courseFilterSearch.trim()) return displayedCourses;
+    const q = courseFilterSearch.toLowerCase().trim();
+    return displayedCourses.filter((c) => c.toLowerCase().includes(q));
+  }, [displayedCourses, courseFilterSearch]);
+
   const addableCourses = allCoursesList.filter((c) => !isCourseEnrolled(c));
 
   const handleAddCourseDirect = (selectedCourse) => {
     if (!selectedCourse) return;
 
-    // Automatically resolve level (no level selection dropdown required)
+    // Automatically resolve default level
     const levels = courseLevelOptions[selectedCourse] || [];
     let autoLevel = levels.length > 0 ? levels[0] : "";
     if (!autoLevel) {
@@ -288,9 +369,9 @@ export default function EditModal({ student, onClose, onSaved }) {
   };
 
   return (
-    <div className="modal" onClick={onClose}>
+    <div className="modal" onClick={handleRequestClose}>
       <div className="modal-box edit-modal-box" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button className="close-btn" onClick={handleRequestClose}>✕</button>
 
         <h3 className="edit-modal-title">
           {isAdmin ? `✏️ Edit — ${personalForm.Name || student.Name || student.name}` : "✏️ Update My Profile"}
@@ -379,100 +460,230 @@ export default function EditModal({ student, onClose, onSaved }) {
         </div>
 
         <div className="edit-section">
-          <h4 className="edit-section-title">Enrolled Courses</h4>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", flexWrap: "wrap", gap: "8px" }}>
+            <h4 className="edit-section-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>Enrolled Courses</span>
+              <span style={{ fontSize: "11px", fontWeight: "700", background: "rgba(139, 92, 246, 0.2)", border: "1px solid rgba(167, 139, 250, 0.3)", color: "#c4b5fd", padding: "2px 8px", borderRadius: "10px" }}>
+                {displayedCourses.length}
+              </span>
+            </h4>
+
+            {displayedCourses.length > 4 && (
+              <input
+                type="text"
+                placeholder="🔍 Filter enrolled…"
+                value={courseFilterSearch}
+                onChange={(e) => setCourseFilterSearch(e.target.value)}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  background: "rgba(15, 23, 42, 0.7)",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  color: "#f8fafc",
+                  fontSize: "12px",
+                  outline: "none",
+                  maxWidth: "160px",
+                }}
+              />
+            )}
+          </div>
 
           {pointsLoading ? (
             <p className="edit-note">Loading course data…</p>
           ) : (
             <>
               {displayedCourses.length === 0 ? (
-                <p className="edit-note">No courses enrolled yet. Choose an available course below.</p>
+                <p className="edit-note" style={{ margin: "10px 0" }}>No courses enrolled yet. Choose or add a course below.</p>
               ) : (
-                <div className="course-edit-list">
-                  {displayedCourses.map((courseName) => {
-                    const currentLevel = courseEdits[courseName] || "COMPLETED";
-                    return (
-                      <div
-                        key={courseName}
-                        className="course-edit-row"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          padding: "10px 14px",
-                          background: "rgba(15, 23, 42, 0.6)",
-                          border: "1px solid rgba(255, 255, 255, 0.08)",
-                          borderRadius: "10px",
-                          marginBottom: "8px",
-                          gap: "10px",
-                        }}
-                      >
-                        <span
-                          className="course-edit-name"
-                          style={{ color: "#f8fafc", fontWeight: "600", fontSize: "13.5px" }}
-                          title={courseName}
-                        >
-                          {courseName}
-                        </span>
+                <div
+                  className="course-edit-list-container"
+                  style={{
+                    maxHeight: "220px",
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                    background: "rgba(10, 6, 24, 0.4)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    borderRadius: "10px",
+                    padding: "8px",
+                  }}
+                >
+                  {filteredDisplayedCourses.length === 0 ? (
+                    <div style={{ fontSize: "12px", color: "#94a3b8", textAlign: "center", padding: "12px" }}>
+                      No matching courses found.
+                    </div>
+                  ) : (
+                    filteredDisplayedCourses.map((courseName) => {
+                      const currentLevel = courseEdits[courseName] || "COMPLETED";
+                      const availableLevels = getLevelsForCourse(courseName);
 
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                      return (
+                        <div
+                          key={courseName}
+                          className="course-compact-row"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "6px 10px",
+                            background: "rgba(22, 16, 42, 0.75)",
+                            border: "1px solid rgba(255, 255, 255, 0.06)",
+                            borderRadius: "8px",
+                            gap: "8px",
+                            transition: "background 0.15s ease",
+                          }}
+                        >
                           <span
                             style={{
-                              fontSize: "12px",
-                              fontWeight: "700",
-                              color: "#38bdf8",
-                              background: "rgba(56, 189, 248, 0.15)",
-                              border: "1px solid rgba(56, 189, 248, 0.3)",
-                              padding: "3px 8px",
-                              borderRadius: "6px",
+                              color: "#f1f5f9",
+                              fontWeight: "500",
+                              fontSize: "13px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              flex: 1,
                             }}
+                            title={courseName}
                           >
-                            {currentLevel}
+                            {courseName}
                           </span>
-                          <button
-                            type="button"
-                            style={{
-                              background: "rgba(239, 68, 68, 0.15)",
-                              border: "1px solid rgba(239, 68, 68, 0.35)",
-                              color: "#f87171",
-                              padding: "4px 10px",
-                              borderRadius: "6px",
-                              fontSize: "12px",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                              transition: "all 0.2s ease",
-                            }}
-                            onClick={() =>
-                              setCourseEdits((prev) => ({ ...prev, [courseName]: "" }))
-                            }
-                            title="Remove course"
-                          >
-                            ✕ Remove
-                          </button>
+
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+                            {/* Interactive Level Selector */}
+                            <select
+                              value={currentLevel}
+                              onChange={(e) =>
+                                setCourseEdits((prev) => ({ ...prev, [courseName]: e.target.value }))
+                              }
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: "#38bdf8",
+                                background: "rgba(56, 189, 248, 0.12)",
+                                border: "1px solid rgba(56, 189, 248, 0.35)",
+                                borderRadius: "6px",
+                                padding: "3px 6px",
+                                cursor: "pointer",
+                                outline: "none",
+                              }}
+                              title="Click to change completion level"
+                            >
+                              {availableLevels.map((lvl) => (
+                                <option key={lvl} value={lvl} style={{ background: "#0f172a", color: "#f8fafc" }}>
+                                  {lvl}
+                                </option>
+                              ))}
+                            </select>
+
+                            {/* Compact Remove Button */}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCourseEdits((prev) => ({ ...prev, [courseName]: "" }))
+                              }
+                              style={{
+                                background: "rgba(239, 68, 68, 0.12)",
+                                border: "1px solid rgba(239, 68, 68, 0.3)",
+                                color: "#f87171",
+                                borderRadius: "6px",
+                                padding: "3px 8px",
+                                fontSize: "11px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                              }}
+                              title="Remove course"
+                            >
+                              ✕ Remove
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               )}
 
-              <div className="course-add-row" style={{ marginTop: "12px" }}>
+              {/* Add Course & Management Toolbar */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  marginTop: "10px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
                 <select
                   className="course-edit-select"
                   value=""
-                  onChange={(e) => handleAddCourseDirect(e.target.value)}
-                  style={{ width: "100%" }}
+                  onChange={(e) => {
+                    if (e.target.value === "__CREATE_NEW__") {
+                      setShowAddCourseModal(true);
+                    } else if (e.target.value) {
+                      handleAddCourseDirect(e.target.value);
+                    }
+                  }}
+                  style={{ flex: 1, minWidth: "180px" }}
                 >
-                  <option value="">+ Add a course…</option>
+                  <option value="">+ Add an enrolled course…</option>
+                  <option value="__CREATE_NEW__" style={{ color: "#a78bfa", fontWeight: "700" }}>
+                    ➕ Create New Course…
+                  </option>
                   {addableCourses.map((c) => (
                     <option key={c} value={c}>
                       {c}
                     </option>
                   ))}
                 </select>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddCourseModal(true)}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    background: "rgba(139, 92, 246, 0.18)",
+                    border: "1px solid rgba(167, 139, 250, 0.35)",
+                    color: "#c4b5fd",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    whiteSpace: "nowrap",
+                  }}
+                  title="Create a course that does not exist in the catalogue"
+                >
+                  ➕ Add New Course
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowManageCoursesModal(true)}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    background: "rgba(255, 255, 255, 0.06)",
+                    border: "1px solid rgba(255, 255, 255, 0.14)",
+                    color: "#94a3b8",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    whiteSpace: "nowrap",
+                  }}
+                  title="Manage course catalog and point rules"
+                >
+                  ⚙️ Manage Courses
+                </button>
               </div>
 
-              <p className="edit-note" style={{ marginTop: "10px" }}>
+              <p className="edit-note" style={{ marginTop: "8px", fontSize: "11.5px" }}>
                 💡 Changes are saved directly to MongoDB.
               </p>
             </>
@@ -501,7 +712,7 @@ export default function EditModal({ student, onClose, onSaved }) {
             </button>
           )}
 
-          <button className="edit-cancel-btn" onClick={onClose} disabled={saving || deleting}>
+          <button className="edit-cancel-btn" onClick={handleRequestClose} disabled={saving || deleting}>
             Cancel
           </button>
           <button className="edit-save-btn" onClick={handleSave} disabled={saving || deleting}>
@@ -509,6 +720,46 @@ export default function EditModal({ student, onClose, onSaved }) {
           </button>
         </div>
       </div>
+
+      {/* Direct Add New Course Modal */}
+      {showAddCourseModal && (
+        <AddCourseModal
+          onClose={() => setShowAddCourseModal(false)}
+          onCreated={(newCourseName) => {
+            loadCoursesData().then(() => {
+              if (newCourseName && typeof newCourseName === "string") {
+                handleAddCourseDirect(newCourseName);
+              }
+            });
+            setShowAddCourseModal(false);
+          }}
+        />
+      )}
+
+      {/* Direct Manage Courses Modal */}
+      {showManageCoursesModal && (
+        <ManageCoursesModal
+          onClose={() => {
+            loadCoursesData();
+            setShowManageCoursesModal(false);
+          }}
+        />
+      )}
+
+      {/* Unsaved Changes Confirmation Dialog */}
+      <UnsavedChangesModal
+        isOpen={showUnsavedModal}
+        onKeepEditing={() => setShowUnsavedModal(false)}
+        onDiscard={() => {
+          setShowUnsavedModal(false);
+          onClose();
+        }}
+        onSave={async () => {
+          setShowUnsavedModal(false);
+          await handleSave();
+        }}
+        saving={saving}
+      />
     </div>
   );
 }

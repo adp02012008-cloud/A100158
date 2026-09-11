@@ -1150,6 +1150,26 @@ h1, h2, h3, h4, h5, h6 {
 .course-edit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
 .course-edit-name { font-size: 13px; font-weight: 600; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+.course-edit-list-container::-webkit-scrollbar {
+  width: 5px;
+}
+.course-edit-list-container::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 4px;
+}
+.course-edit-list-container::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.35);
+  border-radius: 4px;
+}
+.course-edit-list-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.6);
+}
+
+.course-compact-row:hover {
+  background: rgba(30, 20, 58, 0.9) !important;
+  border-color: rgba(167, 139, 250, 0.25) !important;
+}
+
 .course-edit-select {
   padding: 9px 12px; border-radius: 12px; outline: none;
   font-size: 13px; font-family: var(--font-body); cursor: pointer; width: 100%;

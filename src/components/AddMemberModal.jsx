@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../utils/api";
 import { formatDateForInput } from "../utils/dateUtils";
+import UnsavedChangesModal from "./UnsavedChangesModal";
 
 export default function AddMemberModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -15,6 +16,17 @@ export default function AddMemberModal({ onClose, onCreated }) {
   const [existingClusters, setExistingClusters] = useState(["Core", "Computer Cluster"]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+
+  const isDirty = Boolean(form.name.trim() || form.email.trim() || form.enrolmentNumber.trim());
+
+  const handleRequestClose = () => {
+    if (isDirty) {
+      setShowUnsavedModal(true);
+    } else {
+      onClose();
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -111,7 +123,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
         zIndex: 1100,
         padding: "20px",
       }}
-      onClick={onClose}
+      onClick={handleRequestClose}
     >
       <div
         className="add-member-modal-box"
@@ -130,7 +142,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          onClick={onClose}
+          onClick={handleRequestClose}
           style={{
             position: "absolute",
             top: "20px",
@@ -264,7 +276,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
           >
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleRequestClose}
               disabled={saving}
               style={{
                 padding: "10px 20px",
@@ -299,6 +311,20 @@ export default function AddMemberModal({ onClose, onCreated }) {
           </div>
         </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showUnsavedModal}
+        onKeepEditing={() => setShowUnsavedModal(false)}
+        onDiscard={() => {
+          setShowUnsavedModal(false);
+          onClose();
+        }}
+        onSave={(e) => {
+          setShowUnsavedModal(false);
+          handleSubmit(e);
+        }}
+        saving={saving}
+      />
     </div>
   );
 }

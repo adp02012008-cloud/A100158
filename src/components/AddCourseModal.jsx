@@ -2,11 +2,14 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../utils/api";
 
+import UnsavedChangesModal from "./UnsavedChangesModal";
+
 export default function AddCourseModal({ onClose, onCreated }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Development");
-  
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+
   // Cluster access handling
   const [availableClusters, setAvailableClusters] = useState(["Core", "Computer Cluster"]);
   const [selectedClusters, setSelectedClusters] = useState(["Core", "Computer Cluster"]);
@@ -20,6 +23,16 @@ export default function AddCourseModal({ onClose, onCreated }) {
     { id: 3, name: "LEVEL-2", points: 40 },
     { id: 4, name: "LEVEL-3", points: 60 },
   ]);
+
+  const isDirty = Boolean(name.trim() || description.trim());
+
+  const handleRequestClose = () => {
+    if (isDirty) {
+      setShowUnsavedModal(true);
+    } else {
+      onClose();
+    }
+  };
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -169,7 +182,7 @@ export default function AddCourseModal({ onClose, onCreated }) {
         });
       }
 
-      onCreated();
+      if (onCreated) onCreated(name.trim());
       onClose();
     } catch (err) {
       setError(err.message || "Failed to create course");
@@ -179,9 +192,9 @@ export default function AddCourseModal({ onClose, onCreated }) {
   };
 
   return (
-    <div className="modal" onClick={onClose}>
+    <div className="modal" onClick={handleRequestClose}>
       <div className="modal-box edit-modal-box" style={{ maxWidth: "620px" }} onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <button className="close-btn" onClick={handleRequestClose}>✕</button>
 
         <h3 className="edit-modal-title">➕ Add New Course</h3>
 
@@ -383,7 +396,7 @@ export default function AddCourseModal({ onClose, onCreated }) {
           </div>
 
           <div className="edit-actions" style={{ marginTop: "16px" }}>
-            <button className="edit-cancel-btn" type="button" onClick={onClose} disabled={saving}>
+            <button className="edit-cancel-btn" type="button" onClick={handleRequestClose} disabled={saving}>
               Cancel
             </button>
             <button className="edit-save-btn" type="submit" disabled={saving}>
@@ -392,6 +405,20 @@ export default function AddCourseModal({ onClose, onCreated }) {
           </div>
         </form>
       </div>
+
+      <UnsavedChangesModal
+        isOpen={showUnsavedModal}
+        onKeepEditing={() => setShowUnsavedModal(false)}
+        onDiscard={() => {
+          setShowUnsavedModal(false);
+          onClose();
+        }}
+        onSave={(e) => {
+          setShowUnsavedModal(false);
+          handleSubmit(e);
+        }}
+        saving={saving}
+      />
     </div>
   );
 }
