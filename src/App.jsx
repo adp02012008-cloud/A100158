@@ -18,6 +18,7 @@ const Projects = lazy(() => import("./pages/Projects"));
 const Certificates = lazy(() => import("./pages/Certificates"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Courses = lazy(() => import("./pages/Courses"));
 const AdminSubmissionsReview = lazy(() => import("./pages/AdminSubmissionsReview"));
 const UserRosterAdmin = lazy(() => import("./pages/UserRosterAdmin"));
 
@@ -52,6 +53,7 @@ export default function App() {
           <Suspense fallback={<UnifiedLoader title="Loading…" subtitle="" minHeight="420px" />}>
             {visiblePage === "dashboard" && <Dashboard search={search} setPage={changePage} />}
             {visiblePage === "leaderboard" && <Leaderboard search={search} />}
+            {visiblePage === "courses" && <Courses search={search} />}
             {visiblePage === "profile" && <Profile />}
             {auth.role === "admin" && visiblePage === "manage-users" && (
               <UserRosterAdmin search={search} />

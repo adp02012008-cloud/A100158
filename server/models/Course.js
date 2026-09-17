@@ -43,6 +43,16 @@ const courseSchema = new mongoose.Schema(
       uppercase: true,
       index: true,
     },
+    levels: [
+      {
+        levelNumber: { type: Number, default: 0 },
+        levelName: { type: String, default: "Level 0" },
+        rewardPoints: { type: Number, default: 100 },
+        prerequisites: { type: String, default: "" },
+        assessmentType: { type: String, default: "MCQ" },
+        topics: [{ type: String, trim: true }],
+      },
+    ],
   },
   {
     timestamps: true,

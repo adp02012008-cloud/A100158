@@ -24,6 +24,14 @@ const Icons = {
       <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
     </svg>
   ),
+  Courses: () => (
+    <svg className="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+      <path d="M6 6h10" />
+      <path d="M6 10h10" />
+      <path d="M6 14h6" />
+    </svg>
+  ),
   TeamHub: () => (
     <svg className="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -204,6 +212,7 @@ export default function Navbar({ page, setPage, search, setSearch }) {
   const pageSearchLabels = {
     dashboard: "Search students, courses…",
     leaderboard: "Search leaderboard…",
+    courses: "Search courses by name or category…",
     "manage-users": "Search members…",
     "assign-tasks": "Search tasks…",
     "review-deliverables": "Search submissions…",
@@ -259,6 +268,15 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             >
               <Icons.Leaderboard />
               <span>Leaderboard</span>
+            </button>
+
+            <button
+              type="button"
+              className={`nav-tab-btn ${page === "courses" ? "active" : ""}`}
+              onClick={() => handleNavClick("courses")}
+            >
+              <Icons.Courses />
+              <span>Courses</span>
             </button>
 
             {/* Team Hub Dropdown */}
@@ -534,6 +552,14 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                 >
                   <Icons.Leaderboard />
                   <span>Leaderboard</span>
+                </button>
+                <button
+                  type="button"
+                  className={`mobile-nav-item ${page === "courses" ? "active" : ""}`}
+                  onClick={() => handleNavClick("courses")}
+                >
+                  <Icons.Courses />
+                  <span>Courses</span>
                 </button>
                 {auth.isLoggedIn && (
                   <button

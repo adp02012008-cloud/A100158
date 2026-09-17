@@ -1,3 +1,4 @@
+import { User } from "../models/User.js";
 import { Course } from "../models/Course.js";
 import { CoursePointRule } from "../models/CoursePointRule.js";
 import { UserCourseProgress } from "../models/UserCourseProgress.js";
@@ -6,8 +7,66 @@ import { withTransaction } from "../utils/dbTransaction.js";
 
 export async function getCourses(req, res) {
   try {
-    const courses = await Course.find({ status: "ACTIVE" }).sort({ name: 1 }).exec();
-    return res.json({ success: true, courses });
+    const courses = await Course.find({ status: "ACTIVE" }).sort({ name: 1 }).lean().exec();
+    const pointRules = await CoursePointRule.find({}).lean().exec();
+    const ruleMap = new Map();
+    pointRules.forEach((r) => {
+      ruleMap.set(String(r.courseId), r);
+      if (r.courseName) ruleMap.set(r.courseName.toLowerCase(), r);
+    });
+
+    const enrichedCourses = courses.map((course) => {
+      let levels = Array.isArray(course.levels) && course.levels.length > 0 ? course.levels : [];
+      const rule = ruleMap.get(String(course._id)) || ruleMap.get((course.name || "").toLowerCase());
+
+      if (levels.length === 0 && rule?.levelPoints) {
+        const entries = Object.entries(rule.levelPoints);
+        if (entries.length > 0) {
+          levels = entries.map(([lvlName, pts], idx) => ({
+            levelNumber: idx,
+            levelName: lvlName,
+            rewardPoints: Number(pts) || (idx + 1) * 100,
+            prerequisites: idx > 0 ? `${course.name} - ${entries[idx - 1][0]}` : "None",
+            assessmentType: idx % 2 === 0 ? "MCQ" : "Manual Grading",
+            topics: [
+              `Foundations of ${course.name}`,
+              `Core methods & technical framework`,
+              `Practice exercises and assessment`,
+            ],
+          }));
+        }
+      }
+
+      if (levels.length === 0) {
+        levels = [
+          {
+            levelNumber: 0,
+            levelName: "Level 0",
+            rewardPoints: 100,
+            prerequisites: "None",
+            assessmentType: "MCQ",
+            topics: [`Introduction to ${course.name}`, "Fundamentals & Basics"],
+          },
+          {
+            levelNumber: 1,
+            levelName: "Level 1",
+            rewardPoints: 300,
+            prerequisites: `${course.name} - Level 0`,
+            assessmentType: "Manual Grading",
+            topics: [`Advanced Applications in ${course.name}`, "Practical Project Assessment"],
+          },
+        ];
+      }
+
+      return {
+        ...course,
+        levels,
+        levelCount: levels.length,
+        pointRule: rule || null,
+      };
+    });
+
+    return res.json({ success: true, courses: enrichedCourses });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -15,10 +74,46 @@ export async function getCourses(req, res) {
 
 export async function createCourse(req, res) {
   try {
-    const { name, description, category, prerequisites, clusterAccess } = req.body;
+    const { name, description, category, prerequisites, clusterAccess, levels, levelPoints } = req.body;
     if (!name) return res.status(400).json({ success: false, message: "Course name is required" });
 
     const courseId = `CRS-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    let formattedLevels = [];
+    if (Array.isArray(levels) && levels.length > 0) {
+      formattedLevels = levels.map((lvl, idx) => ({
+        levelNumber: lvl.levelNumber !== undefined ? Number(lvl.levelNumber) : idx,
+        levelName: lvl.levelName || `Level ${idx}`,
+        rewardPoints: Number(lvl.rewardPoints) || 100,
+        prerequisites: lvl.prerequisites || (idx > 0 ? `Level ${idx - 1}` : "None"),
+        assessmentType: lvl.assessmentType || (idx % 2 === 0 ? "MCQ" : "Manual Grading"),
+        topics: Array.isArray(lvl.topics)
+          ? lvl.topics.map((t) => String(t).trim()).filter(Boolean)
+          : typeof lvl.topics === "string"
+          ? lvl.topics.split("\n").map((t) => t.trim()).filter(Boolean)
+          : [],
+      }));
+    } else {
+      formattedLevels = [
+        {
+          levelNumber: 0,
+          levelName: "Level 0",
+          rewardPoints: 100,
+          prerequisites: "None",
+          assessmentType: "MCQ",
+          topics: [`Introduction to ${name}`, "Fundamental Principles & Concepts"],
+        },
+        {
+          levelNumber: 1,
+          levelName: "Level 1",
+          rewardPoints: 300,
+          prerequisites: `${name} - Level 0`,
+          assessmentType: "Manual Grading",
+          topics: [`Applied Methods in ${name}`, "Comprehensive Project & Practical Evaluation"],
+        },
+      ];
+    }
+
     const course = await Course.create({
       courseId,
       name: name.trim(),
@@ -27,7 +122,32 @@ export async function createCourse(req, res) {
       prerequisites: Array.isArray(prerequisites) ? prerequisites : [],
       clusterAccess: clusterAccess || "Both",
       status: "ACTIVE",
+      levels: formattedLevels,
     });
+
+    const sanitizedLevelPoints = {};
+    if (levelPoints && typeof levelPoints === "object") {
+      Object.keys(levelPoints).forEach((k) => {
+        const safeK = String(k).replace(/\.0\b/g, "").replace(/\./g, "-");
+        sanitizedLevelPoints[safeK] = Number(levelPoints[k]) || 0;
+      });
+    } else {
+      formattedLevels.forEach((lvl) => {
+        const safeK = String(lvl.levelName).replace(/\.0\b/g, "").replace(/\./g, "-");
+        sanitizedLevelPoints[safeK] = lvl.rewardPoints || 100;
+      });
+    }
+
+    await CoursePointRule.findOneAndUpdate(
+      { courseId: course._id },
+      {
+        courseId: course._id,
+        courseName: course.name,
+        levelPoints: sanitizedLevelPoints,
+        clusterAccess: course.clusterAccess,
+      },
+      { upsert: true, new: true }
+    );
 
     return res.status(201).json({ success: true, course });
   } catch (err) {
@@ -41,7 +161,7 @@ export async function createCourse(req, res) {
 export async function updateCourse(req, res) {
   try {
     const { id } = req.params;
-    const { name, description, category, clusterAccess, levelPoints } = req.body;
+    const { name, description, category, clusterAccess, levelPoints, levels } = req.body;
 
     let course = null;
     if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
@@ -55,15 +175,37 @@ export async function updateCourse(req, res) {
     if (category) course.category = category.trim();
     if (clusterAccess) course.clusterAccess = clusterAccess.trim();
 
+    if (Array.isArray(levels) && levels.length > 0) {
+      course.levels = levels.map((lvl, idx) => ({
+        levelNumber: lvl.levelNumber !== undefined ? Number(lvl.levelNumber) : idx,
+        levelName: lvl.levelName || `Level ${idx}`,
+        rewardPoints: Number(lvl.rewardPoints) || 100,
+        prerequisites: lvl.prerequisites || (idx > 0 ? `Level ${idx - 1}` : "None"),
+        assessmentType: lvl.assessmentType || (idx % 2 === 0 ? "MCQ" : "Manual Grading"),
+        topics: Array.isArray(lvl.topics)
+          ? lvl.topics.map((t) => String(t).trim()).filter(Boolean)
+          : typeof lvl.topics === "string"
+          ? lvl.topics.split("\n").map((t) => t.trim()).filter(Boolean)
+          : [],
+      }));
+    }
+
     await course.save();
 
-    if (levelPoints && typeof levelPoints === "object") {
-      const sanitizedLevelPoints = {};
+    const sanitizedLevelPoints = {};
+    if (levelPoints && typeof levelPoints === "object" && Object.keys(levelPoints).length > 0) {
       Object.keys(levelPoints).forEach((k) => {
         const safeK = String(k).replace(/\.0\b/g, "").replace(/\./g, "-");
         sanitizedLevelPoints[safeK] = Number(levelPoints[k]) || 0;
       });
+    } else if (Array.isArray(course.levels) && course.levels.length > 0) {
+      course.levels.forEach((lvl) => {
+        const safeK = String(lvl.levelName).replace(/\.0\b/g, "").replace(/\./g, "-");
+        sanitizedLevelPoints[safeK] = lvl.rewardPoints || 100;
+      });
+    }
 
+    if (Object.keys(sanitizedLevelPoints).length > 0) {
       await CoursePointRule.findOneAndUpdate(
         { courseId: course._id },
         {
@@ -114,12 +256,48 @@ export async function getUserCourseProgress(req, res) {
 
 export async function updateCourseProgress(req, res) {
   try {
-    const { userId, courseId, newLevel } = req.body;
+    const { userId, courseId, newLevel, pointsEarned } = req.body;
     const targetUserId = userId || req.user._id;
 
     let progress = null;
     await withTransaction(async (session) => {
       progress = await updateUserCourseLevel(targetUserId, courseId, newLevel, session);
+
+      // If completing a level, award reward points and activity points
+      if (newLevel && !["NULL", "NIL", ""].includes(String(newLevel).toUpperCase())) {
+        const user = await User.findById(targetUserId, null, { session }).exec();
+        if (user) {
+          let points = Number(pointsEarned) || 0;
+          if (!points) {
+            const course = await Course.findById(courseId, null, { session }).exec();
+            if (course && Array.isArray(course.levels)) {
+              const matchedLvl = course.levels.find(
+                (l) =>
+                  String(l.levelName).toUpperCase() === String(newLevel).toUpperCase() ||
+                  String(l.levelNumber) === String(newLevel).replace(/\D/g, "")
+              );
+              if (matchedLvl?.rewardPoints) points = Number(matchedLvl.rewardPoints);
+            }
+            if (!points) {
+              const rule = await CoursePointRule.findOne({ courseId }, null, { session }).exec();
+              if (rule?.levelPoints) {
+                const sanitizedLvl = String(newLevel).replace(/\.0\b/g, "").replace(/\./g, "-");
+                points =
+                  Number(
+                    rule.levelPoints.get
+                      ? rule.levelPoints.get(newLevel) || rule.levelPoints.get(sanitizedLvl)
+                      : rule.levelPoints[newLevel] || rule.levelPoints[sanitizedLvl]
+                  ) || 100;
+              }
+            }
+          }
+          if (points > 0) {
+            user.rewardPoints = (user.rewardPoints || 0) + points;
+            user.activityPoints = (user.activityPoints || 0) + points;
+            await user.save({ session });
+          }
+        }
+      }
     });
 
     return res.json({ success: true, progress });
