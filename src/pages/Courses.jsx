@@ -5,250 +5,556 @@ import { useAuth } from "../context/AuthContext";
 import UnifiedLoader from "../components/UnifiedLoader";
 import "./Courses.css";
 
-// Dynamic SVG illustrated banners tailored to course category / topic
-function CourseBannerGraphic({ course }) {
+// Precise domain-aware thematic classifier for educational courses
+function detectCourseTheme(course) {
   const name = (course.name || "").toLowerCase();
-  const category = (course.category || "").toLowerCase();
 
-  // Pick themed visual
-  let theme = "general";
-  if (name.includes("system admin") || name.includes("backup") || name.includes("storage")) {
-    theme = "sysadmin";
-  } else if (name.includes("weld") || name.includes("assembly") || name.includes("manufacturing") || name.includes("prototype")) {
-    theme = "welding";
-  } else if (name.includes("plc") || name.includes("automation") || name.includes("industrial")) {
-    theme = "plc";
-  } else if (name.includes("network") || name.includes("cyber") || name.includes("cloud")) {
-    theme = "networking";
-  } else if (name.includes("c++") || name.includes("cpp")) {
-    theme = "cpp";
-  } else if (name.includes("c programming") || name === "c" || name.startsWith("c -") || name.includes("code debug")) {
-    theme = "c";
-  } else if (name.includes("python") || name.includes("machine learning") || name.includes("deep learning") || name.includes("ai")) {
-    theme = "python";
-  } else if (name.includes("java") && !name.includes("script")) {
-    theme = "java";
-  } else if (name.includes("ui") || name.includes("ux") || name.includes("creative")) {
-    theme = "uiux";
-  } else if (name.includes("circuit") || name.includes("analog") || name.includes("digital electronic") || name.includes("vlsi") || name.includes("pcb")) {
-    theme = "electronics";
-  } else if (category.includes("hardware") || name.includes("electrical") || name.includes("modelling")) {
-    theme = "hardware";
-  } else if (category.includes("software") || name.includes("database") || name.includes("dbms") || name.includes("data structure") || name.includes("react") || name.includes("node")) {
-    theme = "software";
-  }
+  // 1. C++ vs C Programming
+  if (/\b(c\+\+|cpp|programming c\+\+)\b/i.test(name)) return "cpp";
+  if (/\b(c programming|code debugging)\b/i.test(name) || name === "c" || name.startsWith("c -") || name.startsWith("c programming")) return "c";
+
+  // 2. Python & AI / Deep Learning (word bounded to prevent matching "affairs")
+  if (/\b(python|deep learning|machine learning|artificial intelligence)\b/i.test(name) || name.startsWith("ai -")) return "python_ai";
+
+  // 3. Java Programming
+  if (/\b(java)\b/i.test(name) && !/\b(script)\b/i.test(name)) return "java";
+
+  // 4. Web, Frontend & UI/UX (word bounded so "circuit" does not match "ui")
+  if (/\b(html|css|javascript|java script|react|nodejs|creative media)\b/i.test(name) || (/\b(ui|ux)\b/i.test(name) && !/\b(circuit)\b/i.test(name))) return "web_uiux";
+
+  // 5. Data Science & Analytics
+  if (/\b(data science|data visualization)\b/i.test(name)) return "datascience";
+
+  // 6. Databases & Data Structures
+  if (/\b(dbms|database|data structure|data structures|sql)\b/i.test(name)) return "database";
+
+  // 7. Biotechnology, Food Science & Life Sciences
+  if (/\b(bio|biochemical|bioinformatics|bioinstrumentation|bioprocess|biological|culturing|tissue|food|microbiology|preservation|nutrition|harvest|biotechnology)\b/i.test(name)) return "biotech";
+
+  // 8. Circuits, Electronics & Embedded (Prevents "circuit debugging" from matching UI/UX)
+  if (/\b(circuit|circuits|analog|digital electronic|electronics|vlsi|pcb|electrical|embedded|wiring|eee)\b/i.test(name)) return "electronics";
+
+  // 9. Automation & PLC
+  if (/\b(plc|automation|industrial automation)\b/i.test(name)) return "automation_plc";
+
+  // 10. Mechanical, Fabrication & Materials
+  if (/\b(weld|welding|assembly|materials and manufacturing|mechanical|modelling|prototype|simulation|ansys|fea)\b/i.test(name)) return "mechanical";
+
+  // 11. Civil & Structural Engineering
+  if (/\b(construction|irrigation|structural|surveying)\b/i.test(name)) return "civil";
+
+  // 12. Cloud, SysAdmin, Linux, Security & Version Control
+  if (/\b(system admin|system administration|backup|storage|cloud|network|networking|cyber|cybersecurity|linux|git|github|version control|cs cluster)\b/i.test(name)) return "cloud_sysadmin";
+
+  // 13. Mathematics
+  if (/\b(algebra|calculus|differential|computational thinking)\b/i.test(name)) return "math";
+
+  // 14. Aptitude & Logical Reasoning
+  if (/\b(aptitude|logical|problem solving|reasoning|brainstorming)\b/i.test(name)) return "aptitude";
+
+  // 15. Institutional Regulations, Governance, Affairs & Patents ("Autonomy Affairs" gets this!)
+  if (/\b(regulation|regulations|autonomy|affairs|patent|ipr|laws|counselling)\b/i.test(name)) return "regulations";
+
+  // 16. Hackathons & Competitions
+  if (/\b(challenge|innovation|yukti|gp challenge|project based)\b/i.test(name)) return "innovation";
+
+  // 17. Languages & Soft Skills
+  if (/\b(communication|german|language|leadership|physical fitness|yoga|fitness)\b/i.test(name)) return "general";
+
+  return "general";
+}
+
+// Dynamic high-fidelity illustrated banners tailored directly to course subject
+function CourseBannerGraphic({ course }) {
+  const theme = detectCourseTheme(course);
+  const totalLevels = (course.levels || []).length || 1;
 
   const renderBannerContent = () => {
     switch (theme) {
-      case "sysadmin":
+      case "biotech":
         return (
-          <div className="banner-art-wrap sysadmin-banner">
-            <div className="banner-tag">SYSTEM ADMINISTRATOR</div>
+          <div className="banner-art-wrap biotech-banner">
+            <div className="banner-tag">🧬 BIOTECHNOLOGY</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="20" y="25" width="70" height="75" rx="6" fill="#1e3a8a" opacity="0.8" />
-              <rect x="25" y="32" width="60" height="8" rx="2" fill="#60a5fa" />
-              <rect x="25" y="46" width="60" height="8" rx="2" fill="#60a5fa" />
-              <rect x="25" y="60" width="60" height="8" rx="2" fill="#60a5fa" />
-              <circle cx="32" cy="78" r="3" fill="#34d399" />
-              <circle cx="42" cy="78" r="3" fill="#38bdf8" />
-              <circle cx="52" cy="78" r="3" fill="#fbbf24" />
-              {/* Desktop workstation */}
-              <rect x="120" y="30" width="90" height="55" rx="5" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
-              <line x1="165" y1="85" x2="165" y2="100" stroke="#94a3b8" strokeWidth="4" />
-              <line x1="145" y1="100" x2="185" y2="100" stroke="#94a3b8" strokeWidth="3" />
-              <path d="M135 48 L150 62 L135 74" stroke="#34d399" strokeWidth="2.5" fill="none" />
-              <line x1="158" y1="74" x2="175" y2="74" stroke="#38bdf8" strokeWidth="2.5" />
-              {/* Server nodes */}
-              <circle cx="255" cy="50" r="18" fill="#1e293b" stroke="#818cf8" strokeWidth="2" />
-              <circle cx="255" cy="50" r="8" fill="#6366f1" />
-              <path d="M210 50 L237 50" stroke="#6366f1" strokeDasharray="3 3" strokeWidth="2" />
-            </svg>
-          </div>
-        );
-      case "welding":
-        return (
-          <div className="banner-art-wrap welding-banner">
-            <div className="banner-tag">FABRICATION & WELDING</div>
-            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <path d="M40 95 L110 30 L130 50 L60 115 Z" fill="#334155" stroke="#f59e0b" strokeWidth="2" />
-              <circle cx="150" cy="50" r="28" fill="url(#sparkGlow)" />
-              <path d="M150 50 L180 30 M150 50 L195 55 M150 50 L170 80 M150 50 L140 10 M150 50 L190 70 M150 50 L130 85" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />
-              <rect x="180" y="70" width="100" height="30" rx="3" fill="#1e293b" stroke="#64748b" strokeWidth="2" />
+              {/* Background grid */}
               <defs>
-                <radialGradient id="sparkGlow">
-                  <stop offset="0%" stopColor="#fef08a" stopOpacity="0.9" />
-                  <stop offset="60%" stopColor="#f97316" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
-                </radialGradient>
+                <pattern id="bioGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#10b981" strokeWidth="0.5" opacity="0.15" />
+                </pattern>
               </defs>
+              <rect width="300" height="120" fill="url(#bioGrid)" />
+              {/* Chemical Benzene Ring */}
+              <polygon points="50,45 68,34 86,45 86,67 68,78 50,67" stroke="#34d399" strokeWidth="1.8" fill="rgba(16, 185, 129, 0.12)" />
+              <circle cx="68" cy="56" r="12" stroke="#34d399" strokeWidth="1.2" strokeDasharray="3 2" fill="none" />
+              {/* Laboratory Flask with Liquid */}
+              <path d="M98 42 L106 42 L106 52 L120 74 C122 78 119 82 114 82 L90 82 C85 82 82 78 84 74 L98 52 Z" fill="#047857" stroke="#6ee7b7" strokeWidth="2" />
+              <path d="M89 74 Q102 70 115 74 L114 82 L90 82 Z" fill="#34d399" opacity="0.6" />
+              <circle cx="100" cy="68" r="2.5" fill="#ffffff" opacity="0.8" />
+              <circle cx="106" cy="62" r="1.8" fill="#ffffff" opacity="0.6" />
+              {/* DNA Double Helix */}
+              <path d="M150 30 Q170 60 190 30 T230 30 T270 30" stroke="#38bdf8" strokeWidth="2.5" fill="none" />
+              <path d="M150 75 Q170 45 190 75 T230 75 T270 75" stroke="#34d399" strokeWidth="2.5" fill="none" />
+              {/* DNA Rungs */}
+              <line x1="160" y1="42" x2="160" y2="63" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2 2" />
+              <line x1="180" y1="36" x2="180" y2="69" stroke="#cbd5e1" strokeWidth="1.5" />
+              <line x1="200" y1="42" x2="200" y2="63" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2 2" />
+              <line x1="220" y1="36" x2="220" y2="69" stroke="#cbd5e1" strokeWidth="1.5" />
+              <line x1="240" y1="42" x2="240" y2="63" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="2 2" />
+              <line x1="260" y1="36" x2="260" y2="69" stroke="#cbd5e1" strokeWidth="1.5" />
+              <circle cx="160" cy="42" r="3" fill="#38bdf8" />
+              <circle cx="160" cy="63" r="3" fill="#34d399" />
+              <circle cx="200" cy="42" r="3" fill="#38bdf8" />
+              <circle cx="200" cy="63" r="3" fill="#34d399" />
+              <circle cx="240" cy="42" r="3" fill="#38bdf8" />
+              <circle cx="240" cy="63" r="3" fill="#34d399" />
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
-      case "plc":
+
+      case "electronics":
         return (
-          <div className="banner-art-wrap plc-banner">
-            <div className="banner-tag">PLC PROGRAMMING</div>
+          <div className="banner-art-wrap electronics-banner">
+            <div className="banner-tag">⚡ CIRCUITS & ELECTRONICS</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="25" y="15" width="250" height="90" rx="8" fill="#1e293b" stroke="#3b82f6" strokeWidth="2" />
-              <rect x="40" y="25" width="80" height="70" rx="4" fill="#0f172a" stroke="#64748b" />
-              <line x1="50" y1="38" x2="110" y2="38" stroke="#10b981" strokeWidth="2" />
-              <line x1="50" y1="50" x2="95" y2="50" stroke="#3b82f6" strokeWidth="2" />
-              <line x1="50" y1="62" x2="105" y2="62" stroke="#f59e0b" strokeWidth="2" />
-              <line x1="50" y1="74" x2="85" y2="74" stroke="#ec4899" strokeWidth="2" />
-              {/* Terminal modules */}
-              <rect x="140" y="25" width="30" height="70" rx="2" fill="#334155" />
-              <circle cx="155" cy="35" r="4" fill="#ef4444" />
-              <circle cx="155" cy="50" r="4" fill="#10b981" />
-              <circle cx="155" cy="65" r="4" fill="#3b82f6" />
-              <circle cx="155" cy="80" r="4" fill="#fbbf24" />
-              <rect x="180" y="25" width="80" height="70" rx="4" fill="#0284c7" opacity="0.2" stroke="#38bdf8" />
-              <path d="M195 60 L210 45 L225 60 L245 40" stroke="#38bdf8" strokeWidth="2" fill="none" />
+              {/* PCB Circuit Traces */}
+              <path d="M25 40 L60 40 L80 60 L120 60" stroke="#38bdf8" strokeWidth="2" fill="none" />
+              <circle cx="25" cy="40" r="3" fill="#38bdf8" />
+              <path d="M40 85 L90 85 L105 70 L120 70" stroke="#34d399" strokeWidth="2" fill="none" />
+              <circle cx="40" cy="85" r="3" fill="#34d399" />
+              {/* Microcontroller Package */}
+              <rect x="120" y="32" width="60" height="56" rx="4" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="130" cy="42" r="2.5" fill="#f59e0b" />
+              <text x="135" y="64" fill="#38bdf8" fontFamily="monospace" fontSize="11" fontWeight="bold">IC</text>
+              {/* IC Pins */}
+              <line x1="128" y1="24" x2="128" y2="32" stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="140" y1="24" x2="140" y2="32" stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="152" y1="24" x2="152" y2="32" stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="164" y1="24" x2="164" y2="32" stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="128" y1="88" x2="128" y2="96" stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="140" y1="88" x2="140" y2="96" stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="152" y1="88" x2="152" y2="96" stroke="#f59e0b" strokeWidth="2.5" />
+              <line x1="164" y1="88" x2="164" y2="96" stroke="#f59e0b" strokeWidth="2.5" />
+              {/* Oscilloscope Waveform */}
+              <rect x="195" y="30" width="80" height="60" rx="4" fill="#091e3a" stroke="#0284c7" strokeWidth="1.5" />
+              <path d="M200 60 L212 60 L218 42 L226 78 L234 42 L240 60 L270 60" stroke="#22c55e" strokeWidth="2" fill="none" />
+              <line x1="180" y1="60" x2="195" y2="60" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 2" />
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
-      case "networking":
-        return (
-          <div className="banner-art-wrap networking-banner">
-            <div className="banner-tag">NETWORKING & CLOUD</div>
-            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <circle cx="150" cy="60" r="35" stroke="#10b981" strokeWidth="2" strokeDasharray="4 2" fill="#064e3b" fillOpacity="0.4" />
-              <circle cx="150" cy="60" r="14" fill="#10b981" />
-              {/* Satellite nodes */}
-              <circle cx="65" cy="40" r="10" fill="#3b82f6" />
-              <line x1="75" y1="45" x2="136" y2="55" stroke="#34d399" strokeWidth="2" />
-              <circle cx="70" cy="85" r="8" fill="#8b5cf6" />
-              <line x1="78" y1="83" x2="137" y2="65" stroke="#34d399" strokeWidth="2" />
-              <circle cx="230" cy="35" r="9" fill="#06b6d4" />
-              <line x1="222" y1="40" x2="164" y2="55" stroke="#34d399" strokeWidth="2" />
-              <circle cx="235" cy="80" r="11" fill="#f59e0b" />
-              <line x1="224" y1="76" x2="164" y2="65" stroke="#34d399" strokeWidth="2" />
-            </svg>
-          </div>
-        );
+
       case "c":
         return (
           <div className="banner-art-wrap c-banner">
-            <div className="banner-tag">C PROGRAMMING</div>
+            <div className="banner-tag">💻 C PROGRAMMING</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="25" y="20" width="135" height="80" rx="6" fill="#042f2e" stroke="#14b8a6" strokeWidth="2" />
-              <path d="M40 42 L55 55 L40 68" stroke="#2dd4bf" strokeWidth="2.5" fill="none" />
-              <text x="65" y="55" fill="#5eead4" fontFamily="monospace" fontSize="12.5" fontWeight="bold">#include &lt;stdio.h&gt;</text>
-              <text x="40" y="80" fill="#99f6e4" fontFamily="monospace" fontSize="11" fontWeight="bold">printf("C Foundation");</text>
-              {/* Pure C Emblem Badge */}
-              <circle cx="230" cy="60" r="32" fill="#0f766e" stroke="#2dd4bf" strokeWidth="3" />
-              <text x="219" y="72" fill="#ffffff" fontFamily="sans-serif" fontSize="34" fontWeight="900">C</text>
+              {/* Hexagonal C Logo Emblem */}
+              <polygon points="150,22 185,42 185,82 150,102 115,82 115,42" fill="#042f2e" stroke="#14b8a6" strokeWidth="2.5" />
+              <text x="135" y="74" fill="#ffffff" fontFamily="sans-serif" fontSize="38" fontWeight="900">C</text>
+              {/* Pointer & Memory Nodes */}
+              <rect x="35" y="38" width="60" height="44" rx="4" fill="#0f172a" stroke="#2dd4bf" strokeWidth="1.5" />
+              <text x="44" y="55" fill="#5eead4" fontFamily="monospace" fontSize="11" fontWeight="bold">*ptr</text>
+              <text x="44" y="72" fill="#94a3b8" fontFamily="monospace" fontSize="9">0x7FFE</text>
+              <path d="M95 60 L115 60" stroke="#2dd4bf" strokeWidth="2" markerEnd="url(#arrow)" />
+              {/* Function Block */}
+              <rect x="205" y="38" width="65" height="44" rx="4" fill="#0f172a" stroke="#2dd4bf" strokeWidth="1.5" />
+              <text x="215" y="55" fill="#5eead4" fontFamily="monospace" fontSize="10.5" fontWeight="bold">main()</text>
+              <text x="215" y="72" fill="#38bdf8" fontFamily="monospace" fontSize="9">{`{ ... }`}</text>
+              <path d="M185 60 L205 60" stroke="#2dd4bf" strokeWidth="2" />
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
+
       case "cpp":
         return (
           <div className="banner-art-wrap cpp-banner">
-            <div className="banner-tag">C++ PROGRAMMING</div>
+            <div className="banner-tag">🚀 C++ PROGRAMMING</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="25" y="20" width="135" height="80" rx="6" fill="#0f172a" stroke="#60a5fa" strokeWidth="2" />
-              <path d="M40 42 L55 55 L40 68" stroke="#34d399" strokeWidth="2.5" fill="none" />
-              <text x="65" y="55" fill="#93c5fd" fontFamily="monospace" fontSize="12.5" fontWeight="bold">#include &lt;iostream&gt;</text>
-              <text x="40" y="80" fill="#a5b4fc" fontFamily="monospace" fontSize="11" fontWeight="bold">std::cout &lt;&lt; "C++";</text>
-              {/* Distinct C++ Badge */}
-              <circle cx="230" cy="60" r="32" fill="#1e40af" stroke="#93c5fd" strokeWidth="3" />
-              <text x="210" y="69" fill="#ffffff" fontFamily="sans-serif" fontSize="24" fontWeight="900">C++</text>
+              {/* Distinct C++ Shield */}
+              <polygon points="150,20 190,42 190,82 150,104 110,82 110,42" fill="#1e3a8a" stroke="#60a5fa" strokeWidth="2.5" />
+              <text x="123" y="73" fill="#ffffff" fontFamily="sans-serif" fontSize="32" fontWeight="900">C++</text>
+              {/* Template & STL Nodes */}
+              <rect x="30" y="35" width="68" height="50" rx="4" fill="#0f172a" stroke="#93c5fd" strokeWidth="1.5" />
+              <text x="38" y="54" fill="#93c5fd" fontFamily="monospace" fontSize="10.5" fontWeight="bold">std::cout</text>
+              <text x="38" y="72" fill="#34d399" fontFamily="monospace" fontSize="10">&lt;&lt; "OOP";</text>
+              {/* Object Class Node */}
+              <rect x="202" y="35" width="72" height="50" rx="4" fill="#0f172a" stroke="#a5b4fc" strokeWidth="1.5" />
+              <text x="210" y="54" fill="#a5b4fc" fontFamily="monospace" fontSize="10.5" fontWeight="bold">class&lt;T&gt;</text>
+              <text x="210" y="72" fill="#f87171" fontFamily="monospace" fontSize="9.5">virtual ~</text>
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
-      case "python":
+
+      case "python_ai":
         return (
           <div className="banner-art-wrap python-banner">
-            <div className="banner-tag">PYTHON & MACHINE LEARNING</div>
+            <div className="banner-tag">🐍 PYTHON & AI</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="25" y="20" width="130" height="80" rx="6" fill="#0f172a" stroke="#fbbf24" strokeWidth="2" />
-              <text x="40" y="45" fill="#38bdf8" fontFamily="monospace" fontSize="13" fontWeight="bold">import numpy</text>
-              <text x="40" y="65" fill="#fbbf24" fontFamily="monospace" fontSize="13" fontWeight="bold">import pandas</text>
-              <text x="40" y="85" fill="#34d399" fontFamily="monospace" fontSize="13" fontWeight="bold">model.fit(X, y)</text>
-              {/* Python Double Snake */}
-              <path d="M210 30 C210 25, 230 25, 230 30 L230 45 L245 45 C250 45, 250 65, 245 65 L235 65 L235 55 L215 55 C210 55, 210 35, 210 30 Z" fill="#38bdf8" />
-              <path d="M230 90 C230 95, 210 95, 210 90 L210 75 L195 75 C190 75, 190 55, 195 55 L205 55 L205 65 L225 65 C230 65, 230 85, 230 90 Z" fill="#fbbf24" />
+              {/* Python Twin Curves Emblem */}
+              <g transform="translate(60, 28) scale(0.9)">
+                <path d="M25 5 C12 5 5 12 5 22 L5 30 L22 30 L22 35 L7 35 C3 35 0 39 0 47 C0 55 4 60 12 60 L18 60 L18 52 C18 44 24 38 32 38 L42 38 C47 38 52 33 52 28 L52 15 C52 7 45 5 35 5 Z" fill="#38bdf8" />
+                <circle cx="15" cy="15" r="2.5" fill="#ffffff" />
+                <path d="M27 65 C40 65 47 58 47 48 L47 40 L30 40 L30 35 L45 35 C49 35 52 31 52 23 C52 15 48 10 40 10 L34 10 L34 18 C34 26 28 32 20 32 L10 32 C5 32 0 37 0 42 L0 55 C0 63 7 65 17 65 Z" fill="#fbbf24" />
+                <circle cx="37" cy="55" r="2.5" fill="#0f172a" />
+              </g>
+              {/* Neural Network Nodes */}
+              <circle cx="160" cy="38" r="7" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="160" cy="65" r="7" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="160" cy="92" r="7" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="210" cy="48" r="7" fill="#fbbf24" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="210" cy="80" r="7" fill="#fbbf24" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="260" cy="65" r="9" fill="#34d399" stroke="#ffffff" strokeWidth="2" />
+              {/* Synapse connections */}
+              <line x1="167" y1="38" x2="203" y2="48" stroke="#60a5fa" strokeWidth="1.5" opacity="0.6" />
+              <line x1="167" y1="38" x2="203" y2="80" stroke="#60a5fa" strokeWidth="1" opacity="0.4" />
+              <line x1="167" y1="65" x2="203" y2="48" stroke="#60a5fa" strokeWidth="1.5" opacity="0.6" />
+              <line x1="167" y1="65" x2="203" y2="80" stroke="#60a5fa" strokeWidth="1.5" opacity="0.6" />
+              <line x1="167" y1="92" x2="203" y2="80" stroke="#60a5fa" strokeWidth="1.5" opacity="0.6" />
+              <line x1="217" y1="48" x2="251" y2="65" stroke="#fbbf24" strokeWidth="2" />
+              <line x1="217" y1="80" x2="251" y2="65" stroke="#fbbf24" strokeWidth="2" />
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
+
       case "java":
         return (
           <div className="banner-art-wrap java-banner">
-            <div className="banner-tag">JAVA PROGRAMMING</div>
+            <div className="banner-tag">☕ JAVA PROGRAMMING</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="30" y="20" width="125" height="80" rx="6" fill="#0f172a" stroke="#f97316" strokeWidth="2" />
-              <text x="42" y="45" fill="#f97316" fontFamily="monospace" fontSize="13" fontWeight="bold">public class</text>
-              <text x="42" y="65" fill="#38bdf8" fontFamily="monospace" fontSize="13" fontWeight="bold">App &#123;</text>
-              <text x="55" y="83" fill="#a78bfa" fontFamily="monospace" fontSize="12">void main()</text>
-              {/* Coffee steam art */}
-              <ellipse cx="225" cy="85" rx="28" ry="10" fill="#7c2d12" />
-              <rect x="202" y="55" width="46" height="30" rx="4" fill="#ea580c" />
-              <path d="M248 60 C258 60, 258 75, 248 78" stroke="#ea580c" strokeWidth="4" fill="none" />
-              <path d="M215 48 Q218 35, 222 45 Q226 35, 230 45" stroke="#fed7aa" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+              {/* Coffee Cup & Steam */}
+              <rect x="70" y="52" width="46" height="34" rx="4" fill="#ea580c" stroke="#fed7aa" strokeWidth="1.5" />
+              <path d="M116 58 C126 58 126 74 116 78" stroke="#fed7aa" strokeWidth="3" fill="none" />
+              <ellipse cx="93" cy="88" rx="28" ry="7" fill="#7c2d12" stroke="#ea580c" strokeWidth="1" />
+              <path d="M84 45 Q88 32 92 42 Q96 30 100 42" stroke="#fed7aa" strokeWidth="2" strokeLinecap="round" fill="none" />
+              {/* JVM Architecture Block */}
+              <rect x="145" y="32" width="115" height="60" rx="6" fill="#18181b" stroke="#f97316" strokeWidth="1.5" />
+              <text x="156" y="52" fill="#f97316" fontFamily="monospace" fontSize="11" fontWeight="bold">JVM Architecture</text>
+              <rect x="155" y="60" width="44" height="22" rx="3" fill="#27272a" stroke="#fb923c" strokeWidth="1" />
+              <text x="160" y="75" fill="#cbd5e1" fontFamily="sans-serif" fontSize="9">Bytecode</text>
+              <rect x="206" y="60" width="44" height="22" rx="3" fill="#27272a" stroke="#38bdf8" strokeWidth="1" />
+              <text x="215" y="75" fill="#38bdf8" fontFamily="sans-serif" fontSize="9">JIT Ops</text>
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
-      case "uiux":
+
+      case "web_uiux":
         return (
-          <div className="banner-art-wrap uiux-banner">
-            <div className="banner-tag">UI / UX DESIGN</div>
+          <div className="banner-art-wrap web-banner">
+            <div className="banner-tag">🎨 WEB & UI/UX DESIGN</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="40" y="15" width="60" height="90" rx="8" fill="#1e1b4b" stroke="#818cf8" strokeWidth="2" />
-              <rect x="48" y="28" width="44" height="22" rx="3" fill="#6366f1" />
-              <circle cx="70" cy="38" r="6" fill="#ffffff" />
-              <rect x="48" y="55" width="44" height="6" rx="2" fill="#cbd5e1" />
-              <rect x="48" y="65" width="44" height="6" rx="2" fill="#cbd5e1" />
-              <rect x="55" y="78" width="30" height="12" rx="3" fill="#a855f7" />
-              {/* Wireframe Desktop */}
-              <rect x="130" y="20" width="130" height="80" rx="6" fill="#0f172a" stroke="#c084fc" strokeWidth="2" />
-              <rect x="140" y="30" width="32" height="60" rx="3" fill="#312e81" />
-              <rect x="180" y="32" width="70" height="15" rx="3" fill="#818cf8" opacity="0.6" />
-              <rect x="180" y="52" width="32" height="35" rx="3" fill="#4c1d95" />
-              <rect x="218" y="52" width="32" height="35" rx="3" fill="#4c1d95" />
+              {/* Responsive Browser Canvas */}
+              <rect x="40" y="24" width="130" height="74" rx="6" fill="#0f172a" stroke="#818cf8" strokeWidth="2" />
+              <circle cx="52" cy="33" r="3" fill="#f87171" />
+              <circle cx="60" cy="33" r="3" fill="#fbbf24" />
+              <circle cx="68" cy="33" r="3" fill="#34d399" />
+              <rect x="50" y="44" width="40" height="44" rx="3" fill="#312e81" />
+              <rect x="98" y="44" width="62" height="14" rx="2" fill="#6366f1" opacity="0.6" />
+              <rect x="98" y="63" width="62" height="8" rx="2" fill="#cbd5e1" opacity="0.5" />
+              <rect x="98" y="75" width="38" height="12" rx="3" fill="#ec4899" />
+              {/* Mobile Device Frame */}
+              <rect x="190" y="20" width="50" height="82" rx="7" fill="#1e1b4b" stroke="#c084fc" strokeWidth="2" />
+              <rect x="197" y="32" width="36" height="28" rx="3" fill="#6366f1" />
+              <rect x="197" y="66" width="36" height="6" rx="2" fill="#cbd5e1" />
+              <circle cx="215" cy="94" r="3" fill="#c084fc" />
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
-      case "electronics":
-      case "hardware":
+
+      case "database":
         return (
-          <div className="banner-art-wrap electronics-banner">
-            <div className="banner-tag">HARDWARE & ELECTRONICS</div>
+          <div className="banner-art-wrap database-banner">
+            <div className="banner-tag">🗄️ DATABASES & DATA</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="30" y="20" width="240" height="80" rx="6" fill="#064e3b" stroke="#10b981" strokeWidth="2" />
-              {/* IC chip */}
-              <rect x="115" y="35" width="70" height="50" rx="4" fill="#0f172a" stroke="#34d399" strokeWidth="1.5" />
-              <text x="133" y="65" fill="#34d399" fontFamily="monospace" fontSize="13" fontWeight="bold">MICRO</text>
-              {/* Chip pins */}
-              <line x1="125" y1="28" x2="125" y2="35" stroke="#fbbf24" strokeWidth="3" />
-              <line x1="140" y1="28" x2="140" y2="35" stroke="#fbbf24" strokeWidth="3" />
-              <line x1="155" y1="28" x2="155" y2="35" stroke="#fbbf24" strokeWidth="3" />
-              <line x1="170" y1="28" x2="170" y2="35" stroke="#fbbf24" strokeWidth="3" />
-              <line x1="125" y1="85" x2="125" y2="92" stroke="#fbbf24" strokeWidth="3" />
-              <line x1="140" y1="85" x2="140" y2="92" stroke="#fbbf24" strokeWidth="3" />
-              <line x1="155" y1="85" x2="155" y2="92" stroke="#fbbf24" strokeWidth="3" />
-              <line x1="170" y1="85" x2="170" y2="92" stroke="#fbbf24" strokeWidth="3" />
-              {/* PCB Traces */}
-              <path d="M50 40 L90 40 L105 55 L115 55" stroke="#34d399" strokeWidth="2" fill="none" />
-              <circle cx="50" cy="40" r="3" fill="#fbbf24" />
-              <path d="M185 65 L210 65 L225 80 L250 80" stroke="#34d399" strokeWidth="2" fill="none" />
-              <circle cx="250" cy="80" r="3" fill="#fbbf24" />
+              {/* Database Cylinder 1 */}
+              <ellipse cx="90" cy="40" rx="36" ry="12" fill="#312e81" stroke="#818cf8" strokeWidth="1.8" />
+              <path d="M54 40 L54 60 C54 67 70 72 90 72 C110 72 126 67 126 60 L126 40" fill="#1e1b4b" stroke="#818cf8" strokeWidth="1.8" />
+              <path d="M54 60 L54 80 C54 87 70 92 90 92 C110 92 126 87 126 80 L126 60" fill="#1e1b4b" stroke="#818cf8" strokeWidth="1.8" />
+              {/* Connected Schema Table */}
+              <rect x="160" y="32" width="95" height="58" rx="4" fill="#0f172a" stroke="#60a5fa" strokeWidth="1.8" />
+              <rect x="160" y="32" width="95" height="16" rx="3" fill="#1e40af" />
+              <text x="170" y="44" fill="#ffffff" fontFamily="sans-serif" fontSize="10" fontWeight="bold">SQL Schema</text>
+              <line x1="160" y1="62" x2="255" y2="62" stroke="#334155" strokeWidth="1" />
+              <circle cx="172" cy="55" r="3" fill="#fbbf24" />
+              <line x1="180" y1="55" x2="245" y2="55" stroke="#cbd5e1" strokeWidth="2" />
+              <circle cx="172" cy="74" r="3" fill="#34d399" />
+              <line x1="180" y1="74" x2="230" y2="74" stroke="#cbd5e1" strokeWidth="2" />
+              {/* Connecting Line */}
+              <path d="M126 60 L160 60" stroke="#818cf8" strokeWidth="2" strokeDasharray="3 2" />
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
+
+      case "datascience":
+        return (
+          <div className="banner-art-wrap datascience-banner">
+            <div className="banner-tag">📊 DATA SCIENCE</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Coordinate Grid */}
+              <line x1="50" y1="92" x2="250" y2="92" stroke="#475569" strokeWidth="1.5" />
+              <line x1="50" y1="28" x2="50" y2="92" stroke="#475569" strokeWidth="1.5" />
+              {/* Bar Columns */}
+              <rect x="70" y="60" width="18" height="32" rx="2" fill="#0284c7" />
+              <rect x="96" y="45" width="18" height="47" rx="2" fill="#38bdf8" />
+              <rect x="122" y="35" width="18" height="57" rx="2" fill="#06b6d4" />
+              <rect x="148" y="50" width="18" height="42" rx="2" fill="#0284c7" />
+              {/* Analytical Spline Curve */}
+              <path d="M60 80 Q100 25 150 48 T240 32" stroke="#f59e0b" strokeWidth="2.5" fill="none" />
+              <circle cx="100" cy="44" r="3.5" fill="#fbbf24" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="150" cy="48" r="3.5" fill="#fbbf24" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="195" cy="52" r="3.5" fill="#fbbf24" stroke="#ffffff" strokeWidth="1" />
+              <circle cx="240" cy="32" r="4.5" fill="#10b981" stroke="#ffffff" strokeWidth="1.5" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "automation_plc":
+        return (
+          <div className="banner-art-wrap plc-banner">
+            <div className="banner-tag">🤖 AUTOMATION & PLC</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* PLC Controller Rack */}
+              <rect x="40" y="24" width="220" height="74" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
+              {/* Module 1: CPU */}
+              <rect x="52" y="34" width="40" height="54" rx="3" fill="#1e293b" stroke="#64748b" strokeWidth="1" />
+              <circle cx="62" cy="44" r="3" fill="#22c55e" />
+              <circle cx="72" cy="44" r="3" fill="#38bdf8" />
+              <circle cx="82" cy="44" r="3" fill="#ef4444" />
+              <text x="60" y="68" fill="#94a3b8" fontFamily="monospace" fontSize="8" fontWeight="bold">CPU</text>
+              {/* Module 2: Ladder Logic */}
+              <rect x="100" y="34" width="75" height="54" rx="3" fill="#1e293b" stroke="#64748b" strokeWidth="1" />
+              <line x1="110" y1="48" x2="165" y2="48" stroke="#38bdf8" strokeWidth="1.5" />
+              <line x1="122" y1="42" x2="122" y2="54" stroke="#38bdf8" strokeWidth="2" />
+              <line x1="128" y1="42" x2="128" y2="54" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="152" cy="48" r="4.5" stroke="#f59e0b" strokeWidth="1.5" fill="none" />
+              <line x1="110" y1="68" x2="165" y2="68" stroke="#34d399" strokeWidth="1.5" />
+              <circle cx="138" cy="68" r="4.5" stroke="#34d399" strokeWidth="1.5" fill="none" />
+              {/* Digital I/O Bus */}
+              <rect x="183" y="34" width="65" height="54" rx="3" fill="#1e293b" stroke="#64748b" strokeWidth="1" />
+              <path d="M190 62 L200 62 L200 44 L212 44 L212 62 L224 62 L224 44 L236 44" stroke="#38bdf8" strokeWidth="1.8" fill="none" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "mechanical":
+        return (
+          <div className="banner-art-wrap mechanical-banner">
+            <div className="banner-tag">⚙️ MECHANICAL & CAD</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Technical drafting grid */}
+              <circle cx="110" cy="60" r="32" stroke="#d97706" strokeWidth="2" strokeDasharray="4 2" />
+              {/* Interlocking Main Gear */}
+              <circle cx="110" cy="60" r="26" fill="#27272a" stroke="#f59e0b" strokeWidth="3" />
+              <circle cx="110" cy="60" r="10" fill="#18181b" stroke="#fbbf24" strokeWidth="2" />
+              {/* Gear Cogs */}
+              <line x1="110" y1="26" x2="110" y2="34" stroke="#f59e0b" strokeWidth="6" strokeLinecap="round" />
+              <line x1="110" y1="86" x2="110" y2="94" stroke="#f59e0b" strokeWidth="6" strokeLinecap="round" />
+              <line x1="76" y1="60" x2="84" y2="60" stroke="#f59e0b" strokeWidth="6" strokeLinecap="round" />
+              <line x1="136" y1="60" x2="144" y2="60" stroke="#f59e0b" strokeWidth="6" strokeLinecap="round" />
+              {/* Secondary Meshing Gear */}
+              <circle cx="165" cy="45" r="18" fill="#27272a" stroke="#ea580c" strokeWidth="2.5" />
+              <circle cx="165" cy="45" r="6" fill="#18181b" stroke="#ea580c" strokeWidth="1.5" />
+              {/* Vernier Caliper / Dimension Arrows */}
+              <line x1="205" y1="35" x2="255" y2="35" stroke="#94a3b8" strokeWidth="1.5" />
+              <line x1="205" y1="30" x2="205" y2="40" stroke="#94a3b8" strokeWidth="1.5" />
+              <line x1="255" y1="30" x2="255" y2="40" stroke="#94a3b8" strokeWidth="1.5" />
+              <text x="216" y="32" fill="#fbbf24" fontFamily="sans-serif" fontSize="9">50.0mm</text>
+              {/* 3D Part Wireframe */}
+              <polygon points="210,50 240,50 255,65 225,65" fill="#3f3f46" stroke="#d97706" strokeWidth="1.5" />
+              <polygon points="210,50 225,65 225,85 210,70" fill="#27272a" stroke="#d97706" strokeWidth="1.5" />
+              <polygon points="225,65 255,65 255,85 225,85" fill="#18181b" stroke="#d97706" strokeWidth="1.5" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "civil":
+        return (
+          <div className="banner-art-wrap civil-banner">
+            <div className="banner-tag">🏗️ CIVIL ENGINEERING</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Structural Truss Bridge Geometry */}
+              <line x1="30" y1="85" x2="270" y2="85" stroke="#ca8a04" strokeWidth="3" />
+              <line x1="60" y1="40" x2="240" y2="40" stroke="#eab308" strokeWidth="2.5" />
+              <line x1="30" y1="85" x2="60" y2="40" stroke="#eab308" strokeWidth="2" />
+              <line x1="60" y1="40" x2="95" y2="85" stroke="#eab308" strokeWidth="2" />
+              <line x1="95" y1="85" x2="130" y2="40" stroke="#eab308" strokeWidth="2" />
+              <line x1="130" y1="40" x2="165" y2="85" stroke="#eab308" strokeWidth="2" />
+              <line x1="165" y1="85" x2="200" y2="40" stroke="#eab308" strokeWidth="2" />
+              <line x1="200" y1="40" x2="240" y2="85" stroke="#eab308" strokeWidth="2" />
+              <line x1="240" y1="85" x2="270" y2="40" stroke="#eab308" strokeWidth="2" />
+              {/* Theodolite Survey Compass Circle */}
+              <circle cx="150" cy="30" r="14" stroke="#fde047" strokeWidth="1.5" strokeDasharray="2 2" fill="#292524" />
+              <line x1="150" y1="20" x2="150" y2="40" stroke="#fde047" strokeWidth="1.5" />
+              <line x1="140" y1="30" x2="160" y2="30" stroke="#fde047" strokeWidth="1.5" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "cloud_sysadmin":
+        return (
+          <div className="banner-art-wrap cloud-banner">
+            <div className="banner-tag">☁️ CLOUD & DEVOPS</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Cloud Icon with Network Backbone */}
+              <path d="M60 65 C50 65 42 57 42 47 C42 38 49 31 58 30 C62 20 73 14 85 14 C99 14 110 23 113 36 C118 34 124 35 128 39 C133 44 134 50 131 56 C138 58 142 64 140 71 C138 77 132 81 125 81 L60 81 Z" fill="#0369a1" stroke="#38bdf8" strokeWidth="2" opacity="0.6" />
+              {/* Terminal Console */}
+              <rect x="145" y="26" width="125" height="68" rx="6" fill="#0f172a" stroke="#0ea5e9" strokeWidth="2" />
+              <rect x="145" y="26" width="125" height="16" rx="4" fill="#1e293b" />
+              <circle cx="157" cy="34" r="3" fill="#ef4444" />
+              <circle cx="166" cy="34" r="3" fill="#fbbf24" />
+              <circle cx="175" cy="34" r="3" fill="#10b981" />
+              <text x="156" y="58" fill="#34d399" fontFamily="monospace" fontSize="11" fontWeight="bold">&gt;_ root@cloud</text>
+              <text x="156" y="74" fill="#38bdf8" fontFamily="monospace" fontSize="10.5">deploy --prod</text>
+              <line x1="110" y1="65" x2="145" y2="65" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 2" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "math":
+        return (
+          <div className="banner-art-wrap math-banner">
+            <div className="banner-tag">📐 MATHEMATICS</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Cartesian Axes */}
+              <line x1="50" y1="90" x2="260" y2="90" stroke="#6366f1" strokeWidth="1.5" />
+              <line x1="50" y1="20" x2="50" y2="90" stroke="#6366f1" strokeWidth="1.5" />
+              {/* Parabolic / Sine Curve */}
+              <path d="M50 85 Q110 15 160 65 T250 30" stroke="#38bdf8" strokeWidth="2.5" fill="none" />
+              {/* Integral & Math Symbols */}
+              <text x="75" y="58" fill="#c084fc" fontFamily="serif" fontSize="34" fontStyle="italic">∫</text>
+              <text x="120" y="52" fill="#a5b4fc" fontFamily="sans-serif" fontSize="18" fontWeight="bold">f(x)dx</text>
+              <text x="195" y="54" fill="#f43f5e" fontFamily="sans-serif" fontSize="22" fontWeight="bold">∑</text>
+              <text x="225" y="74" fill="#facc15" fontFamily="serif" fontSize="20" fontStyle="italic">Δy/Δx</text>
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "aptitude":
+        return (
+          <div className="banner-art-wrap aptitude-banner">
+            <div className="banner-tag">🧠 APTITUDE & LOGIC</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Target Bullseye with Dart */}
+              <circle cx="95" cy="58" r="34" stroke="#c084fc" strokeWidth="1.8" fill="rgba(168, 85, 247, 0.15)" />
+              <circle cx="95" cy="58" r="22" stroke="#a855f7" strokeWidth="1.8" fill="rgba(168, 85, 247, 0.25)" />
+              <circle cx="95" cy="58" r="10" fill="#e879f9" stroke="#ffffff" strokeWidth="1.5" />
+              {/* Analytical Compass & Logic Path */}
+              <path d="M150 78 L175 35 L200 78" stroke="#38bdf8" strokeWidth="2.5" fill="none" />
+              <line x1="158" y1="62" x2="192" y2="62" stroke="#38bdf8" strokeWidth="2" />
+              {/* Logic puzzle node */}
+              <rect x="220" y="38" width="45" height="45" rx="5" fill="#581c87" stroke="#e879f9" strokeWidth="2" />
+              <circle cx="242" cy="60" r="8" fill="#fdf4ff" />
+              <path d="M192 62 L220 60" stroke="#e879f9" strokeWidth="2" strokeDasharray="2 2" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "regulations":
+        return (
+          <div className="banner-art-wrap regulations-banner">
+            <div className="banner-tag">⚖️ REGULATIONS & IPR</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Scales of Justice */}
+              <line x1="100" y1="28" x2="100" y2="86" stroke="#fbbf24" strokeWidth="3" />
+              <line x1="85" y1="86" x2="115" y2="86" stroke="#fbbf24" strokeWidth="3" />
+              <line x1="65" y1="38" x2="135" y2="38" stroke="#fbbf24" strokeWidth="2.5" />
+              <polygon points="100,24 94,36 106,36" fill="#f59e0b" />
+              {/* Left Scale Pan */}
+              <line x1="65" y1="38" x2="52" y2="58" stroke="#fcd34d" strokeWidth="1.5" />
+              <line x1="65" y1="38" x2="78" y2="58" stroke="#fcd34d" strokeWidth="1.5" />
+              <path d="M48 58 Q65 70 82 58 Z" fill="#b45309" stroke="#fcd34d" strokeWidth="1.5" />
+              {/* Right Scale Pan */}
+              <line x1="135" y1="38" x2="122" y2="58" stroke="#fcd34d" strokeWidth="1.5" />
+              <line x1="135" y1="38" x2="148" y2="58" stroke="#fcd34d" strokeWidth="1.5" />
+              <path d="M118 58 Q135 70 152 58 Z" fill="#b45309" stroke="#fcd34d" strokeWidth="1.5" />
+              {/* Official Seal / Certificate Scroll */}
+              <rect x="175" y="32" width="75" height="54" rx="4" fill="#1e293b" stroke="#f59e0b" strokeWidth="2" />
+              <circle cx="212" cy="52" r="12" fill="#b45309" stroke="#fbbf24" strokeWidth="2" />
+              <path d="M212 64 L208 76 L212 73 L216 76 Z" fill="#fbbf24" />
+              <line x1="185" y1="42" x2="198" y2="42" stroke="#94a3b8" strokeWidth="1.5" />
+              <line x1="185" y1="68" x2="240" y2="68" stroke="#94a3b8" strokeWidth="1.5" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
+      case "innovation":
+        return (
+          <div className="banner-art-wrap innovation-banner">
+            <div className="banner-tag">🏆 INNOVATION & CHALLENGES</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              {/* Trophy Cup */}
+              <path d="M70 34 L110 34 L104 62 C100 70 80 70 76 62 Z" fill="#f59e0b" stroke="#fef08a" strokeWidth="2" />
+              <path d="M70 40 C60 40 60 52 70 54" stroke="#fef08a" strokeWidth="2" fill="none" />
+              <path d="M110 40 C120 40 120 52 110 54" stroke="#fef08a" strokeWidth="2" fill="none" />
+              <rect x="85" y="66" width="10" height="12" fill="#d97706" />
+              <rect x="76" y="78" width="28" height="8" rx="2" fill="#b45309" stroke="#fef08a" strokeWidth="1" />
+              {/* Rocket Launch */}
+              <g transform="translate(170, 20) rotate(25)">
+                <path d="M25 0 C25 0 40 20 40 45 L10 45 C10 20 25 0 25 0 Z" fill="#f8fafc" stroke="#38bdf8" strokeWidth="2" />
+                <circle cx="25" cy="22" r="6" fill="#0284c7" />
+                <path d="M10 35 L0 48 L10 45 Z" fill="#ef4444" />
+                <path d="M40 35 L50 48 L40 45 Z" fill="#ef4444" />
+                <polygon points="15,45 25,60 35,45" fill="#f59e0b" />
+                <polygon points="18,45 25,54 32,45" fill="#fef08a" />
+              </g>
+              {/* Starburst rays */}
+              <circle cx="230" cy="40" r="2" fill="#ffffff" />
+              <circle cx="255" cy="65" r="3" fill="#fde047" />
+              <circle cx="240" cy="80" r="2" fill="#ffffff" />
+            </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
+          </div>
+        );
+
       default:
         return (
-          <div className="banner-art-wrap default-banner">
-            <div className="banner-tag">{course.category || "GENERAL SKILL"}</div>
+          <div className="banner-art-wrap general-banner">
+            <div className="banner-tag">🌐 GENERAL SKILLS</div>
+            <div className="banner-level-pill">📄 {totalLevels} Levels</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="25" y="18" width="250" height="84" rx="6" fill="#1e1b4b" stroke="#818cf8" strokeWidth="1.5" />
-              <circle cx="80" cy="60" r="28" fill="#312e81" stroke="#a78bfa" strokeWidth="2" />
-              <path d="M70 60 L78 68 L92 50" stroke="#34d399" strokeWidth="3" fill="none" />
-              <text x="130" y="55" fill="#f8fafc" fontFamily="sans-serif" fontSize="16" fontWeight="bold">
-                {course.name?.slice(0, 18)}
-              </text>
-              <text x="130" y="75" fill="#94a3b8" fontFamily="sans-serif" fontSize="12">
-                Levels: {course.levels?.length || 2}
-              </text>
+              {/* Globe with Longitude & Latitude */}
+              <circle cx="100" cy="58" r="28" fill="#155e75" stroke="#38bdf8" strokeWidth="2" />
+              <ellipse cx="100" cy="58" rx="14" ry="28" stroke="#38bdf8" strokeWidth="1.2" fill="none" />
+              <line x1="72" y1="58" x2="128" y2="58" stroke="#38bdf8" strokeWidth="1.2" />
+              {/* Open Book of Knowledge */}
+              <path d="M155 68 C170 60 190 60 205 66 L205 40 C190 34 170 34 155 42 Z" fill="#0e7490" stroke="#67e8f9" strokeWidth="1.8" />
+              <path d="M255 68 C240 60 220 60 205 66 L205 40 C220 34 240 34 255 42 Z" fill="#0e7490" stroke="#67e8f9" strokeWidth="1.8" />
+              {/* Graduation Cap Star */}
+              <polygon points="205,20 185,28 205,36 225,28" fill="#facc15" stroke="#ffffff" strokeWidth="1" />
+              <line x1="225" y1="28" x2="228" y2="40" stroke="#facc15" strokeWidth="1.5" />
             </svg>
+            <div className="banner-course-title-strip">{course.name}</div>
           </div>
         );
     }
