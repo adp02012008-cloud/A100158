@@ -294,7 +294,7 @@ export default function Courses({ search: initialSearch = "" }) {
         levelNumber: 1,
         levelName: "Level 1",
         rewardPoints: 300,
-        prerequisites: "Level 0",
+        prerequisites: "None",
         assessmentType: "Manual Grading",
         topicsText: "1. Advanced Problem Solving\n2. Real-World Projects\n3. Final Evaluation",
       },
@@ -372,45 +372,38 @@ export default function Courses({ search: initialSearch = "" }) {
       }
 
       const completedIndices = new Set();
-      let highestIdx = -1;
       let lastLevelText = null;
 
       matchingRecords.forEach((record) => {
-        const rawLvl = String(record.currentLevel || "").trim();
-        if (!rawLvl || ["NULL", "NIL", ""].includes(rawLvl.toUpperCase())) return;
+        // Collect completed levels list with fallback to currentLevel
+        const recordLevels = Array.isArray(record.completedLevels) && record.completedLevels.length > 0
+          ? [...record.completedLevels]
+          : record.currentLevel ? [record.currentLevel] : [];
 
-        lastLevelText = rawLvl;
+        recordLevels.forEach((rawLvl) => {
+          if (!rawLvl || ["NULL", "NIL", ""].includes(String(rawLvl).toUpperCase())) return;
+          lastLevelText = String(rawLvl).trim();
 
-        if (rawLvl.toUpperCase() === "COMPLETED") {
-          for (let i = 0; i < totalLevels; i++) completedIndices.add(i);
-          highestIdx = totalLevels - 1;
-          return;
-        }
-
-        // Match with specific level in course
-        const normLvl = rawLvl.toLowerCase();
-        levels.forEach((lvl, idx) => {
-          const lName = (lvl.levelName || "").toLowerCase();
-          const pCourseName = (record.courseId?.name || "").toLowerCase();
-
-          if (
-            normLvl === lName ||
-            lName.includes(normLvl) ||
-            pCourseName === lName ||
-            (lvl.levelNumber !== undefined && normLvl.includes(`level ${lvl.levelNumber}`))
-          ) {
-            completedIndices.add(idx);
-            if (idx > highestIdx) highestIdx = idx;
+          if (String(rawLvl).trim().toUpperCase() === "COMPLETED") {
+            for (let i = 0; i < totalLevels; i++) completedIndices.add(i);
+            return;
           }
+
+          const normLvl = String(rawLvl).toLowerCase().trim();
+          levels.forEach((lvl, idx) => {
+            const lName = (lvl.levelName || "").toLowerCase().trim();
+            const lNum = String(lvl.levelNumber !== undefined ? lvl.levelNumber : "");
+            if (
+              normLvl === lName ||
+              lName.includes(normLvl) ||
+              normLvl.includes(lName) ||
+              (lNum && (normLvl === `level ${lNum}` || normLvl === `level - ${lNum}`))
+            ) {
+              completedIndices.add(idx);
+            }
+          });
         });
       });
-
-      // In sequential curriculum, completing Level N implies 0..N are completed
-      if (highestIdx >= 0) {
-        for (let i = 0; i <= highestIdx; i++) {
-          completedIndices.add(i);
-        }
-      }
 
       const completedCount = Math.min(completedIndices.size, totalLevels);
       const percent = Math.min(100, Math.round((completedCount / totalLevels) * 100));
@@ -593,7 +586,7 @@ export default function Courses({ search: initialSearch = "" }) {
     });
   }, [myCourseLevelItems, selectedCategory, search, sortBy]);
 
-  // Handle Toggle Level Completed / Not Completed
+  // Handle Toggle Level Completed / Not Completed (Independent)
   const handleToggleLevelProgress = async (course, levelObj, levelIndex) => {
     if (!course?._id) return;
     try {
@@ -601,34 +594,20 @@ export default function Courses({ search: initialSearch = "" }) {
       const targetUserId = currentUser?._id || auth.userId;
       const prog = getCourseProgress(course);
       const isCurrentlyCompleted = prog.completedIndices.has(levelIndex);
+      const willBeCompleted = !isCurrentlyCompleted;
 
-      let newLevel = "";
-      let pointsEarned = 0;
-
-      if (isCurrentlyCompleted) {
-        // Toggle OFF: switch this level to Not Completed
-        if (levelIndex > 0 && Array.isArray(course.levels) && course.levels[levelIndex - 1]) {
-          newLevel = course.levels[levelIndex - 1].levelName || `Level ${levelIndex - 1}`;
-          pointsEarned = course.levels[levelIndex - 1].rewardPoints || 0;
-        } else {
-          // If level 0 is toggled off, reset course progress
-          newLevel = "";
-          pointsEarned = 0;
-        }
-      } else {
-        // Toggle ON: mark as Completed
-        newLevel = levelObj?.levelName || `Level ${levelIndex}`;
-        pointsEarned = levelObj?.rewardPoints || 100;
-      }
+      const levelName = levelObj?.levelName || `Level ${levelIndex}`;
+      const pointsEarned = Number(levelObj?.rewardPoints) || 100;
 
       const res = await apiFetch("/courses/progress/update", {
         method: "POST",
-        body: JSON.stringify({
+        body: {
           userId: targetUserId,
           courseId: course._id,
-          newLevel,
+          levelName,
+          completed: willBeCompleted,
           pointsEarned,
-        }),
+        },
       });
 
       if (res?.success) {
@@ -662,7 +641,7 @@ export default function Courses({ search: initialSearch = "" }) {
         levelNumber: lvl.levelNumber !== undefined ? lvl.levelNumber : idx,
         levelName: lvl.levelName || `Level ${idx}`,
         rewardPoints: lvl.rewardPoints || 100,
-        prerequisites: lvl.prerequisites || (idx > 0 ? `Level ${idx - 1}` : "None"),
+        prerequisites: lvl.prerequisites || "None",
         assessmentType: lvl.assessmentType || "MCQ",
         topicsText: Array.isArray(lvl.topics) ? lvl.topics.join("\n") : "",
       })),
@@ -691,7 +670,7 @@ export default function Courses({ search: initialSearch = "" }) {
           levelNumber: 1,
           levelName: "Level 1",
           rewardPoints: 300,
-          prerequisites: "Level 0",
+          prerequisites: "None",
           assessmentType: "Manual Grading",
           topicsText: "1. Advanced Problem Solving\n2. Real-World Applications\n3. Final Evaluation",
         },
@@ -717,7 +696,7 @@ export default function Courses({ search: initialSearch = "" }) {
       levelNumber: idx,
       levelName: lvl.levelName.trim() || `Level ${idx}`,
       rewardPoints: Number(lvl.rewardPoints) || 100,
-      prerequisites: lvl.prerequisites.trim() || (idx > 0 ? `Level ${idx - 1}` : "None"),
+      prerequisites: lvl.prerequisites ? lvl.prerequisites.trim() : "None",
       assessmentType: lvl.assessmentType || "MCQ",
       topics: (lvl.topicsText || "")
         .split("\n")
@@ -1142,7 +1121,7 @@ export default function Courses({ search: initialSearch = "" }) {
                         <div className="level-meta-row">
                           <span className="level-meta-label">Pre Request</span>
                           <span className="level-meta-value">
-                            {lvl.prerequisites || (index > 0 ? `Level ${index - 1}` : "None")}
+                            {lvl.prerequisites || "None"}
                           </span>
                         </div>
 
@@ -1280,7 +1259,7 @@ export default function Courses({ search: initialSearch = "" }) {
                             levelNumber: formData.levels.length,
                             levelName: `Level ${formData.levels.length}`,
                             rewardPoints: 200,
-                            prerequisites: `Level ${formData.levels.length - 1}`,
+                            prerequisites: "None",
                             assessmentType: "MCQ",
                             topicsText: "1. Key Topic\n2. Practical Exercise",
                           },
@@ -1365,7 +1344,7 @@ export default function Courses({ search: initialSearch = "" }) {
                           updated[index].prerequisites = e.target.value;
                           setFormData({ ...formData, levels: updated });
                         }}
-                        placeholder="e.g. None or Level 0"
+                        placeholder="e.g. None"
                       />
                     </div>
 

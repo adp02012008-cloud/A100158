@@ -93,7 +93,7 @@ export async function createCourse(req, res) {
         levelNumber: lvl.levelNumber !== undefined ? Number(lvl.levelNumber) : idx,
         levelName: lvl.levelName || `Level ${idx}`,
         rewardPoints: Number(lvl.rewardPoints) || 100,
-        prerequisites: lvl.prerequisites || (idx > 0 ? `Level ${idx - 1}` : "None"),
+        prerequisites: lvl.prerequisites || "None",
         assessmentType: lvl.assessmentType || (idx % 2 === 0 ? "MCQ" : "Manual Grading"),
         topics: Array.isArray(lvl.topics)
           ? lvl.topics.map((t) => String(t).trim()).filter(Boolean)
@@ -115,7 +115,7 @@ export async function createCourse(req, res) {
           levelNumber: 1,
           levelName: "Level 1",
           rewardPoints: 300,
-          prerequisites: `${name} - Level 0`,
+          prerequisites: "None",
           assessmentType: "Manual Grading",
           topics: [`Applied Methods in ${name}`, "Comprehensive Project & Practical Evaluation"],
         },
@@ -188,7 +188,7 @@ export async function updateCourse(req, res) {
         levelNumber: lvl.levelNumber !== undefined ? Number(lvl.levelNumber) : idx,
         levelName: lvl.levelName || `Level ${idx}`,
         rewardPoints: Number(lvl.rewardPoints) || 100,
-        prerequisites: lvl.prerequisites || (idx > 0 ? `Level ${idx - 1}` : "None"),
+        prerequisites: lvl.prerequisites || "None",
         assessmentType: lvl.assessmentType || (idx % 2 === 0 ? "MCQ" : "Manual Grading"),
         topics: Array.isArray(lvl.topics)
           ? lvl.topics.map((t) => String(t).trim()).filter(Boolean)
@@ -264,63 +264,54 @@ export async function getUserCourseProgress(req, res) {
 
 export async function updateCourseProgress(req, res) {
   try {
-    const { userId, courseId, newLevel, pointsEarned } = req.body;
+    const { userId, courseId, levelName, newLevel, completed, pointsEarned } = req.body;
     const targetUserId = userId || req.user._id;
 
     if (!courseId) {
       return res.status(400).json({ success: false, message: "Course ID is required." });
     }
 
+    const targetLevel = levelName || newLevel || "";
+    const isCompleted = completed !== undefined
+      ? Boolean(completed)
+      : Boolean(targetLevel && !["NULL", "NIL", ""].includes(String(targetLevel).toUpperCase()));
+
     let progress = null;
     await withTransaction(async (session) => {
-      // Find previous progress record to calculate delta
-      const prevProgress = await UserCourseProgress.findOne({ userId: targetUserId, courseId }, null, { session });
-      const prevLevel = prevProgress?.currentLevel;
+      progress = await updateUserCourseLevel(targetUserId, courseId, targetLevel, isCompleted, session);
 
-      progress = await updateUserCourseLevel(targetUserId, courseId, newLevel, session);
-
-      // Points delta calculation
+      // Independent points delta calculation
       const user = await User.findById(targetUserId, null, { session }).exec();
-      if (user) {
-        let prevPts = 0;
-        let newPts = 0;
-        const rule = await CoursePointRule.findOne({ courseId }, null, { session }).exec();
-        const course = await Course.findById(courseId, null, { session }).exec();
-
-        const getPtsForLvl = (lvlName) => {
-          if (!lvlName || ["NULL", "NIL", ""].includes(String(lvlName).toUpperCase())) return 0;
+      if (user && targetLevel) {
+        let pts = Number(pointsEarned) || 0;
+        if (!pts) {
+          const course = await Course.findById(courseId, null, { session }).exec();
           if (course && Array.isArray(course.levels)) {
             const matched = course.levels.find(
               (l) =>
-                String(l.levelName).toUpperCase() === String(lvlName).toUpperCase() ||
-                String(l.levelNumber) === String(lvlName).replace(/\D/g, "")
+                String(l.levelName).toUpperCase() === String(targetLevel).toUpperCase() ||
+                String(l.levelNumber) === String(targetLevel).replace(/\D/g, "")
             );
-            if (matched?.rewardPoints) return Number(matched.rewardPoints);
+            if (matched?.rewardPoints) pts = Number(matched.rewardPoints);
           }
-          if (rule?.levelPoints) {
-            const sanitized = String(lvlName).replace(/\.0\b/g, "").replace(/\./g, "-");
-            return (
-              Number(
+          if (!pts) {
+            const rule = await CoursePointRule.findOne({ courseId }, null, { session }).exec();
+            if (rule?.levelPoints) {
+              const sanitized = String(targetLevel).replace(/\.0\b/g, "").replace(/\./g, "-");
+              pts = Number(
                 rule.levelPoints.get
-                  ? rule.levelPoints.get(lvlName) || rule.levelPoints.get(sanitized)
-                  : rule.levelPoints[lvlName] || rule.levelPoints[sanitized]
-              ) || 100
-            );
+                  ? rule.levelPoints.get(targetLevel) || rule.levelPoints.get(sanitized)
+                  : rule.levelPoints[targetLevel] || rule.levelPoints[sanitized]
+              ) || 100;
+            }
           }
-          return 100;
-        };
-
-        if (prevLevel) prevPts = getPtsForLvl(prevLevel);
-        if (newLevel && !["NULL", "NIL", ""].includes(String(newLevel).toUpperCase())) {
-          newPts = Number(pointsEarned) || getPtsForLvl(newLevel);
         }
+        if (!pts) pts = 100;
 
-        const delta = newPts - prevPts;
-        if (delta !== 0) {
-          user.rewardPoints = Math.max(0, (user.rewardPoints || 0) + delta);
-          user.activityPoints = Math.max(0, (user.activityPoints || 0) + delta);
-          await user.save({ session });
-        }
+        const delta = isCompleted ? pts : -pts;
+        user.rewardPoints = Math.max(0, (user.rewardPoints || 0) + delta);
+        user.activityPoints = Math.max(0, (user.activityPoints || 0) + delta);
+        await user.save({ session });
       }
     });
 

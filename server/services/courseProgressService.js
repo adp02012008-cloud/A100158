@@ -11,9 +11,10 @@ function normalizeStr(str) {
 }
 
 /**
- * Updates a user's course progress level, validates prerequisites, and triggers points recalculation.
+ * Updates a user's course progress level independently without prerequisite gating.
+ * Supports independent level completion/undo tracking via completedLevels array.
  */
-export async function updateUserCourseLevel(userId, courseId, newLevel, session = null) {
+export async function updateUserCourseLevel(userId, courseId, levelName, isCompleted = true, session = null) {
   const queryOpts = session ? { session } : {};
 
   const course = await Course.findById(courseId, null, queryOpts).exec();
@@ -21,35 +22,60 @@ export async function updateUserCourseLevel(userId, courseId, newLevel, session 
     throw new Error(`Course not found: ${courseId}`);
   }
 
-  // Validate prerequisites if updating to a non-empty level
-  if (newLevel && course.prerequisites && course.prerequisites.length > 0) {
-    const userProgressList = await UserCourseProgress.find({ userId }, null, queryOpts).populate("courseId").exec();
-    const completedCourseNames = userProgressList
-      .filter((p) => p.currentLevel && !["NULL", "NIL", ""].includes(p.currentLevel.toUpperCase()))
-      .map((p) => normalizeStr(p.courseId?.name));
+  // Levels and courses are completely independent — no prerequisite barriers
 
-    for (const req of course.prerequisites) {
-      if (!req || ["NONE", "NIL", "NULL", "-", "NO"].includes(String(req).toUpperCase().trim())) continue;
-      if (!completedCourseNames.includes(normalizeStr(req))) {
-        throw new Error(`Prerequisite not met: ${req} is required before taking ${course.name}.`);
-      }
+  let progress = await UserCourseProgress.findOne({ userId, courseId }, null, queryOpts).exec();
+
+  if (!levelName || ["NULL", "NIL", ""].includes(String(levelName).toUpperCase())) {
+    if (!isCompleted) {
+      await UserCourseProgress.deleteOne({ userId, courseId }, queryOpts);
+      await recalculateUserPoints(userId, session);
+      return null;
     }
   }
 
-  let progress = null;
-  if (!newLevel || ["NULL", "NIL", ""].includes(String(newLevel).toUpperCase())) {
-    // Delete progress record if level set to empty
-    await UserCourseProgress.deleteOne({ userId, courseId }, queryOpts);
+  const cleanLevelName = String(levelName || "").trim();
+
+  if (!progress) {
+    if (!isCompleted) return null;
+    progress = new UserCourseProgress({
+      userId,
+      courseId,
+      currentLevel: cleanLevelName,
+      completedLevels: cleanLevelName ? [cleanLevelName] : [],
+      completedAt: new Date(),
+    });
+    await progress.save(queryOpts);
   } else {
-    progress = await UserCourseProgress.findOneAndUpdate(
-      { userId, courseId },
-      { currentLevel: String(newLevel).trim().toUpperCase(), completedAt: new Date() },
-      { upsert: true, new: true, ...queryOpts }
-    );
+    let completedLevels = Array.isArray(progress.completedLevels) ? [...progress.completedLevels] : [];
+    if (completedLevels.length === 0 && progress.currentLevel) {
+      completedLevels.push(progress.currentLevel);
+    }
+
+    const normTarget = normalizeStr(cleanLevelName);
+    const existingIdx = completedLevels.findIndex((lvl) => normalizeStr(lvl) === normTarget);
+
+    if (isCompleted) {
+      if (existingIdx === -1 && cleanLevelName) {
+        completedLevels.push(cleanLevelName);
+      }
+    } else {
+      if (existingIdx !== -1) {
+        completedLevels.splice(existingIdx, 1);
+      }
+    }
+
+    if (completedLevels.length === 0) {
+      await UserCourseProgress.deleteOne({ _id: progress._id }, queryOpts);
+      progress = null;
+    } else {
+      progress.completedLevels = completedLevels;
+      progress.currentLevel = completedLevels[completedLevels.length - 1] || "";
+      progress.completedAt = new Date();
+      await progress.save(queryOpts);
+    }
   }
 
-  // Recalculate points after progress update
   await recalculateUserPoints(userId, session);
-
   return progress;
 }

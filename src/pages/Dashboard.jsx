@@ -84,11 +84,8 @@ function canTakeCourseByCluster(student, pointRow) {
 }
 
 function canTakeCourseByPrerequisite(courseName, studentCourses) {
-  const key = normalize(courseName);
-  if (!PREREQUISITES[key]) return true;
-  return PREREQUISITES[key].every((req) =>
-    studentCourses.some((c) => normalize(c.courseName) === req)
-  );
+  // Courses and levels are independent — no prerequisite barriers
+  return true;
 }
 
 function buildAvailableOptions(student, courseDetails, pointsRows) {

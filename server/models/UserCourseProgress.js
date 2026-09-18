@@ -16,8 +16,12 @@ const userCourseProgressSchema = new mongoose.Schema(
     },
     currentLevel: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
+    },
+    completedLevels: {
+      type: [String],
+      default: [],
     },
     completedAt: {
       type: Date,
