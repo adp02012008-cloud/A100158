@@ -481,147 +481,59 @@ export default function Courses({ search: initialSearch = "" }) {
     });
   }, [availableParentCourses, selectedCategory, search, sortBy, getCourseProgress]);
 
-  // "My Courses": Unrolled Separate Div for Each Level
-  const myCourseLevelItems = useMemo(() => {
-    const items = [];
-
-    courses.forEach((course) => {
-      const progInfo = getCourseProgress(course);
-      if (progInfo.completedCount > 0 || progInfo.hasOngoing) {
-        (course.levels || []).forEach((lvl, idx) => {
-          const isCompleted = progInfo.completedIndices.has(idx);
-          const isOngoing = !isCompleted && idx === progInfo.nextLevelIdx;
-
-          // Render only completed or active in-progress levels
-          if (isCompleted || isOngoing) {
-            items.push({
-              id: `${course._id}-lvl-${idx}`,
-              courseId: course._id,
-              courseName: course.name,
-              courseCategory: course.category,
-              clusterAccess: course.clusterAccess,
-              levelIndex: idx,
-              levelNumber: lvl.levelNumber !== undefined ? lvl.levelNumber : idx + 1,
-              levelName: lvl.levelName || `Level ${idx + 1}`,
-              rewardPoints: lvl.rewardPoints || 100,
-              prerequisites: lvl.prerequisites || "None",
-              assessmentType: lvl.assessmentType || "MCQ",
-              topics: lvl.topics || [],
-              status: isCompleted ? "Completed" : "OnGoing",
-              parentCourse: course,
-              levelObj: lvl,
-            });
-          }
-        });
-      }
+  // "My Courses": Enrolled / Active Parent Courses
+  const myEnrolledCourses = useMemo(() => {
+    return availableParentCourses.filter((course) => {
+      const prog = getCourseProgress(course);
+      const hasDbRecord = (userProgress || []).some(
+        (p) =>
+          p.courseId?._id === course._id ||
+          p.courseId === course._id ||
+          (p.courseId?.name &&
+            p.courseId.name.toLowerCase().trim() === course.name.toLowerCase().trim())
+      );
+      return prog.completedCount > 0 || prog.hasOngoing || hasDbRecord;
     });
+  }, [availableParentCourses, getCourseProgress, userProgress]);
 
-    // Also include any orphaned progress records from DB
-    if (userProgress && userProgress.length > 0) {
-      userProgress.forEach((p) => {
-        const pCourseName = p.courseId?.name || "";
-        const alreadyIncluded = items.some(
-          (it) => it.courseName === pCourseName || it.levelName === pCourseName
-        );
-        if (!alreadyIncluded && p.currentLevel && !["NULL", "NIL", ""].includes(String(p.currentLevel).toUpperCase())) {
-          items.push({
-            id: `orphan-${p._id}`,
-            courseId: p.courseId?._id || p._id,
-            courseName: pCourseName || "Course Assessment",
-            courseCategory: p.courseId?.category || "General",
-            clusterAccess: "Both",
-            levelIndex: 0,
-            levelNumber: 1,
-            levelName: pCourseName.includes("Level") ? pCourseName : `${pCourseName} - ${p.currentLevel}`,
-            rewardPoints: 100,
-            prerequisites: "None",
-            assessmentType: "Evaluation",
-            topics: ["Course curriculum evaluation"],
-            status: "Completed",
-            parentCourse: p.courseId || { name: pCourseName, category: "General", levels: [] },
-            levelObj: { levelName: p.currentLevel, rewardPoints: 100 },
-          });
-        }
-      });
-    }
-
-    return items;
-  }, [courses, userProgress, getCourseProgress]);
-
-  // Filtered & Sorted My Course Level Items
-  const filteredMyCourseLevels = useMemo(() => {
-    let list = myCourseLevelItems;
+  // Filtered & Sorted My Courses
+  const filteredMyCourses = useMemo(() => {
+    let list = myEnrolledCourses;
 
     if (selectedCategory !== "All") {
       list = list.filter(
-        (item) => (item.courseCategory || "").toLowerCase() === selectedCategory.toLowerCase()
+        (c) => (c.category || "").toLowerCase() === selectedCategory.toLowerCase()
       );
     }
 
     if (search.trim()) {
       const term = search.toLowerCase().trim();
       list = list.filter(
-        (item) =>
-          item.courseName.toLowerCase().includes(term) ||
-          item.levelName.toLowerCase().includes(term) ||
-          item.courseCategory.toLowerCase().includes(term) ||
-          (item.topics || []).some((t) => t.toLowerCase().includes(term))
+        (c) =>
+          (c.name || "").toLowerCase().includes(term) ||
+          (c.category || "").toLowerCase().includes(term) ||
+          (c.description || "").toLowerCase().includes(term)
       );
     }
 
     return [...list].sort((a, b) => {
       if (sortBy === "name") {
-        return a.courseName.localeCompare(b.courseName);
+        return (a.name || "").localeCompare(b.name || "");
       }
       if (sortBy === "category") {
-        return a.courseCategory.localeCompare(b.courseCategory);
+        return (a.category || "").localeCompare(b.category || "");
       }
-      if (sortBy === "points") {
-        return (b.rewardPoints || 0) - (a.rewardPoints || 0);
+      if (sortBy === "levels") {
+        return (b.levels?.length || 0) - (a.levels?.length || 0);
       }
-      if (sortBy === "status") {
-        return a.status.localeCompare(b.status);
+      if (sortBy === "progress") {
+        const progA = getCourseProgress(a).percent;
+        const progB = getCourseProgress(b).percent;
+        return progB - progA;
       }
       return 0;
     });
-  }, [myCourseLevelItems, selectedCategory, search, sortBy]);
-
-  // Handle Toggle Level Completed / Not Completed (Independent)
-  const handleToggleLevelProgress = async (course, levelObj, levelIndex) => {
-    if (!course?._id) return;
-    try {
-      setActionLoading(true);
-      const targetUserId = currentUser?._id || auth.userId;
-      const prog = getCourseProgress(course);
-      const isCurrentlyCompleted = prog.completedIndices.has(levelIndex);
-      const willBeCompleted = !isCurrentlyCompleted;
-
-      const levelName = levelObj?.levelName || `Level ${levelIndex}`;
-      const pointsEarned = Number(levelObj?.rewardPoints) || 100;
-
-      const res = await apiFetch("/courses/progress/update", {
-        method: "POST",
-        body: {
-          userId: targetUserId,
-          courseId: course._id,
-          levelName,
-          completed: willBeCompleted,
-          pointsEarned,
-        },
-      });
-
-      if (res?.success) {
-        await loadData();
-        if (detailCourse && detailCourse._id === course._id) {
-          setDetailCourse({ ...course });
-        }
-      }
-    } catch (err) {
-      alert("Failed to update progress: " + (err.message || "Unknown error"));
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  }, [myEnrolledCourses, selectedCategory, search, sortBy, getCourseProgress]);
 
   // Open Edit Modal (Admin)
   const handleOpenEdit = (course, e) => {
@@ -751,328 +663,61 @@ export default function Courses({ search: initialSearch = "" }) {
   }
 
   return (
-    <div className="courses-container">
-      {/* Header Section */}
-      <div className="courses-header-section">
-        <div className="courses-title-row">
-          <div>
-            <h1 className="courses-main-title">
-              <span>🎓</span> {activeTab === "available" ? "Courses Available" : "My Enrolled & Completed Levels"}
-            </h1>
-            <p className="courses-count-subtitle">
-              {activeTab === "available"
-                ? `Showing ${filteredAvailableCourses.length} available courses with integrated modular levels`
-                : `Showing ${filteredMyCourseLevels.length} individual course levels enrolled or completed`}
-            </p>
-          </div>
-
-          {auth.role === "admin" && (
-            <button type="button" className="btn-add-course" onClick={handleOpenAdd}>
-              <span>➕</span> Add New Course
-            </button>
-          )}
-        </div>
-
-        {/* Primary Tabs: Courses Available vs My Courses */}
-        <div className="courses-nav-tabs">
-          <button
-            type="button"
-            className={`courses-tab-btn ${activeTab === "available" ? "active" : ""}`}
-            onClick={() => setActiveTab("available")}
-          >
-            <span>📖 Courses Available</span>
-            <span className="courses-tab-badge">{availableParentCourses.length}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`courses-tab-btn ${activeTab === "my-courses" ? "active" : ""}`}
-            onClick={() => setActiveTab("my-courses")}
-          >
-            <span>🎓 My Courses</span>
-            <span className="courses-tab-badge">{myCourseLevelItems.length}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Toolbar: Search, Filters, Sorting */}
-      <div className="courses-toolbar">
-        <div className="courses-search-wrap">
-          <span className="courses-search-icon">🔍</span>
-          <input
-            type="text"
-            className="courses-search-input"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={
-              activeTab === "available"
-                ? "Search courses by name or category…"
-                : "Search your enrolled levels, topics or course…"
-            }
-          />
-          {search && (
+    <div className="courses-container full-width-layout">
+      {detailCourse ? (
+        /* =========================================================================
+           FULL-SCREEN COURSE DETAILS VIEW (Matching College LMS Portal Image 4)
+           Navbar remains completely visible; content uses entire screen space
+           ========================================================================= */
+        <div className="course-details-fullscreen-view">
+          {/* Top Bar with Navigation & Breadcrumb */}
+          <div className="course-details-nav-bar">
             <button
               type="button"
-              className="courses-search-clear"
-              onClick={() => setSearch("")}
-              title="Clear search"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        <div className="courses-filters-wrap">
-          <select
-            className="courses-select"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            aria-label="Filter by Category"
-          >
-            {categoryOptions.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat === "All" ? "All Categories" : cat}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className="courses-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            aria-label="Sort Courses"
-          >
-            <option value="name">Sort by Name</option>
-            <option value="category">Sort by Category</option>
-            {activeTab === "available" ? (
-              <>
-                <option value="levels">Sort by Levels</option>
-                <option value="progress">Sort by Progress</option>
-              </>
-            ) : (
-              <>
-                <option value="points">Sort by Reward Points</option>
-                <option value="status">Sort by Status</option>
-              </>
-            )}
-          </select>
-        </div>
-      </div>
-
-      {/* =========================================================================
-          VIEW 1: COURSES AVAILABLE (1 Div per Course with Segmented Progress Bar)
-         ========================================================================= */}
-      {activeTab === "available" && (
-        <>
-          {filteredAvailableCourses.length === 0 ? (
-            <div className="courses-empty-state">
-              <div className="empty-icon-lg">🔍</div>
-              <h3 style={{ color: "#0f172a", margin: "0 0 8px 0" }}>No matching courses found</h3>
-              <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
-                Try adjusting your search or category filter to discover courses.
-              </p>
-            </div>
-          ) : (
-            <div className="courses-grid">
-              {filteredAvailableCourses.map((course) => {
-                const prog = getCourseProgress(course);
-                const totalLevels = (course.levels || []).length || 2;
-
-                return (
-                  <div
-                    key={course._id}
-                    className="portal-course-card"
-                    onClick={() => setDetailCourse(course)}
-                  >
-                    {/* Top Visual Thematic Banner */}
-                    <CourseBannerGraphic course={course} />
-
-                    {/* Card Content */}
-                    <div className="portal-course-content">
-                      <h3 className="portal-course-title" title={course.name}>
-                        {course.name}
-                      </h3>
-
-                      {/* Meta Information Row */}
-                      <div className="portal-course-meta-row">
-                        <span className="portal-meta-levels">
-                          📄 Levels: {totalLevels}
-                        </span>
-                        <span className="portal-meta-cat">
-                          {course.category === "Hardware" && "🖥️ Hardware"}
-                          {course.category === "Software" && "💻 Software"}
-                          {course.category === "GENERAL Skill" && "🎯 GENERAL Skill"}
-                          {course.category === "Beginner" && "🌱 Beginner"}
-                          {course.category === "Advanced" && "⚡ Advanced"}
-                          {!["Hardware", "Software", "GENERAL Skill", "Beginner", "Advanced"].includes(course.category) &&
-                            `📌 ${course.category || "General"}`}
-                        </span>
-                      </div>
-
-                      {/* Reference Image Segmented Progress Bar */}
-                      <div className="segmented-progress-wrap">
-                        <div className="segmented-progress-row">
-                          {Array.from({ length: totalLevels }).map((_, idx) => {
-                            const isCompleted = prog.completedIndices.has(idx);
-                            return (
-                              <div
-                                key={idx}
-                                className={`segment-pill ${isCompleted ? "completed" : "empty"}`}
-                                title={`Level ${idx + 1}: ${isCompleted ? "Completed" : "Empty / Incomplete"}`}
-                              />
-                            );
-                          })}
-                        </div>
-                        <div className="segmented-progress-meta">
-                          Progress: {prog.completedCount}/{prog.totalLevels} levels ({prog.percent}%)
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* =========================================================================
-          VIEW 2: MY COURSES (Separate Div For Each Enrolled/Completed Level)
-         ========================================================================= */}
-      {activeTab === "my-courses" && (
-        <>
-          {filteredMyCourseLevels.length === 0 ? (
-            <div className="courses-empty-state">
-              <div className="empty-icon-lg">🎓</div>
-              <h3 style={{ color: "#0f172a", margin: "0 0 8px 0" }}>No enrolled course levels yet</h3>
-              <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
-                You haven’t completed any levels yet. Head over to <strong>"Courses Available"</strong>, select a course, and mark milestones complete!
-              </p>
-            </div>
-          ) : (
-            <div className="my-levels-grid">
-              {filteredMyCourseLevels.map((item) => {
-                const isDone = item.status === "Completed";
-
-                return (
-                  <div key={item.id} className="level-item-card">
-                    {/* Header */}
-                    <div className="level-item-header">
-                      <div>
-                        <span className="level-item-parent-badge">{item.courseName}</span>
-                        <h3 className="level-item-title">{item.levelName}</h3>
-                      </div>
-                      <span className={`level-status-pill ${isDone ? "status-completed" : "status-ongoing"}`}>
-                        {isDone ? "✓ Completed" : "⏳ In Progress"}
-                      </span>
-                    </div>
-
-                    {/* Metadata Grid */}
-                    <div className="level-item-meta-grid">
-                      <div className="level-meta-box">
-                        <span className="meta-box-label">Category</span>
-                        <span className="meta-box-value">{item.courseCategory}</span>
-                      </div>
-                      <div className="level-meta-box">
-                        <span className="meta-box-label">Rewards</span>
-                        <span className="meta-box-value highlight-gold">🪙 {item.rewardPoints} RP</span>
-                      </div>
-                      <div className="level-meta-box">
-                        <span className="meta-box-label">Assessment</span>
-                        <span className="meta-box-value">{item.assessmentType}</span>
-                      </div>
-                      <div className="level-meta-box">
-                        <span className="meta-box-label">Prerequisites</span>
-                        <span className="meta-box-value">{item.prerequisites}</span>
-                      </div>
-                    </div>
-
-                    {/* Topics Preview */}
-                    {item.topics && item.topics.length > 0 && (
-                      <div className="level-topics-preview">
-                        <span className="topics-preview-title">Syllabus Highlights:</span>
-                        <ul className="topics-preview-list">
-                          {item.topics.slice(0, 3).map((topic, tIdx) => (
-                            <li key={tIdx}>{topic}</li>
-                          ))}
-                          {item.topics.length > 3 && (
-                            <li className="topics-more">+{item.topics.length - 3} more topics…</li>
-                          )}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="level-item-actions">
-                      <button
-                        type="button"
-                        className="btn-view-course-details"
-                        onClick={() => setDetailCourse(item.parentCourse)}
-                      >
-                        📖 View Full Course
-                      </button>
-
-                      <button
-                        type="button"
-                        className={`btn-mark-level-direct ${isDone ? "is-completed" : ""}`}
-                        disabled={actionLoading}
-                        onClick={() => handleToggleLevelProgress(item.parentCourse, item.levelObj, item.levelIndex)}
-                        title={isDone ? "Click to switch back to Not Completed" : "Click to mark as Completed"}
-                      >
-                        {actionLoading ? "Saving…" : isDone ? "✓ Completed (Switch)" : "Mark Completed ✓"}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* ===================================================
-          COURSE DETAILS MODAL (Modular Level View)
-         =================================================== */}
-      {detailCourse && (
-        <div className="course-details-modal-overlay" onClick={() => setDetailCourse(null)}>
-          <div className="course-details-modal-box" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className="course-details-close-btn"
+              className="btn-back-courses"
               onClick={() => setDetailCourse(null)}
             >
-              ✕
+              ← Back to {activeTab === "available" ? "Courses Available" : "My Courses"}
             </button>
+            <div className="course-breadcrumb-trail">
+              <span
+                className="breadcrumb-root"
+                onClick={() => setDetailCourse(null)}
+              >
+                {activeTab === "available" ? "Courses Available" : "My Courses"}
+              </span>
+              <span className="breadcrumb-sep">/</span>
+              <span className="breadcrumb-current">{detailCourse.name}</span>
+            </div>
+          </div>
 
-            <div className="course-details-header">
-              <h2 className="course-details-title">{detailCourse.name}</h2>
-              <p className="course-details-desc">
-                {detailCourse.description || "Comprehensive modular learning path with real-world evaluations and graded milestones."}
+          {/* Hero Banner Card matching Image 4 */}
+          <div className="course-details-hero-card">
+            <div className="hero-card-left">
+              <h1 className="hero-course-title">{detailCourse.name}</h1>
+              <p className="hero-course-desc">
+                {detailCourse.description ||
+                  "Comprehensive modular curriculum designed for mastery and practical application."}
               </p>
-              <div className="course-details-pills">
-                <span className="course-card-cat-badge">{detailCourse.category || "General"}</span>
-                <span className="course-card-cluster-badge">Levels: {(detailCourse.levels || []).length}</span>
-                <span className="course-rewards-indicator">
-                  Total Rewards: {(detailCourse.levels || []).reduce((s, l) => s + (Number(l.rewardPoints) || 100), 0)} pts
+              <div className="hero-tags-row">
+                <span className="hero-pill-badge">
+                  📄 Levels: {(detailCourse.levels || []).length || 2}
                 </span>
-                {auth.role === "admin" && (
-                  <button
-                    type="button"
-                    className="course-btn-edit-modal"
-                    onClick={(e) => handleOpenEdit(detailCourse, e)}
-                  >
-                    ✏️ Edit Curriculum
-                  </button>
-                )}
+                <span className="hero-pill-badge category">
+                  🎓 {detailCourse.category || "General"}
+                </span>
               </div>
             </div>
+            <div className="hero-card-right">
+              <CourseBannerGraphic course={detailCourse} />
+            </div>
+          </div>
 
-            <div className="course-details-content">
-              {(detailCourse.levels || []).map((lvl, index) => {
-                const prog = getCourseProgress(detailCourse);
-                const isCompleted = prog.completedIndices.has(index);
-
-                const topicsList = Array.isArray(lvl.topics) && lvl.topics.length > 0
+          {/* College Level Cards matching Image 4 */}
+          <div className="course-details-levels-container">
+            {(detailCourse.levels || []).map((lvl, index) => {
+              const topicsList =
+                Array.isArray(lvl.topics) && lvl.topics.length > 0
                   ? lvl.topics
                   : [
                       `1. Introduction to ${detailCourse.name}`,
@@ -1080,87 +725,323 @@ export default function Courses({ search: initialSearch = "" }) {
                       `3. Practical Evaluation & Problem Solving`,
                     ];
 
-                return (
-                  <div key={index} className="level-block">
-                    <div className="level-block-head">
-                      <div className="level-title-text">
-                        <div className="level-badge-num">{index + 1}</div>
-                        <span>
-                          {detailCourse.name} - {lvl.levelName || `Level ${index}`}
-                        </span>
-                      </div>
-                      {isCompleted && (
-                        <span className="level-completed-badge">
-                          ✓ Completed
-                        </span>
-                      )}
+              return (
+                <div key={index} className="college-level-card">
+                  <div className="college-level-header">
+                    <div className="college-level-title-wrap">
+                      <div className="college-level-number-badge">{index + 1}</div>
+                      <h3 className="college-level-title">
+                        {detailCourse.name} - {lvl.levelName || `Level ${index}`}
+                      </h3>
+                    </div>
+                    <span className="college-attempts-badge">Attempts: 0</span>
+                  </div>
+
+                  <div className="college-level-body">
+                    {/* Left: Syllabus Topics List with grey rounded pills */}
+                    <div className="college-topics-column">
+                      {topicsList.map((topic, tIdx) => (
+                        <div key={tIdx} className="college-topic-pill">
+                          {topic}
+                        </div>
+                      ))}
                     </div>
 
-                    <div className="level-block-body">
-                      {/* Left: Syllabus Topics List */}
-                      <div className="level-topics-list">
-                        <div className="level-section-subtitle">
-                          Syllabus / Topics
-                        </div>
-                        {topicsList.map((topic, tIdx) => (
-                          <div key={tIdx} className="topic-item">
-                            {topic}
-                          </div>
-                        ))}
+                    {/* Right: Meta Details (Rewards, Pre Request, Assessment Type) */}
+                    <div className="college-meta-column">
+                      <div className="college-meta-item">
+                        <span className="college-meta-label">With Rewards</span>
+                        <span className="college-meta-value highlight-gold">
+                          🪙 {lvl.rewardPoints || 100}
+                        </span>
                       </div>
 
-                      {/* Right: Meta Details */}
-                      <div className="level-meta-side">
-                        <div className="level-meta-row">
-                          <span className="level-meta-label">With Rewards</span>
-                          <span className="level-meta-value highlight-gold">
-                            🪙 {lvl.rewardPoints || 100} Points
-                          </span>
-                        </div>
+                      <div className="college-meta-item">
+                        <span className="college-meta-label">Pre Request</span>
+                        <span className="college-meta-value">
+                          {lvl.prerequisites || "None"}
+                        </span>
+                      </div>
 
-                        <div className="level-meta-row">
-                          <span className="level-meta-label">Pre Request</span>
-                          <span className="level-meta-value">
-                            {lvl.prerequisites || "None"}
-                          </span>
-                        </div>
-
-                        <div className="level-meta-row">
-                          <span className="level-meta-label">Assessment Type</span>
-                          <span className="level-meta-value">{lvl.assessmentType || "MCQ"}</span>
-                        </div>
-
-                        <div className="level-switch-row">
-                          <span className="level-meta-label">Status</span>
-                          <button
-                            type="button"
-                            className={`level-status-pill-btn ${isCompleted ? "completed" : "incomplete"}`}
-                            disabled={actionLoading}
-                            onClick={() => handleToggleLevelProgress(detailCourse, lvl, index)}
-                            title={isCompleted ? "Click to switch to Not Completed" : "Click to switch to Completed"}
-                          >
-                            <span className="switch-dot" />
-                            <span>{actionLoading ? "Saving…" : isCompleted ? "Completed" : "Not Completed"}</span>
-                          </button>
-                        </div>
-
-                        <button
-                          type="button"
-                          className={`btn-mark-level ${isCompleted ? "is-completed" : ""}`}
-                          disabled={actionLoading}
-                          onClick={() => handleToggleLevelProgress(detailCourse, lvl, index)}
-                          title={isCompleted ? "Click to switch to Not Completed" : "Click to mark as Completed"}
-                        >
-                          {actionLoading ? "Saving…" : isCompleted ? "✓ Completed (Click to Undo)" : "Mark Completed"}
-                        </button>
+                      <div className="college-meta-item">
+                        <span className="college-meta-label">Assessment Type</span>
+                        <span className="college-meta-value">
+                          {lvl.assessmentType || "MCQ"}
+                        </span>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
+      ) : (
+        /* =========================================================================
+           PRIMARY COURSES VIEW (Courses Available & My Courses Full-Screen Grid)
+           ========================================================================= */
+        <>
+          {/* Header Section */}
+          <div className="courses-header-section">
+            <div className="courses-title-row">
+              <div>
+                <h1 className="courses-main-title">
+                  <span>🎓</span>{" "}
+                  {activeTab === "available" ? "Courses Available" : "My Courses"}
+                </h1>
+                <p className="courses-count-subtitle">
+                  {activeTab === "available"
+                    ? `Showing ${filteredAvailableCourses.length} of ${availableParentCourses.length} courses`
+                    : `Showing ${filteredMyCourses.length} enrolled courses`}
+                </p>
+              </div>
+
+              {auth.role === "admin" && (
+                <button
+                  type="button"
+                  className="btn-add-course"
+                  onClick={handleOpenAdd}
+                >
+                  <span>➕</span> Add New Course
+                </button>
+              )}
+            </div>
+
+            {/* Primary Tabs: Courses Available vs My Courses */}
+            <div className="courses-nav-tabs">
+              <button
+                type="button"
+                className={`courses-tab-btn ${activeTab === "available" ? "active" : ""}`}
+                onClick={() => setActiveTab("available")}
+              >
+                <span>📖 Courses Available</span>
+                <span className="courses-tab-badge">
+                  {availableParentCourses.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className={`courses-tab-btn ${activeTab === "my-courses" ? "active" : ""}`}
+                onClick={() => setActiveTab("my-courses")}
+              >
+                <span>🎓 My Courses</span>
+                <span className="courses-tab-badge">
+                  {myEnrolledCourses.length}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Toolbar: Search, Filters, Sorting */}
+          <div className="courses-toolbar">
+            <div className="courses-search-wrap">
+              <span className="courses-search-icon">🔍</span>
+              <input
+                type="text"
+                className="courses-search-input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search courses by name or category…"
+              />
+              {search && (
+                <button
+                  type="button"
+                  className="courses-search-clear"
+                  onClick={() => setSearch("")}
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="courses-filters-wrap">
+              <select
+                className="courses-select"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                aria-label="Filter by Category"
+              >
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === "All" ? "All Categories" : cat}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="courses-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                aria-label="Sort Courses"
+              >
+                <option value="name">Sort by Name</option>
+                <option value="category">Sort by Category</option>
+                <option value="levels">Sort by Levels</option>
+                <option value="progress">Sort by Progress</option>
+              </select>
+            </div>
+          </div>
+
+          {/* =========================================================================
+              VIEW 1: COURSES AVAILABLE (Full-width grid)
+             ========================================================================= */}
+          {activeTab === "available" && (
+            <>
+              {filteredAvailableCourses.length === 0 ? (
+                <div className="courses-empty-state">
+                  <div className="empty-icon-lg">🔍</div>
+                  <h3 style={{ color: "#0f172a", margin: "0 0 8px 0" }}>
+                    No matching courses found
+                  </h3>
+                  <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
+                    Try adjusting your search or category filter to discover courses.
+                  </p>
+                </div>
+              ) : (
+                <div className="courses-grid">
+                  {filteredAvailableCourses.map((course) => {
+                    const prog = getCourseProgress(course);
+                    const totalLevels = (course.levels || []).length || 2;
+
+                    return (
+                      <div
+                        key={course._id}
+                        className="portal-course-card"
+                        onClick={() => setDetailCourse(course)}
+                      >
+                        {/* Top Visual Thematic Banner */}
+                        <CourseBannerGraphic course={course} />
+
+                        {/* Card Content */}
+                        <div className="portal-course-content">
+                          <h3 className="portal-course-title" title={course.name}>
+                            {course.name}
+                          </h3>
+
+                          {/* Meta Information Row */}
+                          <div className="portal-course-meta-row">
+                            <span className="portal-meta-levels">
+                              📄 Levels: {totalLevels}
+                            </span>
+                            <span className="portal-meta-cat">
+                              {course.category || "General"}
+                            </span>
+                          </div>
+
+                          {/* Clean Segmented Progress Bar */}
+                          <div className="segmented-progress-wrap">
+                            <div className="segmented-progress-row">
+                              {Array.from({ length: totalLevels }).map((_, idx) => {
+                                const isCompleted = prog.completedIndices.has(idx);
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={`segment-pill ${isCompleted ? "completed" : "empty"}`}
+                                  />
+                                );
+                              })}
+                            </div>
+                            <div className="segmented-progress-meta">
+                              Progress: {prog.completedCount}/{prog.totalLevels} levels ({prog.percent}%)
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* =========================================================================
+              VIEW 2: MY COURSES (Pure Course Listing, No in-progress/status switches)
+             ========================================================================= */}
+          {activeTab === "my-courses" && (
+            <>
+              {filteredMyCourses.length === 0 ? (
+                <div className="courses-empty-state">
+                  <div className="empty-icon-lg">🎓</div>
+                  <h3 style={{ color: "#0f172a", margin: "0 0 8px 0" }}>
+                    No enrolled courses found
+                  </h3>
+                  <p
+                    style={{
+                      color: "#64748b",
+                      fontSize: "14px",
+                      margin: "0 0 16px 0",
+                    }}
+                  >
+                    You haven’t enrolled in any courses yet. Browse through{" "}
+                    <strong>"Courses Available"</strong> to explore our curriculum!
+                  </p>
+                  <button
+                    type="button"
+                    className="btn-back-courses"
+                    onClick={() => setActiveTab("available")}
+                  >
+                    Browse Courses Available
+                  </button>
+                </div>
+              ) : (
+                <div className="courses-grid">
+                  {filteredMyCourses.map((course) => {
+                    const prog = getCourseProgress(course);
+                    const totalLevels = (course.levels || []).length || 2;
+
+                    return (
+                      <div
+                        key={course._id}
+                        className="portal-course-card"
+                        onClick={() => setDetailCourse(course)}
+                      >
+                        {/* Top Visual Thematic Banner */}
+                        <CourseBannerGraphic course={course} />
+
+                        {/* Card Content */}
+                        <div className="portal-course-content">
+                          <h3 className="portal-course-title" title={course.name}>
+                            {course.name}
+                          </h3>
+
+                          {/* Meta Information Row */}
+                          <div className="portal-course-meta-row">
+                            <span className="portal-meta-levels">
+                              📄 Levels: {totalLevels}
+                            </span>
+                            <span className="portal-meta-cat">
+                              {course.category || "General"}
+                            </span>
+                          </div>
+
+                          {/* Clean Segmented Progress Bar */}
+                          <div className="segmented-progress-wrap">
+                            <div className="segmented-progress-row">
+                              {Array.from({ length: totalLevels }).map((_, idx) => {
+                                const isCompleted = prog.completedIndices.has(idx);
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={`segment-pill ${isCompleted ? "completed" : "empty"}`}
+                                  />
+                                );
+                              })}
+                            </div>
+                            <div className="segmented-progress-meta">
+                              Progress: {prog.completedCount}/{prog.totalLevels} levels ({prog.percent}%)
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </>
       )}
 
       {/* ===================================================

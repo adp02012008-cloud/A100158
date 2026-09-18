@@ -1,10 +1,17 @@
 /* src/pages/Courses.css */
 
 .courses-container {
-  padding: 12px 0 40px 0;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 12px 40px 12px;
   animation: fadeIn 0.3s ease-in-out;
+  box-sizing: border-box;
+}
+
+.courses-container.full-width-layout {
+  width: 100%;
+  max-width: 100%;
 }
 
 @keyframes fadeIn {
@@ -621,65 +628,100 @@
 }
 
 /* ==========================================================================
-   MODALS: COURSE DETAILS (View Inside Course to Complete Levels)
+   COLLEGE PORTAL FULL-SCREEN COURSE DETAILS VIEW (Matching Image 4)
+   Uses complete screen space; navbars remain 100% visible at the top!
    ========================================================================== */
-.course-details-modal-overlay,
-.course-form-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: fadeIn 0.2s ease;
+.course-details-fullscreen-view {
+  width: 100%;
+  max-width: 100%;
+  animation: fadeIn 0.25s ease-out;
+  box-sizing: border-box;
+  padding-bottom: 40px;
 }
 
-.course-details-modal-box {
+.course-details-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 8px 0;
+}
+
+.btn-back-courses {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 24px;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-back-courses:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+  transform: translateX(-2px);
+}
+
+.course-breadcrumb-trail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.breadcrumb-root {
+  color: #6366f1;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.breadcrumb-root:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-sep {
+  color: #94a3b8;
+}
+
+.breadcrumb-current {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Hero card matching Image 4 */
+.course-details-hero-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 860px;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-}
-
-.course-details-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  color: #475569;
-  font-size: 15px;
-  cursor: pointer;
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10;
+  gap: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.course-details-close-btn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+.hero-card-left {
+  flex: 1;
+  min-width: 280px;
 }
 
-.course-details-header {
-  padding: 28px 28px 20px 28px;
-  border-bottom: 1px solid #e2e8f0;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-}
-
-.course-details-title {
+.hero-course-title {
   font-size: 24px;
   font-weight: 800;
   color: #0f172a;
@@ -687,292 +729,239 @@
   letter-spacing: -0.02em;
 }
 
-.course-details-desc {
+.hero-course-desc {
+  font-size: 14.5px;
   color: #64748b;
-  font-size: 14px;
+  margin: 0 0 18px 0;
   line-height: 1.5;
-  margin: 0 0 16px 0;
 }
 
-.course-details-pills {
+.hero-tags-row {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.course-card-cat-badge {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 20px;
-  background: #eef2ff;
-  color: #6366f1;
-  border: 1px solid #e0e7ff;
-  text-transform: uppercase;
-}
-
-.course-card-cluster-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-}
-
-.course-rewards-indicator {
-  font-size: 12px;
-  font-weight: 700;
-  color: #d97706;
-}
-
-.course-btn-edit-modal {
-  margin-left: auto;
+.hero-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 5px 12px;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  color: #334155;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Modal Levels Content */
-.course-details-content {
-  padding: 24px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.level-block {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.level-block-head {
-  padding: 14px 18px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.level-title-text {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.level-badge-num {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #6366f1;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.level-completed-badge {
-  font-size: 12px;
-  padding: 3px 10px;
+  background: #f1f5f9;
   border-radius: 20px;
-  background: #ecfdf5;
-  color: #059669;
-  font-weight: 700;
-  border: 1px solid #a7f3d0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+  border: 1px solid #e2e8f0;
 }
 
-.level-block-body {
-  padding: 16px 18px;
-  display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 20px;
+.hero-pill-badge.category {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: #ddd6fe;
 }
 
-@media (max-width: 720px) {
-  .level-block-body {
-    grid-template-columns: 1fr;
+.hero-card-right {
+  flex-shrink: 0;
+  width: 320px;
+  height: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.hero-card-right .banner-art-wrap {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 840px) {
+  .course-details-hero-card {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    padding: 20px;
+  }
+  .hero-card-right {
+    width: 100%;
+    height: 130px;
   }
 }
 
-.level-topics-list {
+/* College Level Card matching Image 4 */
+.course-details-levels-container {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 20px;
+  width: 100%;
 }
 
-.level-section-subtitle {
-  font-size: 11.5px;
+.college-level-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.college-level-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.college-level-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 20px;
+}
+
+.college-level-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.college-level-number-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  margin-bottom: 4px;
+  font-size: 15px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
 }
 
-.topic-item {
-  font-size: 13px;
-  color: #334155;
-  background: #ffffff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #f1f5f9;
+.college-level-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
 }
 
-.level-meta-side {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: #ffffff;
-  padding: 14px;
-  border-radius: 10px;
+.college-attempts-badge {
+  background: #f1f5f9;
+  color: #6366f1;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 20px;
   border: 1px solid #e2e8f0;
 }
 
-.level-meta-row {
+.college-level-body {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12.5px;
+  gap: 28px;
+  align-items: flex-start;
 }
 
-.level-meta-label {
-  color: #64748b;
-  font-weight: 500;
-}
-
-.level-meta-value {
-  color: #0f172a;
-  font-weight: 700;
-}
-
-.highlight-gold {
-  color: #d97706;
-}
-
-.btn-mark-level {
-  margin-top: 8px;
-  padding: 9px 16px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-}
-
-.btn-mark-level:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
-}
-
-.level-switch-row {
+.college-topics-column {
+  flex: 1.6;
+  min-width: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.level-status-pill-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1.5px solid transparent;
-}
-
-.level-status-pill-btn.completed {
-  background: #ecfdf5;
-  color: #059669;
-  border-color: #a7f3d0;
-}
-
-.level-status-pill-btn.completed:hover:not(:disabled) {
-  background: #fef2f2;
-  color: #dc2626;
-  border-color: #fecaca;
-  transform: translateY(-1px);
-}
-
-.level-status-pill-btn.incomplete {
+.college-topic-pill {
   background: #f1f5f9;
-  color: #64748b;
+  border-radius: 8px;
+  padding: 12px 18px;
+  color: #1e293b;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.college-topic-pill:hover {
+  background: #e2e8f0;
   border-color: #cbd5e1;
 }
 
-.level-status-pill-btn.incomplete:hover:not(:disabled) {
-  background: #e0e7ff;
-  color: #4f46e5;
-  border-color: #c7d2fe;
-  transform: translateY(-1px);
+.college-meta-column {
+  flex: 1;
+  min-width: 250px;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 24px;
+  border-left: 1px solid #f1f5f9;
 }
 
-.switch-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
+.college-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.level-status-pill-btn.completed .switch-dot {
-  background-color: #10b981;
+.college-meta-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
-.level-status-pill-btn.incomplete .switch-dot {
-  background-color: #94a3b8;
+.college-meta-value {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.4;
 }
 
-.btn-mark-level.is-completed {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-  box-shadow: none;
-  cursor: pointer;
+.college-meta-value.highlight-gold {
+  color: #d97706;
+  font-weight: 700;
 }
 
-.btn-mark-level.is-completed:hover:not(:disabled) {
-  background: #fef2f2;
-  color: #dc2626;
-  border-color: #fecaca;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
-  transform: translateY(-1px);
+@media (max-width: 768px) {
+  .college-level-body {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .college-meta-column {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 18px;
+    max-width: 100%;
+    width: 100%;
+  }
 }
 
-.btn-mark-level-direct.is-completed {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-  box-shadow: none;
-  cursor: pointer;
-}
-
-.btn-mark-level-direct.is-completed:hover:not(:disabled) {
-  background: #fef2f2;
-  color: #dc2626;
-  border-color: #fecaca;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
-  transform: translateY(-1px);
+/* ==========================================================================
+   ADMIN ADD/EDIT COURSE MODAL (Positioned below navbar so navbar stays visible)
+   ========================================================================== */
+.course-form-modal-overlay {
+  position: fixed;
+  top: 76px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: calc(100vh - 76px);
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease;
 }
 
 /* Course Form Modal */

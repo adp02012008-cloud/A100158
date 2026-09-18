@@ -57,12 +57,26 @@ h1, h2, h3, h4, h5, h6 {
 /* ── App shell ────────────────────────────────────────────── */
 .app {
   min-height: 100vh;
-  padding: 16px 32px 40px;
+  padding: 16px 20px 40px;
   background: var(--color-bg-dark);
   color: var(--color-text-body);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-.page-content { margin-top: 16px; }
+@media (max-width: 768px) {
+  .app {
+    padding: 10px 10px 30px;
+  }
+}
+
+.page-content {
+  margin-top: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
 
 /* ── Unified Modern Navbar ────────────────────────────────── */
 /* ── Enterprise Pro Navbar ────────────────────────────────── */
