@@ -1185,8 +1185,6 @@ export default function Courses({ search: initialSearch = "" }) {
                         </div>
 
                         <div className="college-level-header-right">
-                          <span className="college-attempts-badge">Attempts: 0</span>
-
                           {/* Interactive Status Switcher */}
                           <button
                             type="button"
