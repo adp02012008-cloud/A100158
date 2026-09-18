@@ -872,15 +872,112 @@
   cursor: pointer;
 }
 
-/* Responsive adjustments */
+/* ══════════════════════════════════════════════════════════════════════
+   APPROVED PROJECTS SHOWCASE MULTI-TIER RESPONSIVENESS
+   (ULTRAWIDE, DESKTOP, LAPTOP, TABLET, MOBILE, SMALL PHONES)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* 1. Large Monitors & Ultrawide (> 1440px) */
+@media (min-width: 1441px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 26px;
+  }
+  .ppt-modal-box, .review-modal-box {
+    max-width: 980px;
+  }
+}
+
+/* 2. Laptops & Standard Desktops (1025px – 1440px) */
+@media (max-width: 1440px) and (min-width: 1025px) {
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .ppt-modal-box, .review-modal-box {
+    max-width: 900px;
+  }
+}
+
+/* 3. Tablets & Small Laptops (769px – 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .showcase-hero {
+    padding: 30px 24px;
+  }
+  .showcase-toolbar {
+    gap: 14px;
+  }
+  .ppt-modal-box, .review-modal-box {
+    max-width: 740px;
+    padding: 24px;
+  }
+}
+
+/* 4. Mobile Devices (< 768px) */
 @media (max-width: 768px) {
   .showcase-hero {
-    padding: 24px 20px;
+    padding: 20px 16px;
+    border-radius: 16px;
   }
   .showcase-hero-title {
-    font-size: 22px;
+    font-size: 21px;
+  }
+  .showcase-hero-desc {
+    font-size: 13px;
   }
   .projects-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .showcase-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .showcase-search-wrap {
+    width: 100%;
+  }
+  .showcase-sort-select {
+    width: 100%;
+  }
+  .domain-chips-wrap {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .domain-chips-wrap::-webkit-scrollbar {
+    display: none;
+  }
+  .domain-chip-btn {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    font-size: 11.5px;
+  }
+  .ppt-modal-box, .review-modal-box {
+    width: 96%;
+    padding: 18px 14px;
+    max-height: calc(100vh - 76px);
+    border-radius: 16px;
+  }
+  .ppt-modal-header h3 {
+    font-size: 17px;
+  }
+}
+
+/* 5. Extra Small Compact Phones (< 480px) */
+@media (max-width: 480px) {
+  .showcase-hero-title {
+    font-size: 18px;
+  }
+  .project-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }

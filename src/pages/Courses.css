@@ -1192,3 +1192,182 @@
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   COURSES PAGE MULTI-TIER DEVICE RESPONSIVENESS
+   (ULTRAWIDE, DESKTOP, LAPTOP, TABLET, MOBILE, SMALL PHONES)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* 1. Large Monitors & Ultrawide Computers (> 1440px) */
+@media (min-width: 1441px) {
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .course-form-modal-box {
+    max-width: 920px;
+    padding: 34px;
+  }
+}
+
+/* 2. Standard Laptops & Desktops (1025px – 1440px) */
+@media (max-width: 1440px) and (min-width: 1025px) {
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .course-form-modal-box {
+    max-width: 840px;
+  }
+}
+
+/* 3. Tablets & Small Laptops (769px – 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+  }
+  .courses-toolbar {
+    padding: 14px;
+    gap: 12px;
+  }
+  .courses-search-wrap {
+    flex: 1 1 240px;
+  }
+  .course-form-modal-box {
+    max-width: 720px;
+    padding: 24px;
+  }
+}
+
+/* 4. Mobile Phones & Phablets (max-width: 768px) */
+@media (max-width: 768px) {
+  .courses-container {
+    padding: 6px 8px 30px 8px;
+  }
+  .courses-main-title {
+    font-size: 21px;
+    gap: 8px;
+  }
+  .courses-count-subtitle {
+    font-size: 12.5px;
+  }
+  .courses-nav-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .courses-nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .courses-tab-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .courses-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+    gap: 12px;
+  }
+  .courses-search-wrap {
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+  .courses-filters-wrap {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .courses-select {
+    width: 100%;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .btn-add-course {
+    grid-column: span 2;
+    width: 100%;
+    justify-content: center;
+    padding: 10px;
+  }
+  .courses-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .portal-course-card {
+    border-radius: 12px;
+  }
+  .course-card-top-art {
+    height: 120px;
+  }
+  .course-details-hero-card {
+    padding: 16px;
+  }
+  .hero-card-left h1 {
+    font-size: 20px;
+  }
+  .course-form-modal-overlay {
+    top: 60px;
+    height: calc(100vh - 60px);
+    padding: 8px;
+  }
+  .course-form-modal-box {
+    padding: 18px 14px;
+    border-radius: 16px;
+    max-height: calc(100vh - 76px);
+  }
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .form-actions {
+    flex-direction: row;
+    gap: 10px;
+  }
+  .btn-cancel,
+  .btn-save {
+    flex: 1;
+    text-align: center;
+    padding: 11px;
+    font-size: 12.5px;
+  }
+  .college-level-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .college-attempts-badge {
+    align-self: flex-start;
+  }
+}
+
+/* 5. Extra Small Compact Phones (max-width: 480px) */
+@media (max-width: 480px) {
+  .courses-main-title {
+    font-size: 18px;
+  }
+  .banner-tag {
+    font-size: 8.5px;
+    padding: 2px 5px;
+  }
+  .banner-level-pill {
+    font-size: 8.5px;
+    padding: 2px 5px;
+  }
+  .course-card-body {
+    padding: 12px 10px;
+  }
+  .courses-filters-wrap {
+    grid-template-columns: 1fr;
+  }
+  .btn-add-course {
+    grid-column: auto;
+  }
+}
