@@ -48,6 +48,44 @@ export default function Modal({ student, onClose }) {
 
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
 
+  const userCourses = useMemo(() => {
+    if (Array.isArray(student.COURSE_DETAILS) && student.COURSE_DETAILS.length > 0) {
+      return student.COURSE_DETAILS.map((c) => {
+        let levelText = c.currentLevel || "Completed";
+        if (Array.isArray(c.completedLevels) && c.completedLevels.length > 0) {
+          levelText = c.completedLevels.join(", ");
+        }
+        return {
+          courseName: c.courseName || "Unknown Course",
+          level: levelText,
+        };
+      });
+    }
+    if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
+      return student.COURSES.map((cStr) => {
+        if (typeof cStr === "object" && cStr !== null) {
+          return {
+            courseName: cStr.courseName || "Unknown Course",
+            level: cStr.currentLevel || cStr.level || "Completed",
+          };
+        }
+        const str = String(cStr).trim();
+        const parts = str.split(" - ");
+        if (parts.length > 1) {
+          return {
+            courseName: parts[0].trim(),
+            level: parts.slice(1).join(" - ").trim(),
+          };
+        }
+        return {
+          courseName: str,
+          level: "Completed",
+        };
+      });
+    }
+    return [];
+  }, [student.COURSE_DETAILS, student.COURSES]);
+
   const skills = [
     student.Primary1, student.Primary2,
     student.Secondary1, student.Secondary2,
@@ -142,15 +180,26 @@ export default function Modal({ student, onClose }) {
 
         {/* ── COURSES ─────────────────────────────────────────── */}
         {tab === "courses" && (
-          <>
-            <h3>Courses ({student.COURSE_COUNT})</h3>
-            {(student.COURSES || []).map((c, i) => (
-              <div key={i} className="course">{c}</div>
-            ))}
-            {student.COURSE_COUNT === 0 && (
+          <div className="modal-tab-pane">
+            <h3 style={{ margin: "0 0 14px 0" }}>Courses Completed & Enrolled ({userCourses.length || student.COURSE_COUNT || 0})</h3>
+            {userCourses.length > 0 ? (
+              <div className="modal-courses-grid">
+                {userCourses.map((c, i) => (
+                  <div key={i} className="modal-course-card">
+                    <div className="modal-course-card-top">
+                      <span className="modal-course-icon">🎓</span>
+                      <span className="modal-course-name">{c.courseName}</span>
+                    </div>
+                    <div className="modal-course-card-bottom">
+                      <span className="modal-course-badge">{c.level}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
               <p style={{ opacity: 0.6 }}>No courses enrolled yet.</p>
             )}
-          </>
+          </div>
         )}
 
         {/* ── SUGGESTIONS ─────────────────────────────────────── */}

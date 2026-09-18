@@ -27,42 +27,8 @@ export default function EditModal({ student, onClose, onSaved }) {
     STATUS: student.STATUS || student.status || "ACTIVE",
   });
 
-  // Read-only list of completed / enrolled courses
-  const [enrolledCourses, setEnrolledCourses] = useState(() => {
-    if (Array.isArray(student.COURSE_DETAILS) && student.COURSE_DETAILS.length > 0) {
-      return student.COURSE_DETAILS.map((c) => ({
-        courseName: c.courseName || "Unknown Course",
-        level: c.currentLevel || (Array.isArray(c.completedLevels) && c.completedLevels.length > 0 ? c.completedLevels.join(", ") : "Completed"),
-      }));
-    }
-    if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
-      return student.COURSES.map((cStr) => {
-        if (typeof cStr === "object" && cStr !== null) {
-          return {
-            courseName: cStr.courseName || "Unknown Course",
-            level: cStr.currentLevel || cStr.level || "Completed",
-          };
-        }
-        const str = String(cStr).trim();
-        const parts = str.split(" - ");
-        if (parts.length > 1) {
-          return {
-            courseName: parts[0].trim(),
-            level: parts.slice(1).join(" - ").trim(),
-          };
-        }
-        return {
-          courseName: str,
-          level: "Completed",
-        };
-      });
-    }
-    return [];
-  });
-
   const [clusterOptions, setClusterOptions] = useState(["Core", "Computer Cluster"]);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
-  const [courseFilterSearch, setCourseFilterSearch] = useState("");
 
   // Snapshot for dirty-state comparison
   const initialSnapshotRef = useRef({
@@ -98,31 +64,6 @@ export default function EditModal({ student, onClose, onSaved }) {
       onClose();
     }
   };
-
-  // Fetch real-time progress records for student directly from MongoDB
-  useEffect(() => {
-    const targetId = student._id || student.userId;
-    if (!targetId) return;
-
-    let isMounted = true;
-    apiFetch(`/courses/progress?userId=${targetId}`)
-      .then((res) => {
-        if (!isMounted) return;
-        if (res?.progress && Array.isArray(res.progress) && res.progress.length > 0) {
-          const mapped = res.progress.map((p) => ({
-            courseName: p.courseId?.name || "Unknown Course",
-            level: p.currentLevel || (Array.isArray(p.completedLevels) && p.completedLevels.length > 0 ? p.completedLevels.join(", ") : "Completed"),
-          }));
-          setEnrolledCourses(mapped);
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      isMounted = false;
-    };
-  }, [student._id, student.userId]);
-
   useEffect(() => {
     let isMounted = true;
     Promise.allSettled([
@@ -156,14 +97,6 @@ export default function EditModal({ student, onClose, onSaved }) {
       isMounted = false;
     };
   }, [student]);
-
-  const filteredCourses = useMemo(() => {
-    if (!courseFilterSearch.trim()) return enrolledCourses;
-    const q = courseFilterSearch.toLowerCase().trim();
-    return enrolledCourses.filter((c) =>
-      c.courseName.toLowerCase().includes(q) || c.level.toLowerCase().includes(q)
-    );
-  }, [enrolledCourses, courseFilterSearch]);
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -330,111 +263,6 @@ export default function EditModal({ student, onClose, onSaved }) {
           </div>
         </div>
 
-        <div className="edit-section">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", flexWrap: "wrap", gap: "8px" }}>
-            <h4 className="edit-section-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>Completed & Enrolled Courses</span>
-              <span style={{ fontSize: "11px", fontWeight: "700", background: "rgba(139, 92, 246, 0.2)", border: "1px solid rgba(167, 139, 250, 0.3)", color: "#c4b5fd", padding: "2px 8px", borderRadius: "10px" }}>
-                {enrolledCourses.length}
-              </span>
-            </h4>
-
-            {enrolledCourses.length > 4 && (
-              <input
-                type="text"
-                placeholder="🔍 Filter enrolled…"
-                value={courseFilterSearch}
-                onChange={(e) => setCourseFilterSearch(e.target.value)}
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: "6px",
-                  background: "rgba(15, 23, 42, 0.7)",
-                  border: "1px solid rgba(255, 255, 255, 0.12)",
-                  color: "#f8fafc",
-                  fontSize: "12px",
-                  outline: "none",
-                  maxWidth: "160px",
-                }}
-              />
-            )}
-          </div>
-
-          {enrolledCourses.length === 0 ? (
-            <p className="edit-note" style={{ margin: "10px 0" }}>No completed courses recorded yet.</p>
-          ) : (
-            <div
-              className="course-edit-list-container"
-              style={{
-                maxHeight: "220px",
-                overflowY: "auto",
-                display: "flex",
-                flexDirection: "column",
-                gap: "6px",
-                background: "rgba(10, 6, 24, 0.4)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: "10px",
-                padding: "8px",
-              }}
-            >
-              {filteredCourses.length === 0 ? (
-                <div style={{ fontSize: "12px", color: "#94a3b8", textAlign: "center", padding: "12px" }}>
-                  No matching courses found.
-                </div>
-              ) : (
-                filteredCourses.map((c, idx) => (
-                  <div
-                    key={idx}
-                    className="course-compact-row"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "8px 12px",
-                      background: "rgba(22, 16, 42, 0.75)",
-                      border: "1px solid rgba(255, 255, 255, 0.06)",
-                      borderRadius: "8px",
-                      gap: "8px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "#f1f5f9",
-                        fontWeight: "500",
-                        fontSize: "13px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        flex: 1,
-                      }}
-                      title={c.courseName}
-                    >
-                      {c.courseName}
-                    </span>
-
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: "700",
-                        color: "#38bdf8",
-                        background: "rgba(56, 189, 248, 0.12)",
-                        border: "1px solid rgba(56, 189, 248, 0.35)",
-                        borderRadius: "6px",
-                        padding: "3px 8px",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {c.level || "Completed"}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          <p className="edit-note" style={{ marginTop: "10px", fontSize: "11.5px", color: "#94a3b8" }}>
-            ℹ️ Course enrollment & level completion are managed on the dedicated Courses page.
-          </p>
-        </div>
 
         <div className="edit-actions">
           {isAdmin && (
