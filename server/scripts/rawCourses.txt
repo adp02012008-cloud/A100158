@@ -1,0 +1,5754 @@
+Advanced Modelling & Simulation
+Advanced Modelling & Simulation
+
+Levels: 2
+Advanced
+course-img
+1
+Advanced Modelling & Simulation - Level 0
+Attempts: 0
+1. Introduction to FEA
+2. Mathematical Framework: The FEA Equation
+3. Discretization: Mesh, Elements, Nodes
+4. Types of Elements: 1D, 2D, 3D
+5. Stress, Strain, and Deformation
+6. Hooke’s Law, Young’s Modulus, Poisson’s Ratio
+7. The Stress-Strain Curve: Elastic vs. Plastic
+8. Factor of Safety (FOS)
+9. Material Models: Isotropic, Anisotropic, Orthotropic
+10. Linear vs. Nonlinear Analysis
+11. Preprocessing: Geometry, Materials, Meshing, BCs
+12. ANSYS Workflow
+13. FEA Validity: Mesh Quality, BCs, Judgment
+14. Shape Functions
+15. Degree of Freedom
+With Rewards
+100
+Pre Request
+1. Mechanical Modelling Level - 2B (ADVANCED PART MODELLING)
+Assessment Type
+MCQ
+2
+Advanced Modelling & Simulation - Level 1
+Attempts: 0
+1. Introduction to Thermal-Structural Analysis
+2. Theoretical Foundations
+3. Material Properties and Their Significance
+4. Element Selection and Modeling Strategy
+5. Boundary Conditions – Theory and Application
+6. Loading Types and Application Methods
+7. Step-by-Step Problem Solving Methodology
+With Rewards
+300
+Pre Request
+1. Advanced Modelling & Simulation - Level 0
+Assessment Type
+Manual Grading
+AI - Deep Learning
+Deep Learning
+
+Levels: 2
+Beginner
+course-img
+1
+Deep Learning - Level 1
+Attempts: 0
+1. Digital Images, Pixels, Image Dimensions, Pixel Coordinates (X, Y)
+2. Region of Interest (ROI), Image Cropping, Image Slicing
+3. NumPy Arrays, OpenCV, Image Input/Output
+4. Reading Images, Saving Images, Displaying Images, Bounding Box, RGB Images
+With Rewards
+400
+Pre Request
+1. Programming Python Level - 3
+Assessment Type
+Programming
+2
+Deep Learning - Level 2
+Attempts: 0
+1. Handling missing values (drop, fill, interpolate)
+2. Identifying and removing duplicate records
+3. Detecting and treating outliers (IQR, Z-Score), Webscraping
+With Rewards
+500
+Pre Request
+1. Deep Learning - Level 1
+Assessment Type
+Programming
+AI - Machine Learning
+Machine Learning
+
+Levels: 2
+Beginner
+course-img
+1
+Machine Learning - Level 1
+Attempts: 0
+1. Supervised Learning Overview
+2. Features, Labels, Target Variables
+3. Regression vs Classification Difference
+4. Basic Evaluation (Error, Accuracy Intuition)
+With Rewards
+400
+Pre Request
+1. Programming Python Level - 3
+Assessment Type
+Programming
+2
+Machine Learning - Level 2
+Attempts: 0
+1. Linear Regression (straight line model)
+2. Least Squares Method, Gradient Descent (Intuition)
+3. Logistic Regression (Sigmoid & Probability)
+With Rewards
+500
+Pre Request
+1. Machine Learning - Level 1
+Assessment Type
+Programming
+Algebra
+Algebra
+
+Levels: 3
+GENERAL Skill
+course-img
+1
+Algebra - Level 0
+Attempts: 1
+1. Variables and constants
+2. Algebraic expressions
+3. Types of algebraic expressions and its operations
+4. Laws of exponents and powers
+5. Linear equations in one variable
+6. Algebraic basic identities.
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+2
+Algebra - Level 1
+Attempts: 0
+1. Linear equations
+2. Linear inequalities
+3. Quadratic equations
+4. Algebraic identities
+With Rewards
+200
+Pre Request
+1. Algebra - Level 0
+3
+Algebra - Level 2
+Attempts: 0
+1. Polynomials
+2. Rational Expressions and equations
+3. Rational inequalities
+4. Exponents and Logarithmic functions
+With Rewards
+300
+Pre Request
+1. Algebra - Level 1
+Assessment Type
+MCQ
+Analog Electronics
+Levels: 15
+Hardware
+course-img
+1
+Analog Electronics Level - 1A
+Attempts: 0
+1. Selection of Current Liming Resistors using basic Circuit Laws
+With Rewards
+150 RP
+Pre Request
+1. Electronics Level - 0
+Assessment Type
+Manual Grading
+2
+Analog Electronics Level - 1B
+Attempts: 0
+1. Implementation of Current Division, Voltage Division and Balancing Circuits
+With Rewards
+150 RP
+Pre Request
+1. Analog Electronics Level - 1A
+Assessment Type
+Manual Grading
+3
+Analog Electronics Level - 1C
+Attempts: 0
+1. Implementation of PN Junction and Zener Diode Circuits
+With Rewards
+150 RP
+Pre Request
+1. Analog Electronics Level - 1B
+Assessment Type
+Manual Grading
+4
+Analog Electronics Level - 1D
+Attempts: 0
+1. Implementation of DC Regulated Power Supply Circuit
+With Rewards
+150 RP
+Pre Request
+1. Analog Electronics Level - 1C
+Assessment Type
+Manual Grading
+5
+Analog Electronics - Level 2.0
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+1. Analog Electronics Level - 1D
+Assessment Type
+MCQ
+6
+Analog Electronics Level - 2A
+Attempts: 0
+1. Implementation of Passive Filter using Passive Components Resistor, Capacitor and Inductor
+With Rewards
+300 RP
+Pre Request
+1. Analog Electronics - Level 2.0
+Assessment Type
+Manual Grading
+7
+Analog Electronics Level - 2B
+Attempts: 0
+1. Implementation of Amplifier Circuits with biasing using Bipolar Junction Transistors
+With Rewards
+300 RP
+Pre Request
+1. Analog Electronics - Level 2.0
+2. Analog Electronics Level - 2A
+Assessment Type
+Manual Grading
+8
+Analog Electronics Level - 2C
+Attempts: 0
+1. Implementation of Switching Circuits using Bipolar Junction Transistors
+With Rewards
+300 RP
+Pre Request
+1. Analog Electronics - Level 2.0
+2. Analog Electronics Level - 2B
+Assessment Type
+Manual Grading
+9
+Analog Electronics Level - 3A
+Attempts: 0
+1. Implementation of Oscillator Circuits using Bipolar Junction Transistors
+With Rewards
+300 RP
+Pre Request
+1. Analog Electronics - Level 2.0
+2. Analog Electronics Level - 2C
+Assessment Type
+Manual Grading
+10
+Analog Electronics Level - 3B
+Attempts: 0
+1. Implementation of Oscillator Circuits using Bipolar Junction Transistors
+With Rewards
+300 RP
+Pre Request
+1. Analog Electronics - Level 2.0
+2. Analog Electronics Level - 3A
+Assessment Type
+Manual Grading
+11
+Analog Electronics Level - 3C
+Attempts: 0
+1. Implementation of Basic Open and Closed Loop Applications of Operational Amplifiers
+With Rewards
+300 RP
+Pre Request
+1. Analog Electronics - Level 2.0
+2. Analog Electronics Level - 3B
+Assessment Type
+Manual Grading
+12
+Analog Electronics Level - 4A
+Attempts: 0
+1. Active low pass filter
+2. Active Band pass filetr
+3. Rectifier
+4. Precision Rectifier
+With Rewards
+300
+Pre Request
+1. Analog Electronics Level - 3C
+Assessment Type
+Manual Grading
+13
+Analog Electronics Level - 4B
+Attempts: 0
+1. Multivibrator
+With Rewards
+300
+Pre Request
+1. Analog Electronics Level - 4A
+Assessment Type
+Manual Grading
+14
+Analog Electronics Level - 4C
+Attempts: 0
+1. Sine Wave generator
+2. Function generator
+3. Oscillator
+With Rewards
+300
+Pre Request
+1. Analog Electronics Level - 4B
+Assessment Type
+Manual Grading
+15
+Analog Electronics Level - 5A
+Attempts: 0
+1. Data converters
+2. Sample and Hold Circuit
+3. ADC and DAC
+With Rewards
+300
+Pre Request
+1. Analog Electronics Level - 4C
+Assessment Type
+Manual Grading
+Aptitude
+Levels: 14
+GENERAL Skill
+course-img
+1
+Aptitude Level - 1A
+Attempts: 1
+1. Number System, Ratio Proportion
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Aptitude Level - 1B
+Attempts: 1
+1. Alligation & Mixtures
+2. Partnership
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+Aptitude Level - 1C
+Attempts: 0
+1. Percentage
+2. Profit Loss
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+4
+Aptitude Level - 1D
+Attempts: 0
+1. Time & Work
+2. Pipes & Cisterns
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+5
+Aptitude Level - 1E
+Attempts: 0
+1. Averages
+2. SI and CI
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+6
+Aptitude Level - 1F
+Attempts: 0
+1. Time Speed and Distance
+2. Problems on Trains
+3. Boats and Streams
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+7
+Aptitude Level - 1G
+Attempts: 1
+1. Permutation , Combination & Probability
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+8
+Aptitude Level - 1H
+Attempts: 0
+1. Ages & Calendar
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+9
+Aptitude Level - 1I
+Attempts: 0
+1. Clocks & Directions
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+10
+Aptitude level- 1J
+Attempts: 0
+1. HCF and LCM
+2. Problems on Numbers
+With Rewards
+100 RP
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+11
+Aptitude Level - 1K
+Attempts: 0
+1. Decimals and fractions
+2. Simplification
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+12
+Aptitude Level - 1L
+Attempts: 0
+1. Square and cubic roots
+2. Logarithm
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+13
+Aptitude Level - 1M
+Attempts: 0
+1. Stocks and share
+2. bankers discount
+With Rewards
+100
+Pre Request
+No
+Register
+14
+Aptitude Level - 1N
+Attempts: 0
+1. Area , Volume, surface
+With Rewards
+100
+Pre Request
+No
+Register
+Assembly and Dismantling - Gurugulam Assessment
+Assembly and Dismantling - Gurugulam Assessment
+
+Levels: 3
+Hardware
+course-img
+1
+Assembly and Dismantling - Gurugulam Assessment - level 1A
+Attempts: 0
+1. Understanding the Appliance Structure
+With Rewards
+150
+Pre Request
+1. Assembly and Dismantling - Gurugulam Assessment - level 0
+Assessment Type
+Manual Grading
+2
+Assembly and Dismantling - Gurugulam Assessment - level 1B
+Attempts: 0
+1. Labelling and Documentation
+With Rewards
+150
+Pre Request
+1. Assembly and Dismantling - Gurugulam Assessment - level 1A
+Assessment Type
+Manual Grading
+3
+Assembly and Dismantling - Gurugulam Assessment - level 0
+Attempts: 1
+OnGoing
+1. Basic Electrical Knowledge
+2. Familiarity with Tools
+3. Safety Awareness
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Automation
+Automation
+
+Levels: 8
+Hardware
+course-img
+1
+Automation - Level 0
+Attempts: 0
+1. Introduction to Automation
+2. Need for Automation
+3. Advantages and Disadvantages
+4. History and Evolution of Automation
+5. Types of Automation
+6. Automation Components
+7. Types of Sensors
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Automation - Level 1A
+Attempts: 0
+1. Pnuematic basic circuits design
+With Rewards
+150
+Pre Request
+1. Digital Electronics Level -3C
+Assessment Type
+Manual Grading
+3
+Automation - Level 1B
+Attempts: 0
+1. Pnuematic logic circuits design
+With Rewards
+150
+Pre Request
+1. Automation - Level 1A
+Assessment Type
+Manual Grading
+4
+Automation - Level 1C
+Attempts: 0
+1. Electro Pnuematic basic circuits design
+With Rewards
+150
+Pre Request
+1. Automation - Level 1B
+Assessment Type
+Manual Grading
+5
+Automation - Level 1D
+Attempts: 0
+1. Electro Pnuematic Logic circuits design
+With Rewards
+150
+Pre Request
+1. Automation - Level 1C
+Assessment Type
+Manual Grading
+6
+Automation - Level 2A
+Attempts: 0
+1. Pneumatic sequence circuit - 2 Cyliner
+With Rewards
+300
+Pre Request
+1. Automation - Level 1D
+Assessment Type
+Manual Grading
+7
+Automation - Level 2B
+Attempts: 0
+1. Pneumatic sequence circuit - Multi cylinder
+With Rewards
+300
+Pre Request
+1. Automation - Level 2A
+Assessment Type
+Manual Grading
+8
+Automation - Level 2C
+Attempts: 0
+1. Electro Pneumatic sequence circuit - Multi cylinder
+With Rewards
+300
+Pre Request
+1. Automation - Level 2B
+Assessment Type
+Manual Grading
+Autonomy Affairs - Regulations
+Autonomy Affairs - Brainstorming
+
+Levels: 1
+GENERAL Skill
+course-img
+1
+Autonomy Affairs - Regulations Level 1
+Attempts: 0
+1. Basic Practices of Autonomoy Affairs
+2. Structure of the Program
+3. Examination
+4. Honor/Minor courses
+5. Admission
+6. Value added course
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+
+Backup
+This course covers the fundamentals of backup and recovery, including backup types, restore operations, RPO/RTO concepts, and basic file protection methods. It provides hands-on knowledge of automated backup scheduling, backup storage media, rotation policies, and data recovery strategies.
+
+Levels: 2
+Beginner
+course-img
+1
+Backup Basics - Level 1
+Attempts: 0
+1. Types of Backup (Full, Incremental, Differential)
+2. Manual Backup and Restore Operations
+3. Recovery Point Objective (RPO) and Recovery Time Objective (RTO)
+4. Basic File/Folder Backup and Restore Using OS Tools
+With Rewards
+150
+Pre Request
+1. System Administration - Level 2
+Assessment Type
+Manual Grading
+2
+Automated and Networked Backup - Level 2
+Attempts: 0
+1. Scheduled Backup Tasks Using Task Scheduler (Windows) or Cron (Linux)
+2. Backup Storage Media (External HDD, NAS, Cloud)
+3. Backup Rotation Policies
+4. Backup Verification and Integrity Checks
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+Manual Grading
+Biochemical Stoichiometry & Biostatistics
+Levels: 6
+Hardware
+course-img
+1
+Biochemical Stoichiometry & Biostatistics - 1
+Attempts: 0
+1. Biochemical Stoichiometry
+2. Unit of Measurements & Sig. Figs
+3. Matter: Types & Properties
+4. Stoichiometry: Mole
+5. Biomolecules: Carbs, Proteins, Lipids, Nucleic acids
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Biochemical Stoichiometry & Biostatistics - 2
+Attempts: 0
+1. Basic Probability & Statistics
+2. Discrete & Continuous probability distributions
+3. Mean, Median, Mode
+4. Standard Deviaition & variance
+5. False Discovery Rates
+With Rewards
+100
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 1
+Assessment Type
+MCQ
+3
+Biochemical Stoichiometry & Biostatistics - 3
+Attempts: 0
+1. Power Analysis & Sample size calculation
+2. Types of errors
+3. Sample size calculation
+4. G*power tool
+With Rewards
+600 RP
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 2
+Assessment Type
+Manual Grading
+4
+Biochemical Stoichiometry & Biostatistics - 4
+Attempts: 0
+1. Statistical tests
+With Rewards
+900
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 3
+Assessment Type
+Manual Grading
+5
+Biochemical Stoichiometry & Biostatistics - 5
+Attempts: 0
+1. Goodness-of-Fit Chi-square Test
+2. Chi-square Test of Independence
+3. Simple & Multiple Linear Regression
+4. Correlational Analysis - Pearson coefficient
+5. Correlational Analysis - Spearman coefficient
+With Rewards
+900
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 4
+Assessment Type
+Manual Grading
+6
+Biochemical Stoichiometry & Biostatistics - 6
+Attempts: 0
+1. Design of Experiment
+2. DoE - JMP
+3. Response Surface Methodology
+4. Plackett Burman Design
+5. Box Behbken Design
+6. DoE -EXCEL
+7. Assessment Time Frame
+8. Rubrics
+9. JMP Tool Installation manual
+With Rewards
+900
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 5
+Assessment Type
+Manual Grading
+Bioinformatics and Data Science
+Bioinformatics and Data Science
+
+Levels: 8
+Hardware
+course-img
+1
+Bioinformatics and Data Analytics - Level 1
+Attempts: 0
+1. Biologial Databases
+2. Data types
+3. Data retrival
+4. Sequence & structure data analysis
+With Rewards
+300
+Pre Request
+1. Bioinformatics and Data Analytics - Level 0
+Assessment Type
+Manual Grading
+2
+Bioinformatics and Data Analytics - Level 0
+Attempts: 0
+1. Power Analysis
+2. Types of errors
+3. Sample size calculation
+4. G*power tool
+5. Introduction to Biological Data Types
+6. Basics of Sequence File Formats
+7. Nucleic acids and nucleotides
+8. DNA & Protein sequencing
+9. Genomic library
+10. Data base identifiers
+With Rewards
+100
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 3
+Assessment Type
+MCQ
+3
+Bioinformatics and Data Analytics - Level 2A
+Attempts: 0
+1. Phylogenetic Tree Construction Methods – Neighbor-Joining, Maximum Likelihood, and Bayesian Inference.
+2. Phylogenetic Tree Visualization and Interpretation – Using MEGA, PhyML, or iTOL.
+3. Functional Gene Annotation – GO (Gene Ontology)
+With Rewards
+300
+Pre Request
+1. Bioinformatics and Data Analytics - Level 1
+Assessment Type
+Manual Grading
+4
+Bioinformatics and Data Analytics - Level 2B
+Attempts: 0
+1. Phylogenetic Tree Construction Methods
+2. Neighbor-Joining, Maximum Likelihood, and Bayesian Inference.
+3. Phylogenetic Tree Visualization and Interpretation
+4. Using MEGA, PhyML, or iTOL.
+5. Functional Gene Annotation – GO (Gene Ontology)
+6. Rubrics & Time frame for assessment
+With Rewards
+300
+Pre Request
+1. Bioinformatics and Data Analytics - Level 2A
+Assessment Type
+Manual Grading
+5
+Bioinformatics and Data Analytics - Level 3
+Attempts: 0
+1. Molecular Docking
+2. CADD
+With Rewards
+300
+Pre Request
+1. Bioinformatics and Data Analytics - Level 2B
+Assessment Type
+Manual Grading
+6
+Bioinformatics and Data Analytics - Level 4
+Attempts: 0
+1. Drug Screening
+2. Multiple Ligand Screening
+With Rewards
+300
+Pre Request
+1. Bioinformatics and Data Analytics - Level 3
+Assessment Type
+Manual Grading
+7
+Bioinformatics and Data Analytics - Level 5
+Attempts: 0
+1. Molecular Dynamics Simulation I
+With Rewards
+500
+Pre Request
+1. Bioinformatics and Data Analytics - Level 4
+Assessment Type
+Manual Grading
+8
+Bioinformatics and Data Analytics - Level 6
+Attempts: 0
+1. Molecular Dynamics Simulation II
+With Rewards
+Pre Request
+1. Bioinformatics and Data Analytics - Level 5
+Assessment Type
+Manual Grading
+Bioinstrumentation
+Bioinstrumentation
+
+Levels: 6
+Hardware
+course-img
+1
+Bioinstrumentation - Level 1
+Attempts: 0
+1. Basic and optical instruments
+2. Colorimetry & UV Visible Spectrometry
+3. Visible spectroscopy
+4. Turbidimetry
+With Rewards
+300
+Pre Request
+1. Bioinstrumentation - Level 0
+Assessment Type
+Manual Grading
+2
+Bioinstrumentation - Level 0
+Attempts: 0
+1. Basics of Autoclave, pH meter, Magnetic stirrer, Laminar airflow hood
+2. Basic & Optical Instruments – Colorimetry, UV-Vis, Turbidimetry, Visible spectroscopy
+3. Basics of Electrochemical Instruments – Conductivity Meter, Microplate Reader
+4. Foundation of Chromatography techniques
+5. Basics of GCMS and LCMS
+6. Basics of FTIR and XRD
+With Rewards
+100
+Pre Request
+1. Culturing and Molecular Techniques - 3
+Assessment Type
+MCQ
+3
+Bioinstrumentation - Level 2
+Attempts: 0
+1. Microplate reader
+2. Sieve analyzer
+3. Water Analyzer Function and application of keys
+4. Care, precaution and Operating procedure of 1. pH 2. Turbidity 3. DO 4. TDS 5. Salinity 6. Conductivity meter 7. Colorimeter 8. mV & Temperature measurement
+With Rewards
+600
+Pre Request
+1. Bioinstrumentation - Level 1
+Assessment Type
+Manual Grading
+4
+Bioinstrumentation - Level 3
+Attempts: 0
+1. LCMS & GCMS
+2. Data Analysis
+With Rewards
+500
+Pre Request
+1. Bioinstrumentation - Level 2
+Assessment Type
+Manual Grading
+5
+Bioinstrumentation - Level 4
+Attempts: 0
+1. SEM & FTIR
+2. Preparation & Analysis
+With Rewards
+500
+Pre Request
+1. Bioinstrumentation - Level 3
+Assessment Type
+Manual Grading
+6
+Bioinstrumentation - Level 5
+Attempts: 0
+1. XRD
+2. NMR & TGA - Analysis
+With Rewards
+500
+Pre Request
+1. Bioinstrumentation - Level 4
+Assessment Type
+Manual Grading
+Biological Manuscript and Reference Management
+Biological Manuscript and Reference Management
+
+Levels: 2
+Hardware
+course-img
+1
+Biological Manuscript and Reference Management - Level 1
+Attempts: 0
+1. Manuscript Identification
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+Manual Grading
+Register
+2
+Biological Manuscript and Reference Management - Level 2A
+Attempts: 0
+1. Manscript title selection
+2. Parts of Manuscript
+3. Manuscript writing
+4. IMRaD Structure in Research Papers
+5. Anatomy of a Review Article
+6. Title Writing for Scientific Papers
+7. Keyword choosing
+8. Crafting Figures and Tables in article
+With Rewards
+300
+Pre Request
+1. Biological Manuscript and Reference Management - Level 1
+Assessment Type
+Manual Grading
+Bioprocess Technology
+Bioprocess Technology
+
+Levels: 3
+Hardware
+course-img
+1
+Bioprocess Technology - Level 1
+Attempts: 0
+1. Fermentor Instrumentation
+With Rewards
+300
+Pre Request
+1. Bioprocess Technology - Level 0
+Assessment Type
+Manual Grading
+2
+Bioprocess Technology - Level 0
+Attempts: 0
+1. Introduction & Lab Safety Basics
+2. Buffer Preparation & pH Control
+3. Bioprocess Overview
+4. Introduction to Bioprocess Workflow
+5. Lab Equipment Familiarization & Handling
+With Rewards
+100
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 5
+2. Culturing and Molecular Techniques - 4B
+Assessment Type
+MCQ
+3
+Bioprocess Technology - Level 2
+Attempts: 0
+1. Microbial Growth Curve in Bioprocessing
+2. Types of Fermenters (Bioreactors)
+3. Batch and fed-batch fermentation
+4. Monitoring pH, DO, temperature, agitation
+5. Sampling and biomass estimation
+6. Basic troubleshooting of fermentor operations
+7. SoP's
+With Rewards
+600
+Pre Request
+1. Bioprocess Technology - Level 1
+Assessment Type
+Manual Grading
+C Programming
+C Programming
+
+Levels: 7
+Software
+course-img
+1
+C Programming Level - 1
+Attempts: 1
+Completed
+1. Variables
+2. Operators
+3. Conditional Statements
+With Rewards
+300 RP
+Pre Request
+No
+Assessment Type
+Programming
+2
+C Programming Level - 2
+Attempts: 2
+Completed
+1. Looping Statements
+2. 'break' Statement
+3. 'continue' Statement
+With Rewards
+600 RP
+Pre Request
+1. C Programming Level - 1
+Assessment Type
+Programming
+3
+C Programming Level - 3A
+Attempts: 5
+Completed
+1. Arrays
+With Rewards
+900 RP
+Pre Request
+1. C Programming Level - 2
+Assessment Type
+Programming
+4
+C Programming Level - 3B Written Test
+Attempts: 1
+Completed
+1. Conditional Statements
+2. Loops, break and continue Statements
+3. Arrays
+With Rewards
+No RPs
+Pre Request
+1. C Programming Level - 3A
+Assessment Type
+Programming
+5
+C Programming Level - 4
+Attempts: 0
+OnGoing
+1. String and its operations
+With Rewards
+900 RP
+Pre Request
+1. C Programming Level - 3B Written Test
+Assessment Type
+Programming
+6
+C Programming Level - 5
+Attempts: 0
+1. Functions
+2. Recursive functions
+With Rewards
+900 RP
+Pre Request
+1. C Programming Level - 4
+Assessment Type
+Programming
+7
+C Programming Level - 6
+Attempts: 0
+1. Structues, enum, unions
+2. Pointers
+With Rewards
+900 RP
+Pre Request
+1. C Programming Level - 5
+Assessment Type
+Programming
+C Programming MCQ
+C Programming MCQ
+
+Levels: 1
+Beginner
+course-img
+1
+C Programming MCQ Level 1
+Attempts: 0
+OnGoing
+1. Conditional Statements
+2. Loops
+3. Arrays
+With Rewards
+200 RP
+Pre Request
+1. C Programming Level - 3A
+Assessment Type
+MCQ
+Calculus
+Calculus
+
+Levels: 1
+Beginner
+course-img
+1
+Calculus - Level 0
+Attempts: 0
+1. Limits and Continuity
+2. Basic Differentiation Rules
+3. Basic Integration Rules
+4. Applications: Rate of Change, Area Under Curve
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+
+Circuit Debugging
+Levels: 8
+Hardware
+course-img
+1
+Circuit Debugging Level - 0
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+1. Electrical Level - 1B
+Assessment Type
+MCQ
+2
+Circuit Debugging Level - 1
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Circuit Debugging Level - 0
+Assessment Type
+Manual Grading
+3
+Circuit Debugging Level - 2A
+Attempts: 0
+1. AC Circuits
+2. Relay, Contactors
+3. AC Timers
+4. Single Phase Preventers
+With Rewards
+Pre Request
+1. Circuit Debugging Level - 1
+Assessment Type
+Manual Grading
+4
+Circuit Debugging Level - 2B
+Attempts: 0
+1. Sequential and Combinational Circuits
+With Rewards
+200
+Pre Request
+1. Circuit Debugging Level - 2A
+Assessment Type
+Manual Grading
+5
+Circuit Debugging Level - 2C
+Attempts: 0
+1. Wave Shaping Circuits
+2. Code Converters
+3. Counters
+4. SCRs, TRIACs, MOSFETs, Op-Amps
+With Rewards
+200
+Pre Request
+1. Circuit Debugging Level - 2B
+Assessment Type
+Manual Grading
+6
+Circuit Debugging Level - 3A
+Attempts: 0
+1. Solid State Switching
+2. BJT, MOSFET
+With Rewards
+Pre Request
+1. Circuit Debugging Level - 2C
+Assessment Type
+Manual Grading
+7
+Circuit Debugging Level - 3B
+Attempts: 0
+1. Solid State Switching
+2. Op-Amp Circuits
+With Rewards
+300
+Pre Request
+1. Circuit Debugging Level - 3A
+Assessment Type
+Manual Grading
+8
+Circuit Debugging Level - 3C
+Attempts: 0
+1. Resonance and Magnetically Coupled Circuits
+With Rewards
+300
+Pre Request
+1. Circuit Debugging Level - 3B
+Assessment Type
+Manual Grading
+Cloud Infrastructure
+Cloud Infrastructure
+
+Levels: 6
+Software
+course-img
+1
+Cloud Infrastructure - Level 1
+Attempts: 0
+1. Cloud services
+2. EC2, S3, VPC
+With Rewards
+300
+Pre Request
+1. Computer Networking - Level 2
+2. Linux Level - 2
+Assessment Type
+Manual Grading
+2
+Cloud Infrastructure - Level 2
+Attempts: 0
+1. Databases
+2. Auto Scaling and IAM
+With Rewards
+300
+Pre Request
+1. Cloud Infrastructure - Level 1
+Assessment Type
+Manual Grading
+3
+Cloud Infrastructure - Level 2A
+Attempts: 0
+1. Auto Scaling
+2. Load Balancing
+3. Serverless functions
+With Rewards
+500
+Pre Request
+1. Cloud Infrastructure - Level 2
+Assessment Type
+Manual Grading
+4
+Cloud Infrastructure - Level 2B
+Attempts: 0
+1. Network Address Translation
+2. IAM
+3. Cost Optimization
+With Rewards
+500
+Pre Request
+1. Cloud Infrastructure - Level 2A
+Assessment Type
+Manual Grading
+5
+Cloud Infrastructure - Level 2C
+Attempts: 0
+1. Orchestration
+With Rewards
+500
+Pre Request
+1. Cloud Infrastructure - Level 2B
+Assessment Type
+Manual Grading
+6
+Cloud Infrastructure - Level 3
+Attempts: 0
+1. Architecture Design, Devops
+With Rewards
+800
+Pre Request
+1. Cloud Infrastructure - Level 2C
+Assessment Type
+Manual Grading
+Code Debugging
+Code Debugging
+
+Levels: 2
+Beginner
+course-img
+1
+Code Debugging - Level 1
+Attempts: 0
+OnGoing
+1. Debugging concepts on-Variables and Data Types
+2. Input and Output Statements
+3. Control Flow - if-else statements, switch, nested conditional statements
+4. Control Flow:Loops, Advanced loop constructs
+5. Break and continue statement
+With Rewards
+150
+Pre Request
+1. C Programming Level - 2
+2
+Code Debugging Level 3
+Attempts: 0
+1.
+With Rewards
+250
+Pre Request
+1. Code Debugging - Level 1
+Assessment Type
+Programming
+Communication
+Levels: 3
+GENERAL Skill
+course-img
+1
+Communication Level - 1A - Reading
+Attempts: 3
+1.
+With Rewards
+100 RP
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Communication Level - 1B - Listening
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+1. Communication Level - 1A - Reading
+Assessment Type
+MCQ
+3
+Communication - 1C - Email Etiquette
+Attempts: 0
+1. Email Etiquette
+With Rewards
+100 RP
+Pre Request
+1. Communication Level - 1B - Listening
+Computational Thinking
+Computational Thinking
+
+Levels: 8
+Beginner
+course-img
+1
+Computational Thinking - Level 1
+Attempts: 0
+OnGoing
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+Programming
+2
+Computational Thinking - Level 2
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Computational Thinking - Level 1
+Assessment Type
+Programming
+3
+Computational Thinking - Level 3
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Computational Thinking - Level 2
+Assessment Type
+Programming
+4
+Computational Thinking - Level 4
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Computational Thinking - Level 3
+Assessment Type
+Programming
+5
+Computational Thinking - Level 5
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Computational Thinking - Level 4
+Assessment Type
+Programming
+6
+Computational Thinking - Level 6
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Computational Thinking - Level 5
+Assessment Type
+Programming
+7
+Computational Thinking - Level 7
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Computational Thinking - Level 6
+Assessment Type
+Programming
+8
+Computational Thinking - Level 8
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Computational Thinking - Level 7
+Assessment Type
+Programming
+Computer Networking
+Levels: 6
+Software
+course-img
+1
+Computer Networking - Level 1 Training
+Attempts: 1
+OnGoing
+1. IP Address and its Classes
+2. Simple LAN configuration(PCs with Network Switch)
+3. Subnetting & Classless Addressing (CIDR)
+4. Cabling & Crimping
+With Rewards
+NO RP
+Pre Request
+No
+Assessment Type
+Manual Grading
+2
+Computer Networking - Level 2 Training
+Attempts: 1
+1. IP Address and its Classes
+2. Simple LAN configuration(PCs with Network Switch)
+3. Subnetting & Classless Addressing (CIDR)
+4. Cabling & Crimping
+With Rewards
+NO RP
+Pre Request
+1. Computer Networking - Level 1
+Assessment Type
+Manual Grading
+Register
+3
+Computer Networking - Level 1
+Attempts: 1
+Completed
+1. IP Addressing
+2. IP classes
+3. LAN (2 PCs with 1 Network Switch)
+4. Subnetting
+5. Classless Addressing (CIDR)
+6. Cabling
+7. Crimping
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+Manual Grading
+4
+Computer Networking - Level 2
+Attempts: 0
+OnGoing
+1. VLAN, Types of VLAN
+2. VLAN Configuration
+3. Switch Configuration Commands
+4. MAC Address Table
+5. Access and Trunk ports
+6. Spanning Tree Protocol
+7. LLDP, BPDU guard
+With Rewards
+300
+Pre Request
+1. Computer Networking - Level 1
+Assessment Type
+Manual Grading
+5
+Computer Networking - Level 3
+Attempts: 0
+1. Routing protocols (Static, Dynamic)
+2. Inter-VLAN Routing, Routing Tables
+3. Port Forwarding
+4. Routing Metrics
+With Rewards
+600
+Pre Request
+1. Computer Networking - Level 2
+Assessment Type
+Manual Grading
+6
+Computer Networking - Level 4
+Attempts: 0
+1. DHCP, DNS, FTP, NAT
+With Rewards
+600
+Pre Request
+1. Computer Networking - Level 3
+Assessment Type
+Manual Grading
+Construction Management
+Construction Management
+
+Levels: 4
+Hardware
+course-img
+1
+Construction management - Level 0
+Attempts: 0
+1. Basics of Construction Management
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Construction management - Level 1.1
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Construction management - Level 0
+Assessment Type
+Manual Grading
+3
+Construction management - Level 1.2
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+1. Construction management - Level 1.1
+Assessment Type
+Manual Grading
+4
+Construction management - Level 1.3
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+1. Construction management - Level 1.2
+Assessment Type
+Manual Grading
+Construction materials
+Construction materials
+
+Levels: 10
+Hardware
+course-img
+1
+Construction materials - Level 0
+Attempts: 0
+1. Basic physical characteristics related to cement
+2. fine aggregate and coarse aggregate
+3. Testing procedures for determining the quality of the material
+4. Chemical composition of the materials
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Construction materials - Level 1A
+Attempts: 0
+1. Field and Laboratory Tests on Bricks and Cement
+With Rewards
+150
+Pre Request
+1. Construction materials - Level 0
+Assessment Type
+Manual Grading
+3
+Construction materials - Level 1B
+Attempts: 0
+1. Field and Laboratory Tests on Fine and Coarse Aggregate
+With Rewards
+300
+Pre Request
+1. Construction materials - Level 1A
+Assessment Type
+Manual Grading
+4
+Construction materials - Level 1C
+Attempts: 0
+1. Field and Laboratory Tests on Steel and Tile
+With Rewards
+300
+Pre Request
+1. Construction materials - Level 1B
+Assessment Type
+Manual Grading
+5
+Construction materials - Level 2.1
+Attempts: 0
+1. Admixtures
+With Rewards
+200
+Pre Request
+1. Construction materials - Level 1C
+Assessment Type
+Manual Grading
+6
+Construction materials - Level 2.2
+Attempts: 0
+1. Design Mix
+With Rewards
+200
+Pre Request
+1. Construction materials - Level 2.1
+Assessment Type
+Manual Grading
+7
+Construction materials - Level 2.3
+Attempts: 0
+1. Mix Design for special Concretes
+With Rewards
+200
+Pre Request
+1. Construction materials - Level 2.2
+Assessment Type
+Manual Grading
+8
+Construction materials - Level 3.1
+Attempts: 0
+1. Workability tests on Fresh Concrete for normal concrete
+With Rewards
+300
+Pre Request
+1. Construction materials - Level 2.3
+Assessment Type
+Manual Grading
+9
+Construction materials - Level 3.2
+Attempts: 0
+1. Casting of cubes and cylinders for normal concrete
+With Rewards
+300
+Pre Request
+1. Construction materials - Level 3.1
+Assessment Type
+Manual Grading
+10
+Construction materials - Level 3.3
+Attempts: 0
+1. Casting of prisms for normal concrete
+With Rewards
+300
+Pre Request
+1. Construction materials - Level 3.2
+Assessment Type
+Manual Grading
+Creative Media
+Creative Media
+
+Levels: 1
+Software
+course-img
+1
+Creative Media Entrance Test
+Attempts: 1
+1. You are expected to hand-sketch a given object.
+With Rewards
+100 RP
+Pre Request
+No
+Assessment Type
+Manual Grading
+Regis
+Culturing and Molecular Techniques
+Levels: 5
+Hardware
+course-img
+1
+Culturing and Molecular Techniques - 1
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Culturing and Molecular Techniques - 2
+Attempts: 0
+1.
+With Rewards
+600 RP
+Pre Request
+1. Culturing and Molecular Techniques - 1
+Assessment Type
+Manual Grading
+3
+Culturing and Molecular Techniques - 3
+Attempts: 0
+1.
+With Rewards
+900 RP
+Pre Request
+1. Culturing and Molecular Techniques - 2
+Assessment Type
+Manual Grading
+4
+Culturing and Molecular Techniques - 4A
+Attempts: 0
+1. Microscopy
+2. Cell counting
+3. Hemocytometry
+4. Staining methods
+With Rewards
+450
+Pre Request
+1. Culturing and Molecular Techniques - 3
+Assessment Type
+Manual Grading
+5
+Culturing and Molecular Techniques - 4B
+Attempts: 0
+1. Biomolecules
+2. Spectral Principle and Beer Lamberts law
+3. Qualitative Principle of Biomolecules (Carbohydrates, Protein, Lipids and Nucleic acid)
+4. Quantitative analysis of Biomolecules (Carbohydrates, Protein, Lipids and Nucleic acid)
+5. Additional sample protocols for assays
+With Rewards
+450
+Pre Request
+1. Culturing and Molecular Techniques - 4A
+Assessment Type
+Manual Grading
+CyberSecurity - Level 1
+CyberSecurity - Level 1
+
+Levels: 1
+Beginner
+course-img
+1
+CyberSecurity - Level 1
+Attempts: 0
+1. Networking Fundamentals
+2. Nmap Mastery
+3. Network Traffic Analysis Using Wireshark
+4. Network Enumeration
+5. Basic Vulnerability Identification
+With Rewards
+300
+Pre Request
+1. Computer Networking - Level 1
+2. Linux Level - 2
+3. Logical Reasoning - 1B
+Assessment Type
+Manual Grading
+Data Science
+Data Science
+
+Levels: 3
+Software
+course-img
+1
+Data Science - Level 2
+Attempts: 0
+1. Handling missing values (drop, fill, interpolate)
+2. Identifying and removing duplicate records
+3. Detecting and treating outliers (IQR, Z-Score)
+4. Webscraping
+With Rewards
+400
+Pre Request
+1. Data Science - Level 1
+Assessment Type
+Programming
+2
+Data Science Level 0
+Attempts: 0
+1. Data Acquisition and Data Preprocessing
+2. Exploratory Data Analysis
+3. Correlation analysis
+4. EDA using Tableau
+5. SQL for Data Science
+6. End to End Data Analytics Project
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+Data Science - Level 1
+Attempts: 0
+1. Data Loading
+2. Data Exploration
+With Rewards
+300
+Pre Request
+1. Programming Python Level - 3
+Assessment Type
+Programming
+Data Structure
+Levels: 11
+Software
+course-img
+1
+Data Structure - 1
+Attempts: 0
+OnGoing
+1. Arrays - Sorting Searching
+2. linear,binary Dynamic Arrays Multidimensional Arrays
+With Rewards
+600 RP
+Pre Request
+No
+Assessment Type
+Programming
+2
+Data Structure - 2
+Attempts: 0
+1. Stack - Stack Operations Infix, Postfix, and Prefix Expressions
+2. Stack-based Memory Management Parentheses Matching
+3. Queue - Queue Operations, Queue types. Blocking and Non-blocking Queues Queue Design Patterns
+With Rewards
+600
+Pre Request
+1. Data Structure - 1
+Assessment Type
+Programming
+3
+Data Structure - 3
+Attempts: 0
+1. Linked List - Singly Linked List
+2. Circular Linked List Doubly Linked List
+With Rewards
+900
+Pre Request
+1. Data Structure - 2
+Assessment Type
+Programming
+4
+Data Structure - 4
+Attempts: 0
+1. Binary Tree
+2. Binary Tree Traversals, Insert, Delete Balanced Binary Trees
+With Rewards
+900
+Pre Request
+1. Data Structure - 3
+Assessment Type
+Programming
+5
+Data Structure - 5
+Attempts: 0
+1. Graph - Breadth First Traversal for a Graph
+2. Depth First Traversal for a Graph
+With Rewards
+900
+Pre Request
+1. Data Structure - 4
+Assessment Type
+Programming
+6
+Data Structure - 6
+Attempts: 0
+1. Binary Search Tree - Sorting, search
+2. BST Operations
+3. BST Traversals
+4. AVL trees, Red-black Trees
+With Rewards
+900
+Pre Request
+1. Data Structure - 5
+Assessment Type
+Programming
+7
+Data Structure - 7
+Attempts: 0
+1. Graph - Dijkstra's Algorithm
+2. Krushkal's Algorithm
+3. Prim's Algorithm, MST
+With Rewards
+900
+Pre Request
+1. Data Structure - 6
+Assessment Type
+Programming
+8
+Data Structure - 8
+Attempts: 0
+1. Heap - Heap Sort
+2. Binomial Heap
+3. Fibonacci Heap
+4. Binary Heap
+With Rewards
+900
+Pre Request
+1. Data Structure - 7
+Assessment Type
+Programming
+9
+Data Structure - 9
+Attempts: 0
+1. Hashing - Collision Resolution Strategies
+2. Load Balancing in Hash Tables
+3. Hashing for String Matching
+4. Universal Hashing
+5. Cuckoo Hashing
+With Rewards
+900
+Pre Request
+1. Data Structure - 8
+Assessment Type
+Programming
+10
+Data Structure - 10
+Attempts: 0
+1. Trie Data structure - Ternary Search Tries
+2. Compressed Tries
+3. Compact Tries
+4. Multiway Tries
+With Rewards
+900
+Pre Request
+1. Data Structure - 9
+Assessment Type
+Programming
+11
+Data Structure - 11
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Data Structure - 10
+Assessment Type
+Programming
+Data Structure - Core Conepts (PS-CSE)
+DS Core Concept MCQ
+
+Levels: 3
+Beginner
+course-img
+1
+Data Structure Level 1 - (CSE - core concept)
+Attempts: 2
+OnGoing
+1. Linked List and Applications
+2. Singly Linked List
+3. Doubly Linked List
+4. Circularly Linked List
+5. Stack Concepts
+6. Applications - Evaluating Arithmetic Expressions & Balancing the symbols
+7. Queue Concepts
+8. Queue Concepts
+9. Deque (Double-Ended Queue)
+10. Queue Reversal: Reverse the elements in a queue using recursion
+With Rewards
+100
+Pre Request
+No
+2
+Data Structure Level 2 - (CSE - core concept)
+Attempts: 0
+1. Depth-First Search (DFS): Traverse a tree or graph in depth-first order
+2. Breadth-First Search (BFS): Level-order traversal using a queue
+3. Binary Tree Traversals: In Order, Pre Order, Post Order
+4. Binary Search Tree, Insertion, Deletion and Traversal
+5. AVL Tree, Rotations, Insertion, Deletion and Traversal
+6. B Tree, Red Black Tree
+7. Heap : Min Heap, Max Heap, Insertion and Deletion
+8. Tree Applications
+9. Graph Traversal, BFS DFS
+10. Shortest path Algorithms
+11. Minimum Spanning Tree Algorithms
+12. Travelling Sales Person Problems
+13. Hashing Operations: Separate Chaining and Open Addressing
+14. Hash Map Operations: Insertion, Deletion, Search
+With Rewards
+100
+Pre Request
+1. Data Structure Level 1 - (CSE - core concept)
+3
+Data Structure Level 3 - (CSE - core concept)
+Attempts: 0
+1. Trie: Insert and Search in Trie: Basic operations on a trie
+2. Prefix Search: Find words starting with a given prefix in a trie.
+3. Autocomplete System: Implement a basic autocomplete system using a trie.
+4. Longest Prefix Matching: Find the longest matching prefix in a trie.
+5. Compressed Trie
+6. Suffix Trie
+7. Suffix Array Construction: Efficient construction of suffix arrays.
+8. Longest Common Prefix (LCP): Find the longest common prefix between two strings
+9. String Matching: Efficient string matching using a suffix tree
+10. Union-Find (Disjoint Set Union, DSU)
+11. Connected Components: Using union-find to find connected components in a graph
+12. Segment Tree
+13. Range Sum Query: Query the sum of elements in a given range.
+14. Range Minimum Query: Query the minimum element in a given range.
+15. Range Maximum Query: Query the maximum element in a given range.
+16. Lazy Propagation: Efficient range updates in a segment tree.
+17. Point Updates: Modify a single element and update the tree.
+18. Interval Update: Update all elements in a given range.
+19. Bit Manipulation
+20. Find the Only Non-Repeated Element: XOR-based solutions to find unique elements in an array.
+21. Count Set Bits: Count the number of 1s in a binary representation (Hamming Weight).
+22. Bitwise AND/OR/NOT: Perform bitwise operations on integers.
+23. Toggle Specific Bits: Toggle certain bits using bitwise operators
+With Rewards
+100
+Pre Request
+1. Data Structure Level 2 
+Data Visualization
+Data Visualization
+
+Levels: 3
+Software
+course-img
+1
+Data Visualization - Level 0
+Attempts: 0
+1. Statistical expertise in Excel. Data Interpretation from excel data and charts.
+With Rewards
+Pre Request
+No
+Assessment Type
+Manual Grading
+Register
+2
+Data Visualization(New) - Level 0
+Attempts: 0
+1. Workbook & Data Handling
+2. Formatting & References
+3. Sorting, Filtering & Validation
+4. Logical Functions
+5. Text Functions
+6. Date Functions
+7. Lookup Functions
+8. Statistical & Counting Functions
+9. Error Handling & Array Formulas
+10. Formula Auditing
+11. PivotTables & PivotCharts
+12. Conditional Formatting
+13. What-If Analysis
+14. External Links & Optimization
+With Rewards
+150
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+Data Visualization(New) - Level 1
+Attempts: 0
+1. Excel Basic Functions
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+Manual Grading
+Database Programming
+Levels: 7
+Software
+course-img
+1
+Database Programming Level - 1
+Attempts: 0
+1. Data Types, DDL and DML commands
+2. Constraints - Primary Key
+3. Clauses - from, where, distinct
+With Rewards
+300 RP
+Pre Request
+No
+Assessment Type
+Programming
+Register
+2
+Database Programming Level - 2
+Attempts: 0
+1. Constraints:
+2. SQL NOT NULL Constraints
+3. SQL UNIQUE Constraints SQL
+4. Primary Key Constraints
+5. SQL Foreign Key Constraints
+6. SQL CHECK Constraints
+7. SQL DEFAULT
+8. Operators: Arithmetic Operators (+,-,*,/, %) Comparison Operators = (Equal) <> or != (Not Equal) > (Greater Than) < (Less Than) >= (Greater Than or Equal To) <= (Less Than or Equal To)
+9. BETWEEN IN LIKE IS NULL IS NOT NULL Logical Operators (AND, OR, NOT) LIMIT WILDCARD Operator (like) ALIASES Operator (AS) CASE Operator Order by
+With Rewards
+300
+Pre Request
+1. Database Programming Level - 1
+Assessment Type
+Programming
+3
+Database Programming Level - 3
+Attempts: 0
+1. Aggregation functions
+2. Group by clause
+3. Having Clause
+With Rewards
+300
+Pre Request
+1. Database Programming Level - 2
+Assessment Type
+Programming
+4
+Database Programming Level - 4
+Attempts: 0
+1. Join Operations
+With Rewards
+400
+Pre Request
+1. Database Programming Level - 3
+5
+Database Programming Level - 5
+Attempts: 0
+1. String Functions
+2. Sub Queries
+3. Views and index
+With Rewards
+500
+Pre Request
+1. Database Programming Level - 4
+Assessment Type
+Programming
+6
+Database Programming Level - 6
+Attempts: 0
+1. Functions
+2. Stored procedures and triggers
+3. Exception Handling
+With Rewards
+600
+Pre Request
+1. Database Programming Level - 5
+Assessment Type
+Programming
+7
+Database Programming Level - 7
+Attempts: 0
+1. Optimization Techniques (Normalization, Locking)
+With Rewards
+Pre Request
+No
+Assessment Type
+Programming
+DBMS - Core Concept (PS-CSE)
+DBMS - Core Concept
+
+Levels: 3
+Beginner
+course-img
+1
+DBMS Level 1 - (CSE - core concept)
+Attempts: 0
+1. Types of Databases: Relational vs. Non-Relational
+2. Database Components: Tables, Records, and Fields
+3. Introduction to Database Management Systems (DBMS)
+4. Popular DBMS Options: MySQL, PostgreSQL, MongoDB
+5. Understanding Relational Database Concepts
+6. Introduction to Tables and Relationships
+7. Primary Keys and Foreign Keys
+8. Data Types in Relational Databases
+9. Normalization – 1NF to 5NF, BCNF
+10. Denormalization – When and why to denormalize
+With Rewards
+100
+Pre Request
+No
+Register
+2
+DBMS Level 2 - (CSE - core concept)
+Attempts: 0
+1. Introduction to SQL: The Language of Databases
+2. SELECT Statement: Retrieving Data
+3. WHERE Clause: Filtering Data
+4. ORDER BY Clause: Sorting Data
+5. INSERT Statement: Adding Data
+6. UPDATE Statement: Modifying Data
+7. DELETE Statement: Removing Data
+8. Aggregate Functions: COUNT, SUM, AVG, MIN, MAX
+9. HAVING Clause: Filtering Grouped Data
+10. JOIN Operations: Combining Data from Multiple Tables
+11. Subqueries: Queries within Queries
+12. GROUP BY Clause: Grouping Data
+With Rewards
+100
+Pre Request
+1. DBMS Level 1 - (CSE - core concept)
+3
+DBMS Leve 3 - (CSE - core concept)
+Attempts: 0
+1.
+2. Atomicity, Consistency, Isolation, Durability
+3. Dirty Read, Non-Repeatable read, Phantom Read,
+4. Isolation levels, Isolation issues
+5. Shared Lock, Exclusive Lock, Locking Mechanisms
+6. Shared vs Exclusive Locks
+7. Indexes
+8. Query Optimization
+9. Data Storage, File Organization, Buffer Management
+10. ER modelling, ER to Relational, UML for Databases
+With Rewards
+100
+Pre Request
+1. DBMS Level 2 - (CSE - core concept)
+Differential Equations
+Differential Equations
+
+Levels: 1
+Beginner
+course-img
+1
+Differential Equations - Level 0
+Attempts: 0
+1. Order and Degree
+2. Initial & Boundary Value Problems
+3. First-Order ODEs: Separable, Linear, Exact
+4. Integrating Factor Method
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Digital Electronics
+Levels: 16
+Hardware
+course-img
+1
+Electronics Level - 0
+Attempts: 0
+1. Current and Voltage
+2. Passive Devices
+3. Semiconductor devices
+4. Digital Fundamental
+5. Combinational Circuits
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Digital Electronics Level -1A
+Attempts: 0
+1. Implementation of Logic Functions using Switches, Resistors and LED
+With Rewards
+150 RP
+Pre Request
+1. Electronics Level - 0
+Assessment Type
+Manual Grading
+3
+Digital Electronics Level -1B
+Attempts: 0
+1.
+With Rewards
+150 RP
+Pre Request
+1. Digital Electronics Level -1A
+Assessment Type
+Manual Grading
+4
+Digital Electronics Level -1C
+Attempts: 0
+1. Implementation of Logic Functions using 74 Series Logic ICs
+With Rewards
+150 RP
+Pre Request
+1. Digital Electronics Level -1B
+Assessment Type
+Manual Grading
+5
+Digital Electronics Level -1D
+Attempts: 0
+1. Implementation of Logic Functions using Universal Logic Gates
+With Rewards
+150 RP
+Pre Request
+1. Digital Electronics Level -1C
+Assessment Type
+Manual Grading
+6
+Digital electronics - Level 2.0
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+1. Digital Electronics Level -1D
+Assessment Type
+MCQ
+7
+Digital Electronics Level -2A
+Attempts: 0
+1. Implementation of Logic Functions using Logic ICs for the given Truth Table
+With Rewards
+300 RP
+Pre Request
+1. Digital electronics - Level 2.0
+Assessment Type
+Manual Grading
+8
+Digital Electronics Level -2B
+Attempts: 0
+1.
+With Rewards
+300 RP
+Pre Request
+1. Digital electronics - Level 2.0
+2. Digital Electronics Level -2A
+Assessment Type
+Manual Grading
+9
+Digital Electronics Level -2C
+Attempts: 0
+1. Implementation of Multistage Arithmetic Circuits using Logic ICs
+With Rewards
+300 RP
+Pre Request
+1. Digital electronics - Level 2.0
+2. Digital Electronics Level -2B
+Assessment Type
+Manual Grading
+10
+Digital Electronics Level -3A
+Attempts: 0
+1. Implementation of Data Transmission Circuits: Multiplexer and Demultiplexer
+With Rewards
+300 RP
+Pre Request
+1. Digital electronics - Level 2.0
+2. Digital Electronics Level -2C
+Assessment Type
+Manual Grading
+11
+Digital Electronics Level -3B
+Attempts: 0
+1. Implementation of Data Transmission Circuits: Encoders and Decoders
+With Rewards
+300 RP
+Pre Request
+1. Digital electronics - Level 2.0
+2. Digital Electronics Level -3A
+Assessment Type
+Manual Grading
+12
+Digital Electronics Level - 4A
+Attempts: 0
+1. Flipflops and their types
+With Rewards
+300 RP
+Pre Request
+1. Digital Electronics Level -3C
+Assessment Type
+Manual Grading
+13
+Digital Electronics Level -3C
+Attempts: 0
+1. Implementation of all Code Converter Circuits
+With Rewards
+300 RP
+Pre Request
+1. Digital electronics - Level 2.0
+2. Digital Electronics Level -3B
+Assessment Type
+Manual Grading
+14
+Digital Electronics Level -4B
+Attempts: 0
+1. Shift Registers
+With Rewards
+300
+Pre Request
+1. Digital Electronics Level - 4A
+Assessment Type
+Manual Grading
+15
+Digital Electronics Level -4C
+Attempts: 0
+1. Frequency Divider Circuit
+2. Binary Sequence Generator using Shift Register
+3. frequency division using T flipflop
+4. Design any Clock Frequency Divider
+With Rewards
+300
+Pre Request
+1. Digital Electronics Level -4B
+Assessment Type
+Manual Grading
+16
+Digital Electronics Level - 5A
+Attempts: 0
+1. Ring Counter and its types
+2. Cascading counter
+3. Ripple Counter and BCD counter
+4. Johnson counter
+5. BCD counter
+6. Ripple counter , BCD Ripple counter
+7. Synchronous decade counter
+8. Interfacing 7 segment display
+9. Interfacing 4 bit asynchronous counter with 7 segment display
+With Rewards
+300
+Pre Request
+1. Digital Electronics Level -4C
+Assessment Type
+Manual Grading
+Electrical Skills - Common
+Levels: 13
+Hardware
+course-img
+1
+Electrical Level - 0
+Attempts: 0
+1. Basics of Electricals
+With Rewards
+100 RP
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Electrical Level - 1A
+Attempts: 0
+1. Electric Charge, Current, Voltage, and Resistance
+2. Equivalent Circuit Analysis of Simple DC Circuits
+3. Ohm’s Law
+4. Power and Energy in DC Circuits
+5. Electrical Units and Symbols
+6. Resistors, Capacitors and Inductors in Series and Parallel
+7. Basic Calculations of Voltage, Current, and Resistance
+With Rewards
+300 RP
+Pre Request
+1. Electrical Level - 0
+Assessment Type
+Manual Grading
+3
+Electrical Level - 1B
+Attempts: 0
+1. Kirchhoff’s Current Law (KCL)
+2. Kirchhoff’s Voltage Law (KVL)
+3. Voltage Division Rule
+4. Current Division Rule
+5. Nodal Analysis (Node Voltage Method)
+6. Mesh Analysis (Loop Current Method)
+With Rewards
+300 RP
+Pre Request
+1. Electrical Level - 1A
+Assessment Type
+Manual Grading
+4
+Electrical Level - 2.A
+Attempts: 0
+1. Advanced DC Circuit Analysis: Planar & Non-Planar Circuits, Supermesh and Supernode Techniques
+2. Problems using DC - Planar and Non-planar Circuits using super mesh
+3. Problems with supernodes.
+4. Problems with DC circuit analysis using Independent vs dependent sources
+With Rewards
+300 RP
+Pre Request
+1. Electrical Level - 1B
+Assessment Type
+Manual Grading
+5
+Electrical Level - 2.B
+Attempts: 0
+1. DC Circuit Analysis - R,L,C & Wye-Delta
+2. Problem using Resistance with Wye-Delta Transformations.
+3. Problems using source transformation.
+With Rewards
+300 RP
+Pre Request
+1. Electrical Level - 2.A
+Assessment Type
+Manual Grading
+6
+Electrical Level - 2.C
+Attempts: 0
+1. Network Theorems
+2. Superposition Theorem
+3. Thevenin’s Theorem
+4. Norton’s Theorem
+5. Maximum Power Transfer Theorem
+6. Source Transformation
+7. Star-Delta (Y-Δ) Transformation
+8. Power Calculations in Complex Resistive Networks
+With Rewards
+300 RP
+Pre Request
+1. Electrical Level - 2.B
+Assessment Type
+Manual Grading
+7
+Electrical Level -3.0
+Attempts: 0
+1.
+With Rewards
+100 RP
+Pre Request
+1. Electrical Level - 2.B
+Assessment Type
+MCQ
+8
+Electrical Level -3.A
+Attempts: 0
+1. AC Fundamentals Concepts.
+2. Basic Concepts of AC
+3. Waveforms and Phasors
+4. Reactance and Impedance
+With Rewards
+300
+Pre Request
+1. Electrical Level -3.0
+Assessment Type
+Manual Grading
+9
+Electrical Level -3.B
+Attempts: 0
+1. Inductor & Capacitors in AC
+2. Analysis of voltage, current, and power in AC Circuits
+3. Impedance and Power Triangle
+4. Total Impedance Calculation for the given Circuit
+5. Power and power factor Measurement
+6. RL & RC Transient & steady state analysis with DC / free excitation
+With Rewards
+300
+Pre Request
+1. Electrical Level -3.A
+Assessment Type
+Manual Grading
+10
+Electrical Level -3.C
+Attempts: 0
+1. Series Resonance Circuit
+2. Parallel Resonance Circuit
+3. Quality Factor (Q-Factor)
+4. Impedance Matching
+5. Damping in Resonance Circuits
+6. Bandwidth and Selectivity
+7. Coupled Circuits - Transformers (Introduction) Working principle based on mutual induction Ideal vs. Practical Transformers, Leakage Flux, and Core Losses
+8. Self and Mutual Inductance - Series aiding and series opposing
+With Rewards
+300
+Pre Request
+1. Electrical Level -3.B
+Assessment Type
+Manual Grading
+11
+Electrical Level - 4.A
+Attempts: 0
+1. Identification and Assembly of DC Machine Parts
+2. Winding Practice (Lap and Wave Windings)
+3. Construction of a Basic Working Model of a DC Generator
+4. Open Circuit Characteristics (OCC) of a DC Shunt Generator
+With Rewards
+300
+Pre Request
+1. Electrical Level -3.C
+Assessment Type
+Manual Grading
+12
+Electrical Level - 4.B
+Attempts: 0
+1. Load Test on DC Shunt Generator
+2. Speed Control of DC Shunt Motor (Field and Armature Control)
+3. Load Test on DC Series Motor
+With Rewards
+300
+Pre Request
+1. Electrical Level - 4.A
+Assessment Type
+Manual Grading
+13
+Electrical Level - 4.C
+Attempts: 0
+1. Simulation of DC Motor Control using MATLAB/Multisim/Proteus
+2. Simulation of DC Motor Control using MATLAB/Multisim/Proteus
+With Rewards
+300
+Pre Request
+1. Electrical Level - 4.B
+Assessment Type
+Manual Grading
+Electrical Wiring - Gurugulam Assessment
+Electrical Wiring - Gurugulam Assessment
+
+Levels: 5
+Hardware
+course-img
+1
+Electrical Wiring - Gurugulam Assessment - Level 1A
+Attempts: 0
+1. Plug Socket Wiring (2 pin & 3 Pin)
+With Rewards
+150
+Pre Request
+1. Electrical Wiring - Gurugulam Assessment - Level 0
+Assessment Type
+Manual Grading
+2
+Electrical Wiring - Gurugulam Assessment - Level 1B
+Attempts: 0
+1. Lamp Switch Board Wiring
+With Rewards
+150
+Pre Request
+1. Electrical Wiring - Gurugulam Assessment - Level 1A
+Assessment Type
+Manual Grading
+3
+Electrical Wiring - Gurugulam Assessment - Level 1C
+Attempts: 0
+1. Two-Way Lamp Control Wiring
+With Rewards
+150
+Pre Request
+1. Electrical Wiring - Gurugulam Assessment - Level 1B
+Assessment Type
+Manual Grading
+4
+Electrical Wiring - Gurugulam Assessment - Level 1D
+Attempts: 0
+1. Fan and Regulator Wiring
+With Rewards
+150
+Pre Request
+1. Electrical Wiring - Gurugulam Assessment - Level 1C
+Assessment Type
+Manual Grading
+5
+Electrical Wiring - Gurugulam Assessment - Level 0
+Attempts: 2
+OnGoing
+1. Basic Concepts of Electrical and Electronic Components
+2. Component selection and tools
+3. Types of wires
+4. Electrical installation standards and wire color codes
+5. Series and Parallel combination rules
+6. Electrical Wiring Safety Rules
+7. Protection devices
+8. Conduit system and types
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Electronics - Gurugulam Assessment
+Electronics - Gurugulam Assessment
+
+Levels: 5
+Hardware
+course-img
+1
+Electronics - Gurugulam Assessment - Level 1A
+Attempts: 0
+1. Component Identification
+2. Resistor color code calculation
+3. Capacitor Type and Value Determination
+4. Potential Divider Circuits
+5. Balanced and Unbalanced Circuits
+With Rewards
+150
+Pre Request
+1. Electronics - Gurugulam Assessment - Level 0
+Assessment Type
+Manual Grading
+2
+Electronics - Gurugulam Assessment - Level 1B
+Attempts: 0
+1. Diode Rectifier Circuits: Half-Wave and Full-Wave Rectifiers
+2. Bridge Rectifier Circuit
+3. Voltage Regulator
+4. Voltage Multiplier Circuits.
+With Rewards
+150
+Pre Request
+1. Electronics - Gurugulam Assessment - Level 1A
+Assessment Type
+3
+Electronics - Gurugulam Assessment - Level 1C
+Attempts: 0
+1. Logic Gate Design Using Only Switches
+2. Diodes, Resistors and Transistors
+With Rewards
+150
+Pre Request
+1. Electronics - Gurugulam Assessment - Level 1B
+Assessment Type
+4
+Electronics - Gurugulam Assessment - Level 1D
+Attempts: 0
+1. Switching Circuits using Transistors
+2. Diodes, and Resistors
+3. K-Maps and Combinational Logic Circuits
+With Rewards
+150
+Pre Request
+1. Electronics - Gurugulam Assessment - Level 1C
+Assessment Type
+5
+Electronics - Gurugulam Assessment - Level 0
+Attempts: 1
+1. Basic Concepts of Electronics Component
+2. Identification of electronic components
+3. Types of active and passive components
+4. Basic circuit connections
+5. Calculations of resistance and capacitor values of serial and parallel connections.
+6. Usage of multimeter
+7. Ohms law and Kirchhoff’s voltage and current law.
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+
+Embedded Systems
+Embedded systems skills encompass expertise in designing and programming microcontroller-based systems, focusing on efficient hardware-software integration.
+
+Levels: 8
+Hardware
+course-img
+1
+Embedded System - Level 3B
+Attempts: 0
+1. Level configuration and practical implementation of UART, I²C, and SPI communication protocols
+With Rewards
+300
+Pre Request
+1. Embedded System - Level 3
+Assessment Type
+Manual Grading
+2
+Embedded System - Level 0A (LMC)
+Attempts: 0
+1. Little Man Computing
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+Embedded Systems - 0B
+Attempts: 0
+1. Little Man Computing
+With Rewards
+150
+Pre Request
+1. Embedded System - Level 0A (LMC)
+Assessment Type
+Manual Grading
+4
+Embedded System - Level 1A
+Attempts: 0
+1. Little Man Computing
+2. Architecture, RISC,CISC, Von Neumen, Harvard, Pin diagram
+3. Instruction Set, DAD, DAA, PUSH, POP, SID,SOD
+4. Serial Communication
+5. DMA, CALL, Interrupt, TRAP, RST, RIM, assembler directives
+6. opcode, mnemonics
+7. clock, T-cycle
+8. I/O mapped I/O, Memory Mapped I/O
+With Rewards
+100
+Pre Request
+1. Embedded System - Level 0A (LMC)
+2. Embedded Systems - 0B
+Assessment Type
+MCQ
+5
+Embedded System - Level 1B
+Attempts: 0
+1. Arithmetic Operations 8 bit and 16 bit,Complement, Rotate, Nibble
+2. Binary, ASCII, Array, Comparison
+3. Stack
+4. Logical Operations
+5. Memory Access
+6. Flag Register, Subroutines
+7. Control Flow, Shorting, parity
+With Rewards
+300
+Pre Request
+1. Embedded System - Level 1A
+Assessment Type
+Manual Grading
+6
+Embedded System - Level 2A
+Attempts: 0
+1. Architecture of the PIC16F877A or any other 8-bit microcontroller
+2. Microcontroller memory map
+3. Complete instruction set
+4. Assembly language programming for GPIO handling
+With Rewards
+300
+Pre Request
+1. Embedded System - Level 1B
+Assessment Type
+Manual Grading
+7
+Embedded System - Level 2B
+Attempts: 0
+1. PIC16F877A Microcontroller
+2. Operations
+3. Programming
+With Rewards
+400
+Pre Request
+1. Embedded System - Level 2A
+Assessment Type
+Manual Grading
+8
+Embedded System - Level 3
+Attempts: 0
+1. Timer Modules
+2. Timer vs Delay
+3. Timer Preloading
+4. PWM
+With Rewards
+400
+Pre Request
+1. Embedded System - Level 2B
+Assessment Type
+Manual Grading
+Food chemistry and nutrition
+Food chemistry and nutrition
+
+Levels: 2
+Hardware
+course-img
+1
+Food chemistry and nutrition - Level 0
+Attempts: 0
+1. Introduction to Food Chemistry
+2. Nutrient Classification and Functions
+3. Functional and Bioactive Components
+4. Food Additives and Enzymes
+5. Water Activity and Food Stability
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Food chemistry and nutrition - Level 1
+Attempts: 0
+1. Impact of Processing and Storage on Food Nutrients and Flavor
+2. Analyze the effect of heat on vitamin C content in fruits/vegetables
+3. Investigate lipid oxidation in stored food products
+4. Study Maillard reaction and its impact on food color and flavor
+With Rewards
+300
+Pre Request
+1. Food chemistry and nutrition - Level 0
+Assessment Type
+Manual Grading
+Food laws, Quality Control and Packaging
+Food laws, Quality Control and Packaging
+
+Levels: 2
+Hardware
+course-img
+1
+Food laws, Quality Control and Packaging - Level 0
+Attempts: 0
+1. Introduction
+2. Key Regulations and Standards
+3. Labeling Principles
+4. Common Issues in Labeling
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Food laws, Quality Control and Packaging - Level 1
+Attempts: 0
+1. Simple Physicochemical Tests to Check Food Quality
+2. pH using digital meter
+3. Total Soluble Solids (°Brix) using refractometer
+4. Moisture content using hot air oven or moisture analyzer
+5. Spot tests for common adulterants
+6. Starch in milk, metanil yellow in turmeric, water in honey
+7. Acidity, ash content, and fat content (by Gerber or Soxhlet) determination
+8. Comparison of results with FSSAI/ISI/BIS standards
+9. Preparation of a basic quality report
+With Rewards
+300
+Pre Request
+1. Food laws
+2. Quality Control and Packaging - Level 0
+Assessment Type
+Manual Grading
+Food Microbiology and Safety
+Food Microbiology and Safety
+
+Levels: 2
+Hardware
+course-img
+1
+Food Microbiology and Safety - Level 0
+Attempts: 0
+1. Basics of Food Microbiology and safety
+2. Basic type of microbes
+3. Types of growth pattern of microbes
+4. Mechanism and indications of microbial food spoilage
+5. Sources of microbes in food
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Food Microbiology and Safety - Level 1
+Attempts: 0
+1. Sample Collection and Preparation
+2. Culturing Microorganisms from Food
+3. Staining and Microscopic Observation
+4. Compare Microbial Load Before and After Washing Fresh Produce
+5. Sampling and Pre-Wash Analysis
+6. Washing Techniques and Treatment Conditions
+7. Comparative Microbial Analysis
+8. Evaluate the Effect of Temperature on Microbial Growth (TDP/TDT)
+9. Concepts of Thermal Resistance
+10. Experimental Design for TDP and TDT Determination
+With Rewards
+300
+Pre Request
+1. Food Microbiology and Safety - Level 0
+Assessment Type
+Manual Grading
+Food Processing and Preservation Technology
+Food Processing and Preservation Technology
+
+Levels: 3
+Hardware
+course-img
+1
+Food Processing and Preservation Technology Level 1
+Attempts: 0
+1. Basics of Food Processing and Preservation
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Food Processing and Preservation Technology Level 2
+Attempts: 0
+1. Basic Thermal Processing of Fruits or Vegetables
+2. Intermediate Processing with Ingredient Addition and Preservation
+3. Complex Food System Formulation and Freezing
+With Rewards
+300
+Pre Request
+1. Food Processing and Preservation Technology Level 1
+Assessment Type
+Manual Grading
+3
+Food Processing and Preservation Technology Level 3
+Attempts: 0
+1. Novel Non-Thermal Technologies
+2. Advanced Freezing & Thawing Methods
+3. Innovative Drying Systems
+4. Ready-to-Eat (RTE) and Retort Foods
+5. Functional & Nutraceutical Beverages
+6. Fermented Functional Foods
+7. Healthy Snack Innovations
+8. Smart & Active Packaging
+With Rewards
+400
+Pre Request
+1. Food Processing and Preservation Technology Level 2
+Assessment Type
+Manual Grading
+GATE - BIO TECHNOLOGY
+GATE
+
+Levels: 16
+Beginner
+course-img
+1
+ANIMAL BIOTECHNOLOGY
+Attempts: 0
+1. ANIMAL BIOTECHNOLOGY
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+BIO CHEMISTRY
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+BIO INFORMATICS
+Attempts: 0
+1. BIO INFORMATICS
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+4
+BIO INSTRUMENTATION
+Attempts: 0
+1. BIO INSTRUMENTATION
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+5
+BIO REACTION ENGINEERING
+Attempts: 0
+1. BIO REACTION ENGINEERING
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+6
+CELL BIOLOGY
+Attempts: 0
+1. CELL BIOLOGY
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+7
+ENVIRONMENTAL BIO TECHNOLOGY
+Attempts: 0
+1. ENVIRONMENTAL BIO TECHNOLOGY
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+8
+Genetics and Evolutionary Biology
+Attempts: 0
+1. Genetics and Evolutionary Biology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+9
+Immunology
+Attempts: 0
+1. Immunology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+10
+Microbial Biotechnology
+Attempts: 0
+1. Microbial Biotechnology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+11
+Microbiology
+Attempts: 0
+1. Microbiology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+12
+Molecular Biology
+Attempts: 0
+1. Molecular Biology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+13
+Plant Biotechnology
+Attempts: 0
+1. Plant Biotechnology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+14
+Process Biotechnology
+Attempts: 0
+1. Process Biotechnology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+15
+Recombinant DNA Technology
+Attempts: 0
+1. Recombinant DNA Technology
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+16
+Transport Processes and Process Control
+Attempts: 0
+1. Transport Processes and Process Control
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+GATE -CS CLUSTER
+CS CLUSTER COURSES
+
+Levels: 7
+Beginner
+course-img
+1
+ARTIFICIAL INTELLIGENCE
+Attempts: 0
+1. ARTIFICIAL INTELLIGENCE
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+COA
+Attempts: 0
+1. COA
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+COMPUTER NETWORKS
+Attempts: 0
+1. COMPUTER NETWORKS
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+4
+DBMS
+Attempts: 0
+1. DBMS
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+5
+PROGRAMMING AND DATA STRUCTURES
+Attempts: 0
+1. PROGRAMMING AND DATA STRUCTURES
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+6
+COMPILER DESIGN
+Attempts: 0
+1. COMPILER DESIGN
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+7
+OPERATING SYSTEM
+Attempts: 0
+1. OPERATING SYSTEM
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+Gate EEE
+GATE
+
+Levels: 6
+Beginner
+course-img
+1
+POWER ELECTRONICS
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+POWER SYSTEMS
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+SIGNALS AND SYSTEMS
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+4
+ANALOG & DIGITAL ELECTRONICS
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+5
+ELECTRICAL & ELECTRONICS MEASUREMENTS
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+6
+ELECTROMAGNETIC FIELDS
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+German Language
+-
+
+Levels: 2
+Beginner
+course-img
+1
+Level 0 - German
+Attempts: 2
+Completed
+1. Basic German
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+2
+Level 1 - German
+Attempts: 0
+OnGoing
+1. Basic
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+GP Challenge
+GP Challenge
+
+Levels: 2
+GENERAL Skill
+course-img
+1
+GP Challenge - August 2025
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+GP Challenge
+2
+GP Challenge - October 2025
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+GP Challenge
+GP Challenge - July 2026
+NA
+
+Levels: 1
+Beginner
+course-img
+1
+GP Challenge - July 2026
+Attempts: 0
+OnGoing
+1. GP Challenge - July 2026 Registration
+With Rewards
+Pre Request
+No
+Assessment Type
+Manual Grading
+GP Challenge 2026
+NA
+
+Levels: 1
+Beginner
+course-img
+1
+GP Challenge - March 2026
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+Manual Grading
+HTML / CSS
+HTML / CSS
+
+Levels: 1
+Software
+course-img
+1
+HTML / CSS - Level 1
+Attempts: 3
+Completed
+1. Core Structure
+2. Semantic HTML
+3. Text & Media Content
+4. Links & Navigation
+5. Forms & Input Handling
+6. Tables & Data Display
+7. Embedding & Scripting
+8. HTML5 Features
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+MCQ + Manual Grading
+Industrial Automation (Electrical)
+Industrial Automation
+
+Levels: 5
+Hardware
+course-img
+1
+Industrial Automation (Electrical) - Level 0
+Attempts: 0
+1. Basic Concepts of Electrical and Electronic Components
+2. Components of PLC
+3. Logic Gates
+4. Sensors and Actuators
+5. Timers (ON/OFF Delay)
+6. Counters (UP/DOWN)
+7. Switches & Relays
+8. Basic Digital and Analog PLC Functions
+With Rewards
+100
+Pre Request
+1. Electrical Level -3.C
+2. Electronics (Electrical Domain) Level - 3C first year
+Assessment Type
+MCQ
+2
+Industrial Automation (Electrical) - Level 1A
+Attempts: 0
+1. Identification and testing of Switches and actuators
+2. Execution of Logic Gates
+3. Implementation of combinational logic by appropriately wiring switches to actuators.
+With Rewards
+150
+Pre Request
+1. Industrial Automation (Electrical) - Level 0
+Assessment Type
+Manual Grading
+3
+Industrial Automation (Electrical) - Level 1B
+Attempts: 0
+1. Testing and wiring of relay
+2. Latch /Unlatch
+3. Interlocking
+4. Execution of combinational logic through proper wiring of switches and relays to control actuators.
+With Rewards
+150
+Pre Request
+1. Industrial Automation (Electrical) - Level 1A
+Assessment Type
+Manual Grading
+4
+Industrial Automation (Electrical) - Level 1C
+Attempts: 0
+1. Sensor Data Sheet Interpretation
+2. Testing and wiring of Sensors
+3. Implementation of combinational logic through proper wiring to automated process station
+With Rewards
+150
+Pre Request
+1. Industrial Automation (Electrical) - Level 1B
+Assessment Type
+Manual Grading
+5
+Industrial Automation (Electrical) - Level 1D
+Attempts: 0
+1. Testing and wiring of timers and counters
+2. ON/OFF delay Timer
+3. Counter operation
+4. Implementation of automated Timing and counting based process station using multiple Input/output devices
+With Rewards
+150
+Pre Request
+1. Industrial Automation (Electrical) - Level 1C
+Assessment Type
+Manual Grading
+IPR - Patent Search
+IPR - Patent Search
+
+Levels: 2
+GENERAL Skill
+course-img
+1
+IPR-Patent Search - Level 0
+Attempts: 2
+Completed
+1. Patent Search
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+2
+IPR-Patent Search - Level 1
+Attempts: 1
+Completed
+1.
+With Rewards
+500
+Pre Request
+1. IPR-Patent Search - Level 0
+Assessment Type
+MCQ
+Irrigation Engineering
+Irrigation Engineering
+
+Levels: 6
+Hardware
+course-img
+1
+BASICS OF IRRIGATION & CROP MANAGEMENT PRACTICES
+Attempts: 0
+1. Tomato
+2. Bhendi
+3. Brinjal
+4. Paprika / Chilli
+5. Watermelon
+6. Cucumber
+7. Ashgourd
+8. Bittergourd
+9. Pumpkin
+10. Bottle gourd
+11. Muskemelon
+12. Paddy
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Irrigation Engineering - Level 2.1
+Attempts: 0
+1. Introduction to land surveying
+2. Chain and Cross staff surveying
+3. Plane table surveying
+4. Survey drawing sheet preparation
+With Rewards
+300
+Pre Request
+1. BASICS OF IRRIGATION & CROP MANAGEMENT PRACTICES
+Assessment Type
+Manual Grading
+3
+Irrigation Engineering - Level 2.2
+Attempts: 0
+1. Introduction to Levelling
+2. Levelling in irrigation
+3. Advanced instruments for surveying
+4. Instruments for surveying and levelling
+5. GPS Survey
+6. Theodolite survey
+7. Levelling of agriculture field
+8. Drawing sheet preparation
+With Rewards
+300
+Pre Request
+1. Irrigation Engineering - Level 2.1
+Assessment Type
+Manual Grading
+4
+Irrigation Engineering - Level 3
+Attempts: 0
+1. Soil sample collection techniques
+2. water sample collection techniques
+3. soil quality analysis
+4. water quality analysis
+5. suggestions for land reclammation
+With Rewards
+900
+Pre Request
+1. Irrigation Engineering - Level 2.2
+Assessment Type
+Manual Grading
+5
+Irrigation Engineering - Level 4
+Attempts: 0
+1. GPS survey
+2. Drip Irrigation System components
+3. Design of drip irrigation systems
+4. Preventive maintenance
+With Rewards
+900
+Pre Request
+1. Irrigation Engineering - Level 3
+Assessment Type
+Manual Grading
+6
+Irrigation Engineering - Level 5
+Attempts: 0
+1. Chain survey
+2. Sprinkler Irrigation System components
+3. Design of Sprinkler irrigation systems
+4. Preventive maintenance
+With Rewards
+Pre Request
+1. Irrigation Engineering - Level 4
+Assessment Type
+Manual Grading
+Java Script
+Java Script
+
+Levels: 1
+Beginner
+course-img
+1
+Java Script - Level 1
+Attempts: 1
+1. Introduction to JavaScript & Environment Setup
+2. JavaScript Basics & Syntax
+3. Variables & Data Types
+4. Operators & Expressions
+5. Control Flow & Logic
+6. Loops, Arrays & Functions
+7. Objects & Object-Oriented JavaScript
+8. DOM Manipulation Basics
+9. DOM Events & Form Handling
+10. Asynchronous JavaScript
+11. Working with APIs & Data
+12. Browser APIs
+13. Modern JavaScript & Tooling
+With Rewards
+400
+Pre Request
+1. Version control - Git
+2. Github Level 0
+Assessment Type
+Manual Grading
+Register
+Leadership
+Leadership Series to certify students in leadership and entrepreneurship competencies.
+
+Levels: 4
+GENERAL Skill
+course-img
+1
+Leadership Level - 0
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+Manual Grading
+Register
+2
+Leadership Level - 1A
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Leadership Level - 0
+Assessment Type
+Manual Grading
+3
+Leadership Level - 1B
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+Manual Grading
+4
+Leadership Level - 1C
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+Manual Grading
+Linux
+Kickstart your journey into DevOps with foundational skills to build, manage, and optimize modern development workflows.
+
+Levels: 5
+Software
+course-img
+1
+Linux Level - 0
+Attempts: 0
+1. Basic Linux commands
+2. Operating systems
+3. Networking Fundamentals
+4. Devops Introduction
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+2
+Linux Level - 1
+Attempts: 2
+1. Working with files
+2. User Management
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+Manual Grading
+Register
+3
+Linux Level - 2
+Attempts: 0
+1. File Management
+2. System Management
+With Rewards
+300
+Pre Request
+1. Linux Level - 1
+Assessment Type
+Manual Grading
+4
+Linux Level -1 Training
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+Training
+5
+Linux Level - 3
+Attempts: 0
+1. Process Management
+2. Network Management
+With Rewards
+300
+Pre Request
+1. Linux Level - 2
+Assessment Type
+Manual Grading
+Logical Reasoning
+Logical Reasoning
+
+Levels: 8
+GENERAL Skill
+course-img
+1
+Logical Reasoning - 1A
+Attempts: 3
+1. Linear arrangement
+2. Circular arrangement
+3. Square / rectangular seating
+4. Floor-based arrangements
+With Rewards
+100
+Pre Request
+No
+Register
+2
+Logical Reasoning - 1B
+Attempts: 0
+1. Logical Puzzles: Box puzzle, Scheduling puzzles, People-place-object puzzles
+With Rewards
+100
+Pre Request
+No
+Register
+3
+Logical Reasoning - 1C
+Attempts: 0
+1. Coding & Decoding - Letter Coding, Number Coding, Symbol Coding
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+4
+Logical Reasoning - 1D
+Attempts: 0
+1. Syllogism
+2. Statement-Conclusion questions
+3. Venn Diagram based reasoning
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+5
+Logical Reasoning - 1E
+Attempts: 0
+1. Blood Relations - Family tree, Generation based relationships
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+6
+Logical Reasoning - 1F
+Attempts: 0
+1. Directions - Distance and Movement, Find Direction Calculation
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+7
+Logical Reasoning - 1G
+Attempts: 0
+1. Alphabet Series: Letter Sequence Patterns, Position based questions
+2. Number Series: Missing Number Patterns, Arithmetic/ Logical sequences
+3. Word Classification: Word, Number, Pattern Classification
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+8
+Logical Reasoning - 1H
+Attempts: 0
+1. Statement and Assumption, Statement and argument, Statement and Conclusion
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+Materials and Manufacturing
+Materials and Manufacturing
+
+Levels: 3
+Beginner
+course-img
+1
+Materials and Manufacturing - Level 0
+Attempts: 0
+1. Introduction to Materials
+2. Properties
+3. Machining Operation
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Materials and Manufacturing - Level 1A
+Attempts: 0
+1. 6M in Material Selection
+2. 6M Factors Applied to Material Selection
+3. 6M Analysis and CNC rejection scenario
+With Rewards
+150
+Pre Request
+1. Materials and Manufacturing - Level 0
+Assessment Type
+Manual Grading
+3
+Materials and Manufacturing - Level 1B
+Attempts: 0
+1.
+With Rewards
+Pre Request
+1. Materials and Manufacturing - Level 1A
+Assessment Type
+Manual Grading
+Mechanical Measurement
+Levels: 7
+Hardware
+course-img
+1
+Mechanical Measurement - Level 0
+Attempts: 0
+1. Introduction to Measurement Principles
+2. Importance of measurements in engineering and manufacturing
+3. Overview of GD&T and its significance in precision measurements.
+4. Calibration principles and traceability.
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Mechanical Measurement Level 1.A
+Attempts: 0
+1. Introduction to Measurement Principles
+2. Importance of measurements in engineering and manufacturing
+3. Overview of GD&T and its significance in precision measurements
+4. Calibration principles and traceability
+With Rewards
+300
+Pre Request
+1. Mechanical Measurement - Level 0
+Assessment Type
+Manual Grading
+3
+Mechanical Measurement Level 1.B
+Attempts: 0
+1. Introduction to Measurement Principles
+2. Importance of measurements in engineering and manufacturing
+3. Overview of GD&T and its significance in precision measurements
+4. Calibration principles and traceability
+With Rewards
+300
+Pre Request
+1. Mechanical Measurement Level 1.A
+Assessment Type
+Manual Grading
+4
+Mechanical Measurement Level 1.C
+Attempts: 0
+1.
+With Rewards
+300
+Pre Request
+1. Mechanical Measurement Level 1.B
+Assessment Type
+Manual Grading
+5
+Mechanical Measurements - Level 2A - Profile Measurement
+Attempts: 0
+1. Measurements of screw threads
+2. Thread Caliper
+3. Filet chamber mesurements
+With Rewards
+300
+Pre Request
+1. Mechanical Measurement Level 1.C
+6
+Mechanical Measurements - Level 2B - Gear Measurement
+Attempts: 0
+1. Gears
+2. Measuring Instruments
+3. Math work
+4. Sprockets and Spline measurements
+With Rewards
+300
+Pre Request
+1. Mechanical Measurements - Level 2A - Profile Measurement
+7
+Mechanical Measurements - Level 2C - Form Measurement and GD&T
+Attempts: 0
+1. Form measurements
+2. Types of Form measurement
+3. Measuring Instruments
+4. Master Sheet ofInstruments
+5. Formula sheet
+6. ISO Standards
+7. Standard Operating Procedure
+8. GD&T and it's Symbols
+9. Limits, Fits, & Tolerances
+With Rewards
+300
+Pre Request
+1. Mechanical Measurements - Level 2B - Gear Measurement
+Mechanical Modelling
+Levels: 11
+Hardware
+course-img
+1
+Mechanical Modelling Level - 1A (READING DRAWING)
+Attempts: 0
+1. Introduction to Engineering Drawings
+2. Drawing Tools and Equipment
+3. Lines and Their Meanings
+4. Lettering and Annotations
+5. Geometric Constructions
+6. Scales and Measurements
+7. Projections and Views
+8. Basic Dimensioning
+9. Title Block and Revisions
+10. Basic Section Views
+With Rewards
+100 RP
+Pre Request
+No
+Assessment Type
+Manual Grading
+Register
+2
+Mechanical Modelling Level - 0
+Attempts: 0
+1. Drawing Instruments & Conventions
+2. Sheet Sizes & Scales
+3. Dimensioning Practice
+4. Geometrical Constructions & Engineering Curves
+5. Orthographic Projection
+6. Projection of Points, Lines, Planes and Solids
+7. Sections of Solids
+8. Isometric Projection
+9. Freehand Sketching & CAD Basics
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+3
+Mechanical Modelling Level - 1B (PART SKETCHING)
+Attempts: 0
+1. Introduction of SolidWorks and its advantages
+2. Improve the quality of designs
+3. Creating Documentation of Designing
+4. Uses of Computer Aided Design
+5. Sketching
+6. Part Modelling
+7. Assembly, Drafting
+8. Sketch setup, Features
+9. Modify Sketch Tools
+With Rewards
+200 RP
+Pre Request
+1. Mechanical Modelling Level - 1A (READING DRAWING)
+Assessment Type
+Manual Grading
+4
+Mechanical Modelling Level - 2A (PART MODELLING)
+Attempts: 0
+1. Introduction to SolidWorks
+2. Part Modelling
+3. Sketched Features
+4. Drafting
+With Rewards
+300
+Pre Request
+1. Mechanical Modelling Level - 1B (PART SKETCHING)
+Assessment Type
+Manual Grading
+5
+Mechanical Modelling Level - 3A
+Attempts: 0
+1. Introduction to Assembly
+2. Starting an Assembly
+3. Positioning Components
+4. Adding Mates, Coincident Mate, Parallel Mate, Perpendicular Mate
+5. Tangent Mate, Concentric Mate, Distance Mate, Angle Mate, Smart Mates, Multiple Mate Mode
+6. Top Down Assembly & Bottom Up Assembly
+7. Working with Assembly
+8. Editing Components, Deleting Components
+9. Assembly Appearances, Hide/Show Components
+10. Analyzing Assemblies, Assembly Bill of Materials
+With Rewards
+450
+Pre Request
+1. Mechanical Modelling Level - 2B (ADVANCED PART MODELLING)
+Assessment Type
+Manual Grading
+6
+Mechanical Modelling Level - 2B (ADVANCED PART MODELLING)
+Attempts: 0
+1. Introduction of GD&T – Symbols
+2. Dimensional Tolerancing In Technical Drawings
+3. GD&T in mechanical Drawings
+4. Perpendicular Mate , Tangent Mate ,Width Mate,Angular Mate, Screw Mate ,Hinge Mate ,Gear Mate
+5. Mirror – Linear Component Pattern
+6. Circular Component Pattern
+7. Exploded View
+With Rewards
+300
+Pre Request
+1. Mechanical Modelling Level - 2A (PART MODELLING)
+Assessment Type
+Manual Grading
+7
+Mechanical Modelling Level - 3B (ADVANCED ASSEMBLY)
+Attempts: 0
+1. Introduction of Assembly
+2. Inserting and Positioning
+3. Coincident Mate , Concentric and Parallel Mate ,Perpendicular Mate
+4. Tangent Mate ,Width Mate , Angular Mate , Screw Mate
+5. Hinge Mate, Gear Mate
+6. Mirror – Linear Component Pattern
+7. Circular Component Pattern
+8. Exploded View
+With Rewards
+450
+Pre Request
+1. Mechanical Modelling Level - 2B (ADVANCED PART MODELLING)
+2. Mechanical Modelling Level - 3A
+Assessment Type
+Manual Grading
+8
+Mechanical Modelling Level - 4A
+Attempts: 0
+1. SHEET METAL
+With Rewards
+450
+Pre Request
+1. Mechanical Modelling Level - 3B (ADVANCED ASSEMBLY)
+Assessment Type
+Manual Grading
+9
+Mechanical Modelling Level - 4B
+Attempts: 0
+1. SURFACE MODELLING
+With Rewards
+450
+Pre Request
+1. Mechanical Modelling Level - 4A
+Assessment Type
+Manual Grading
+10
+Mechanical Modelling Level - 5A MOLD DESIGN
+Attempts: 0
+1. Mold Design
+2. Injection Mold features
+3. Mold types
+With Rewards
+450
+Pre Request
+1. Mechanical Modelling Level - 4B
+11
+Mechanical Modelling Level - 5B REDEFINING AND MOTION ANALYSIS
+Attempts: 0
+1. Redefining and Motion Analysis
+2. Motion Study
+3. Motion Study Tools
+4. Rendering
+5. Alternative rendering methods
+With Rewards
+450
+Pre Request
+1. Mechanical Modelling Level - 5A MOLD DESIGN
+NodeJS
+NodeJS
+
+Levels: 1
+Advanced
+course-img
+1
+NodeJS - Level 1
+Attempts: 0
+1. Fundamentals of Node.js
+2. Node.js Modules & File System
+3. Events, Streams & Buffers
+4. HTTP Module & Routing
+5. Express.js Basics
+6. Templating & REST APIs
+7. connecting MySQL with Node.js
+8. MongoDB & Mongoose
+9. Auth & Security
+10. Advanced Patterns & Deployment
+With Rewards
+600
+Pre Request
+1. React - Level 1
+Assessment Type
+Manual Grading
+PCB Design
+Welcome to the PCB Designing Assessment Platform. This platform is tailored to assess your proficiency in PCB design through targeted evaluations. From schematic creation to layout design and manufacturing considerations, the portal challenges your understanding of core concepts. Gain valuable feedback, track your progress, and demonstrate your expertise in designing efficient and reliable PCBs. Get ready to showcase your skills in the world of electronics innovation!
+
+Levels: 7
+Hardware
+course-img
+1
+PCB Design Level-0A
+Attempts: 0
+1. PCB Design
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+PCB Design Level-0B
+Attempts: 0
+1. PCB Routing
+With Rewards
+100
+Pre Request
+1. PCB Design Level-0A
+Assessment Type
+Manual Grading
+3
+PCB Design Level-1
+Attempts: 0
+1. Schematic Design
+2. Component Selection
+3. Through-Hole(THT) Components
+4. Constraint Setting
+5. Gerber Generation across Single-Layer PCB Designs
+With Rewards
+600
+Pre Request
+1. PCB Design Level-0B
+Assessment Type
+Manual Grading
+4
+PCB Design Level-2A
+Attempts: 0
+1. Schematic Symbol
+2. PCB Library
+3. Datasheet
+4. Electrical Symbol
+5. Altium Designer
+With Rewards
+300
+Pre Request
+1. PCB Design Level-1
+Assessment Type
+Manual Grading
+5
+PCB Design Level-2B
+Attempts: 0
+1. SMD
+2. Through Hole
+3. Footprint
+4. PCB Library
+5. Datasheet
+6. Electrical Symbol
+7. Altium Designer
+With Rewards
+300
+Pre Request
+1. PCB Design Level-2A
+Assessment Type
+Manual Grading
+6
+PCB Design Level-3
+Attempts: 0
+1. Schematic Design
+2. Component Selection
+3. Through-Hole(THT) Components
+4. Microcontroller Boards
+5. Footprints
+6. Constraint Setting
+7. Gerber Generation across Single-Layer PCB Designs
+With Rewards
+600
+Pre Request
+1. PCB Design Level-2B
+Assessment Type
+Manual Grading
+7
+PCB Design Level - 4A
+Attempts: 0
+1. Basic SMD PCB layout
+2. Footprint creation
+3. Component placement
+4. Soldering
+5. Assembly defects
+6. Manufacturing.
+With Rewards
+200
+Pre Request
+1. PCB Design Level-3
+Assessment Type
+MCQ
+Physical Fitness
+Levels: 4
+GENERAL Skill
+course-img
+1
+Physical Fitness Level 1A 1B or 1C 1D
+Attempts: 1
+Completed
+1. Level IA (i) Muscular Strength Testing: Push-Ups (Boys) & Modified Push-Ups (Girls)
+2. Level IA (ii) Lower Body Strength: Squats (Boys & Girls)
+3. Level IB (i) Endurance Test: Run/Walk
+4. Level IB (ii) Eye-Hand Coordination Test
+5. Level IC Flexibility Test: Sit and Reach Test
+6. Level ID Bend Knee Stretch Test
+With Rewards
+400 RP
+Pre Request
+No
+Assessment Type
+Manual Grading
+2
+Physical Fitness Level 2
+Attempts: 0
+1.
+With Rewards
+400 RP
+Pre Request
+1. Physical Fitness Level 1A 1B or 1C 1D
+Assessment Type
+Manual Grading
+Register
+3
+Physical Fitness Level 3
+Attempts: 0
+1. Speed
+2. Arm Power- Medicine ball throw
+3. Abdominal Strength – side plank
+4. Semo Agility - Test – (Boys &amp; Girls)
+5. Endurance run ( Boys &amp; Girls)
+With Rewards
+400 RP
+Pre Request
+1. Physical Fitness Level 2
+Assessment Type
+Manual Grading
+4
+Physical Fitness - Level 4
+Attempts: 0
+1. Standing Broad Jump Test
+2. Curl-Up Test
+3. Arrowhead Agility Test
+4. Flamingo Balance Test
+5. Endurance Test
+With Rewards
+400
+Pre Request
+1. Physical Fitness Level 3
+Assessment Type
+Manual Grading
+Physical Fitness - Yoga
+Yoga Training
+
+Levels: 2
+GENERAL Skill
+course-img
+1
+Physical Fitness - Yoga Level -1
+Attempts: 1
+Completed
+1. Forward bending
+2. Backward bending
+3. Hand balancing
+4. Leg balancing
+5. Twisting
+6. Surya Namaskar
+With Rewards
+200
+Pre Request
+No
+Assessment Type
+Manual Grading
+2
+Physical Fitness - Yoga Level - 2
+Attempts: 0
+1. PRASARITA PADOTTANASANA
+2. JANU SIRASANA
+3. DHANURASANA
+4. SETHU BANDHASANA
+5. PARIVIRTHA ANJANEYASANA
+6. GATYATMAK MERU VAKRASANA
+7. UTTHITHA EKA PADASANA
+8. NATARAJA ASANA
+9. EKA PADA RAJAKAPOTASANA
+10. BHEKASANA
+With Rewards
+200
+Pre Request
+1. Physical Fitness - Yoga Level -1
+Assessment Type
+Manual Grading
+Register
+PLC - Gurugulam Assessment
+Gurugulam Assessment
+
+Levels: 5
+Hardware
+course-img
+1
+PLC - Gurugulam Assessment - Level 1A
+Attempts: 0
+1. Switch Logic Operations
+With Rewards
+150
+Pre Request
+1. PLC - Gurugulam Assessment - Level 0
+Assessment Type
+Manual Grading
+Register
+2
+PLC - Gurugulam Assessment - Level 1B
+Attempts: 0
+1. Relay Logic operations
+With Rewards
+150
+Pre Request
+1. PLC - Gurugulam Assessment - Level 1A
+Assessment Type
+Manual Grading
+3
+PLC - Gurugulam Assessment - Level 1C
+Attempts: 0
+1. Sensor Based Automated Process Station
+With Rewards
+150
+Pre Request
+1. PLC - Gurugulam Assessment - Level 1B
+Assessment Type
+Manual Grading
+4
+PLC - Gurugulam Assessment - Level 1D
+Attempts: 0
+1. Timer and Counter Based Automated Process Station
+With Rewards
+150
+Pre Request
+1. PLC - Gurugulam Assessment - Level 1C
+Assessment Type
+Manual Grading
+5
+PLC - Gurugulam Assessment - Level 0
+Attempts: 1
+Completed
+1. Basic Concepts of Electrical and Electronic Components
+2. Components of PLC
+3. Logic Gates
+4. Sensors and Actuators
+5. Timers (ON/OFF Delay)
+6. Counters (UP/DOWN)
+7. Switches & Relays
+8. Basic Digital and Analog PLC Functions
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Post Harvest Skill
+Post Harvest Skill
+
+Levels: 3
+Hardware
+course-img
+1
+Engineering Properties in Food - 1A
+Attempts: 0
+1. Dimensions and units
+2. Moisture Content and Water Activity
+3. Moisture conent determination methods
+4. Engineering Properties of Food-Physical, mechanical and aerodynamic properties
+5. Engineering Properties of Food - Electrical and Thermal Properties
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Engineering Properties in Food - 1B
+Attempts: 0
+1. Dimensions and units
+2. Moisture Content and Water Activity
+3. Moisture conent determination methods
+4. Engineering Properties of Food-Physical, mechanical and aerodymaic properties
+With Rewards
+150
+Pre Request
+1. Engineering Properties in Food - 1A
+Assessment Type
+Manual Grading
+3
+Engineering Properties in Food - 2
+Attempts: 0
+1. Drying in fruits, vegetables, flowers, and greens
+2. Extraction of pigmnet in leaf and flower
+With Rewards
+200
+Pre Request
+1. Engineering Properties in Food - 1B
+Assessment Type
+Manual Grading
+Power Electronics (Electrical)
+Electrical: Power Electronics
+
+Levels: 17
+Hardware
+course-img
+1
+Power Electronics - Level 1A
+Attempts: 0
+1. Fast recovery diodes
+2. Schottky
+3. Zener
+4. BJT
+With Rewards
+200
+Pre Request
+1. Electrical Level -3.C
+2. Electronics (Electrical Domain) Level - 3C first year
+Assessment Type
+Manual Grading
+2
+Power Electronics - Level 1B
+Attempts: 0
+1. Insulated Gate Bipolar Transistors
+With Rewards
+200
+Pre Request
+1. Power Electronics - Level 1A
+Assessment Type
+Manual Grading
+3
+Power Electronics - Level 1C
+Attempts: 0
+1. Thyristors
+2. SCRs, TRIACs
+3. DIACs, UJT
+With Rewards
+200
+Pre Request
+1. Power Electronics - Level 1B
+Assessment Type
+Manual Grading
+4
+Power Electronics - Level 2A
+Attempts: 0
+1. Pulse Generation for DC Circuits
+2. Op-amp
+3. 555 timer
+4. UJT
+5. BJT-based circuits
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 1C
+Assessment Type
+Manual Grading
+5
+Power Electronics - Level 2B
+Attempts: 0
+1. Pulse Generation for AC Circuits
+2. Zero-crossing detectors
+3. Pulse generation synchronized with AC phase angle
+4. Phase delay triggering circuits
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 2A
+Assessment Type
+Manual Grading
+6
+Power Electronics - Level 2C
+Attempts: 0
+1. Voltage and Current Timebase Pulse Generators
+2. Exponential sweep circuits
+3. Negative resistance switches
+4. Miller and Bootstrap time base generators
+5. Transistorized current time base generator
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 2B
+Assessment Type
+Manual Grading
+7
+Power Electronics - Level 3A
+Attempts: 0
+1. Diode / BJT Based Converters
+With Rewards
+450
+Pre Request
+1. Power Electronics - Level 2C
+Assessment Type
+Manual Grading
+8
+Power Electronics - Level 3B
+Attempts: 0
+1. MOSFET / SCR Based Converters
+With Rewards
+450
+Pre Request
+1. Power Electronics - Level 3A
+Assessment Type
+Manual Grading
+9
+Power Electronics - Level 4A
+Attempts: 0
+1. Buck Converter
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 3B
+Assessment Type
+Manual Grading
+10
+Power Electronics - Level 4B
+Attempts: 0
+1. Boost Converter
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 4A
+Assessment Type
+Manual Grading
+11
+Power Electronics - Level 4C
+Attempts: 0
+1. Buck-Boost Converter
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 4B
+Assessment Type
+Manual Grading
+12
+Power Electronics - Level 5A
+Attempts: 0
+1. Square Wave Converters
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 4C
+Assessment Type
+Manual Grading
+13
+Power Electronics - Level 5B
+Attempts: 0
+1. Modified Sine Wave Converters
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 5A
+Assessment Type
+Manual Grading
+14
+Power Electronics - Level 5C
+Attempts: 0
+1. Phase-Controlled Converters and Cycloconverters (AC–AC Converter)
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 5B
+Assessment Type
+Manual Grading
+15
+Power Electronics - Level 6A
+Attempts: 0
+1. Closed-Loop DC-DC Converter
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 5C
+Assessment Type
+Manual Grading
+16
+Power Electronics - Level 6B
+Attempts: 0
+1. Closed-Loop DC-AC Converter
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 6A
+Assessment Type
+Manual Grading
+17
+Power Electronics - Level 6C
+Attempts: 0
+1. Closed-Loop AC-DC Converter
+With Rewards
+300
+Pre Request
+1. Power Electronics - Level 6B
+Assessment Type
+Manual Grading
+Problem Solving Skills - Daily Challenge
+Problem Solving Skills
+
+Levels: 1
+GENERAL Skill
+course-img
+1
+Problem Solving Skills - Daily Challenge
+Attempts: 0
+1.
+With Rewards
+NO RP
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+Problem Solving Skills - First Year
+Problem-Solving Skills
+
+Levels: 1
+GENERAL Skill
+course-img
+1
+Problem Solving Skills - First Year
+Attempts: 0
+1. Problem Solving Skills
+With Rewards
+No RP
+Pre Request
+No
+Programming C++
+Levels: 10
+Software
+course-img
+1
+Programming C++ Level - 1
+Attempts: 1
+Completed
+1. Basics - Variables
+2. User Input
+3. Data Types, Operators, Conditions
+With Rewards
+300 RP
+Pre Request
+No
+Assessment Type
+Programming
+2
+Programming C++ - Level 2
+Attempts: 0
+OnGoing
+1. Control flow statements
+2. while loop
+3. for loop
+4. do-while loop
+5. break/continue
+6. Boolean
+7. Switch case
+With Rewards
+600 RP
+Pre Request
+1. Programming C++ Level - 1
+Assessment Type
+Programming
+3
+Programming C++ - Level 3
+Attempts: 0
+1. Arrays
+2. Strings
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 2
+Assessment Type
+Programming
+4
+Programming C++ - Level 4
+Attempts: 0
+1. Functions and Recursion
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 3
+Assessment Type
+Programming
+5
+Programming C++ - Level 5
+Attempts: 0
+1. Pointers and References
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 4
+Assessment Type
+Programming
+6
+Programming C++ - Level 6
+Attempts: 0
+1. Classes and Objects
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 5
+Assessment Type
+Programming
+7
+Programming C++ - Level 7
+Attempts: 0
+1. File Handling: Reading and writing to files
+2. Basic and advanced file operations
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 6
+Assessment Type
+Programming
+8
+Programming C++ - Level 8
+Attempts: 0
+1. Inheritance
+2. Overriding
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 7
+Assessment Type
+Programming
+9
+Programming C++ - Level 9
+Attempts: 0
+1. Files reading and writing
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 8
+Assessment Type
+Programming
+10
+Programming C++ - Level 10
+Attempts: 0
+1. Exception handling
+With Rewards
+900
+Pre Request
+1. Programming C++ - Level 9
+Assessment Type
+Programming
+Programming Java
+Levels: 5
+Software
+course-img
+1
+Programming Java Level - 1
+Attempts: 0
+1. Variables
+2. Data types
+3. Operators
+4. Conditional Statements
+With Rewards
+300 RP
+Pre Request
+No
+Assessment Type
+Programming
+Register
+2
+Programming Java Level - 2
+Attempts: 0
+1. Type conversion
+2. Loops
+3. Arrays
+With Rewards
+600 RP
+Pre Request
+1. Programming Java Level - 1
+Assessment Type
+Programming
+3
+Programming Java Level - 3
+Attempts: 0
+1. Classes, Objects, Methods, Constructors, Access Modifiers
+2. Strings, string Methods, string buffer and string builder, final keyword
+With Rewards
+900 RP
+Pre Request
+1. Programming Java Level - 2
+Assessment Type
+Programming
+4
+Programming Java Level - 4
+Attempts: 0
+1. Inheritance, Polymorphism (method overloading &method overriding)
+2. Abstraction( Abstract Keyword & Interface)
+With Rewards
+900 RP
+Pre Request
+1. Programming Java Level - 3
+Assessment Type
+Programming
+5
+Programming Java Level - 5
+Attempts: 0
+1. Packages
+2. Exception Handling (common java exceptions)
+3. Try-catch-throw-throws keyword
+4. Finally block
+With Rewards
+900
+Pre Request
+1. Programming Java Level - 4
+Assessment Type
+Programming
+Programming Python
+Levels: 6
+Software
+course-img
+1
+Programming Python Level - 1
+Attempts: 0
+OnGoing
+1. Variables
+2. Operators
+3. Conditional Statements
+With Rewards
+150
+Pre Request
+No
+Assessment Type
+Programming
+2
+Programming Python Level - 2
+Attempts: 0
+1. Looping Statements
+2. Break and Continue statements
+With Rewards
+300
+Pre Request
+1. Programming Python Level - 1
+Assessment Type
+Programming
+3
+Programming Python Level - 3
+Attempts: 0
+1. Tuples
+2. sets
+3. dictionaries
+4. String manipulation
+With Rewards
+450
+Pre Request
+1. Programming Python Level - 2
+Assessment Type
+Programming
+4
+Programming Python Level - 4
+Attempts: 0
+1. Defining and calling functions
+2. Understanding parameters and return values
+3. Recursion
+With Rewards
+600
+Pre Request
+1. Programming Python Level - 3
+Assessment Type
+Programming
+5
+Programming Python Level - 5
+Attempts: 0
+1. OOPS:Classes and objects
+2. Inheritance and polymorphism
+3. Basic class methods
+4. Encapsulation
+With Rewards
+750
+Pre Request
+1. Programming Python Level - 4
+Assessment Type
+Programming
+6
+Programming Python Level - 6
+Attempts: 0
+1. Exception Handling: Basic error handling with try-except
+2. Handling specific exceptions
+3. Raising exceptions
+With Rewards
+900
+Pre Request
+1. Programming Python Level - 5
+Assessment Type
+Manual Grading
+Project Based Learning - Night Slots
+Project Based Learning - Night Slots
+
+Levels: 1
+Beginner
+course-img
+1
+C Programming Learning Module
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Register
+Prototype - Gurugulam Assessment
+Prototype - Gurugulam Assessment
+
+Levels: 3
+Hardware
+course-img
+1
+Prototype Modelling - Gurugulam Assessment - Level 1A
+Attempts: 0
+1. Introduction to Tools & Safety
+With Rewards
+150
+Pre Request
+1. Prototype Modelling - Gurugulam Assessment - Level 0
+Assessment Type
+Register
+2
+Prototype Modelling - Gurugulam Assessment - Level 1B
+Attempts: 0
+1. Simple Material Fabrication
+With Rewards
+150
+Pre Request
+1. Prototype Modelling - Gurugulam Assessment - Level 1A
+Assessment Type
+Manual Grading
+3
+Prototype Modelling - Gurugulam Assessment - Level 0
+Attempts: 1
+Completed
+1. Prototype Modelling
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+PS Assessment - Brainstorming (2025-2029)
+PS Assessment - Queries (2025-2029)
+
+Levels: 1
+GENERAL Skill
+course-img
+1
+PS Assessment - Brainstorming (2025-2029) - Level 1
+Attempts: 2
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+MCQ
+React
+React
+
+Levels: 1
+Advanced
+course-img
+1
+React - Level 1
+Attempts: 0
+1. React Components
+2. Functional Components
+3. JSX
+4. Props vs States
+5. Component Lifecycle
+With Rewards
+500
+Pre Request
+1. Java Script - Level 1
+Storage
+This course introduces the fundamentals of storage technologies, including storage devices, architectures, protocols, and file systems used in modern IT infrastructure. It covers storage management concepts such as disk partitioning, RAID configurations, storage pools, LUNs, and user access management.
+
+Levels: 2
+Beginner
+course-img
+1
+Storage Fundamentals - Level 1
+Attempts: 0
+1. Types of Drives (HDD, SSD, SATA, NVMe, FC Drives)
+2. Types of Storage (NAS, SAN, DAS)
+3. Types of Storage Protocols (Block, File, Object)
+4. Functions and Basic Operations
+5. File Systems (CIFS, NFS, SMB)
+With Rewards
+150
+Pre Request
+1. System Administration - Level 2
+Assessment Type
+Manual Grading
+2
+Storage Management - Level 2
+Attempts: 0
+1. Disk Partitioning and Management
+2. Creating and Managing RAID Arrays (RAID 0 / RAID 1)
+3. RAID (5/6/10) and Erasure Coding
+4. Storage Pool and LUN (Volumes)
+5. User Management (Permissions, RBAC)
+With Rewards
+300
+Pre Request
+No
+Assessment Type
+Manual Grading
+Structural Engineering
+Structural Engineering
+
+Levels: 10
+Hardware
+course-img
+1
+AutoCAD Level -0
+Attempts: 0
+1.
+With Rewards
+100
+Pre Request
+1. Mechanical Modelling Level - 1A (READING DRAWING)
+Assessment Type
+MCQ
+2
+Structural Engineering - Level 1.1
+Attempts: 0
+1. LAYOUT DRAWING
+With Rewards
+200
+Pre Request
+1. AutoCAD Level -0
+Assessment Type
+Manual Grading
+3
+Structural Engineering - Level 1.2
+Attempts: 0
+1. DRAWING BUILDING PLAN BASED ON LINE SKETCH
+2. DRAWING ELEVATION OF THE BUILDING
+3. COMPLETE DRAWING INCLUDING SPECIFICATIONS AND IMPORTING BLOCKS
+With Rewards
+250
+Pre Request
+1. Structural Engineering - Level 1.1
+Assessment Type
+Manual Grading
+4
+Structural Engineering - Level 1.3
+Attempts: 0
+1. Manual Drafting of section and Elevation
+With Rewards
+200
+Pre Request
+1. Structural Engineering - Level 1.2
+Assessment Type
+Manual Grading
+5
+Structural Engineering - Level 2.1
+Attempts: 0
+1. 2D plan section and Elevation
+With Rewards
+300
+Pre Request
+1. Structural Engineering - Level 1.3
+Assessment Type
+Manual Grading
+6
+Structural Engineering - Level 2.2
+Attempts: 0
+1. 3D plan of a building
+With Rewards
+150
+Pre Request
+1. Structural Engineering - Level 2.1
+7
+Structural Engineering - Level 2.3
+Attempts: 0
+1. Interior design of a building with architectural effects
+With Rewards
+150
+Pre Request
+1. Structural Engineering - Level 2.2
+8
+Structural Engineering - Level 3.1
+Attempts: 0
+1. 3 Bay and 3 storey analysis with different load applications
+With Rewards
+300
+Pre Request
+1. Structural Engineering - Level 2.3
+Assessment Type
+Manual Grading
+9
+Structural Engineering - Level 3.2
+Attempts: 0
+1. Analysis of a structural elements
+With Rewards
+300
+Pre Request
+1. Structural Engineering - Level 3.1
+Assessment Type
+Manual Grading
+10
+Structural Engineering - Level 3.3
+Attempts: 0
+1. Analysis and design of 2 storey Building
+With Rewards
+300
+Pre Request
+1. Structural Engineering - Level 3.2
+Assessment Type
+Manual Grading
+Student Counselling
+Student Counselling
+
+Levels: 1
+Beginner
+course-img
+1
+Student Counselling
+Attempts: 0
+1.
+With Rewards
+Pre Request
+No
+Assessment Type
+FA
+Register
+Surveying
+Surveying
+
+Levels: 3
+Hardware
+course-img
+1
+Surveying - Level 0
+Attempts: 0
+1. SurveyingFundamentals of conventional Surveying and Leveling
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+Register
+2
+Surveying - Level 1.1
+Attempts: 0
+1. PRINCIPLES OF LEVELING
+2. INTRODUCTION TO LEVELLING AND HEIGHT OF INSTRUMENTATION METHOD
+3. STADIA METER
+4. REDUCED LEVEL
+With Rewards
+200
+Pre Request
+1. Surveying - Level 0
+Assessment Type
+Manual Grading
+3
+Surveying - Level 1.2
+Attempts: 0
+1. Determination of area and preparing map using chain/tape
+With Rewards
+Pre Request
+1. Surveying - Level 1.1
+Assessment Type
+Manual Grading
+System Administration
+System Administration
+
+Levels: 4
+Hardware
+course-img
+1
+system Administration - Level 1 Training
+Attempts: 1
+Completed
+1. System Administration - Training
+With Rewards
+NO RP
+Pre Request
+No
+Assessment Type
+Training
+2
+System Administration - Level 1
+Attempts: 1
+OnGoing
+1. Component Identification
+2. Motherboard Familiarization:
+3. Core Component Installation
+4. PSU and Power Connections
+5. Case and Peripheral Connections
+6. Initial Boot-up, BIOS/UEFI Access, and Basic Checks
+With Rewards
+150 RP
+Pre Request
+No
+Assessment Type
+Manual Grading
+3
+System Administration - Level 2
+Attempts: 0
+1. Linux Operating system installation
+2. Basic Networking
+3. Installing and Configuring Packages
+With Rewards
+300
+Pre Request
+1. System Administration - Level 1
+Assessment Type
+Manual Grading
+4
+System Administration - Level 3
+Attempts: 0
+1. Create a multiboot USB
+2. Dual Operating System Installation
+3. Create / Resize / Remove a partition without affecting either operating system
+4. Restore Boot Manager after removing any one Operating System
+With Rewards
+450
+Pre Request
+1. System Administration - Level 2
+Assessment Type
+Manual Grading
+Tissue Culturing
+Tissue Culturing
+
+Levels: 4
+Hardware
+course-img
+1
+Tissue Culturing - Level 1
+Attempts: 0
+1. Plant Tissue Culture
+2. Media preparation
+With Rewards
+300
+Pre Request
+1. Tissue Culturing - Level 0
+Assessment Type
+Manual Grading
+2
+Tissue Culturing - Level 0
+Attempts: 0
+1. Concentration Calculation
+2. Simple & Multiple Linear Regression
+3. Biosafety ettiquttes
+4. pH measuring Techniques & Calibration
+5. Structure and function of plant and animal cells
+6. Cell cycle and cell division (mitosis & meiosis)
+7. Basic plant anatomy (meristems, explants, totipotency concept)
+8. Plant Nutrient basics
+With Rewards
+100
+Pre Request
+1. Biochemical Stoichiometry & Biostatistics - 5
+2. Culturing and Molecular Techniques - 4B
+Assessment Type
+MCQ
+3
+Tissue Culturing - Level 2A
+Attempts: 0
+1. Various Sterilization Techniques for Tissue Culture Media
+2. Storage and Shelf-Life of Prepared Media
+3. Specialized Media and Modifications for Different Plant Species
+4. Criteria for Selecting Suitable Explants
+5. Collection and Pre-Treatment of Explants
+6. Surface Sterilization Methods and Agents
+With Rewards
+300
+Pre Request
+1. Tissue Culturing - Level 1
+Assessment Type
+Manual Grading
+4
+Tissue Culturing - Level 2B
+Attempts: 0
+1. Aseptic Handling Techniques During Sterilization
+2. Post-Sterilization Explant Handling and Inoculation
+3. Substrate Preparation & Nutrient Support for Acclimatization
+4. Sterile Handling & Disease Prevention in PTC
+With Rewards
+300
+Pre Request
+1. Tissue Culturing - Level 2A
+Assessment Type
+Manual Grading
+UI UX
+Levels: 5
+Software
+course-img
+1
+UI/UX Level -1
+Attempts: 0
+OnGoing
+1. Frame Creation
+2. Shape Utilization
+3. Image Incorporation
+4. Stroke Application
+5. Color and Font Selection
+6. Effects Implementation
+7. Text Editor usage
+With Rewards
+150 RP
+Pre Request
+No
+Assessment Type
+Manual Grading
+2
+UI/UX Level - 2
+Attempts: 0
+1. Introduction to Sketching Low-Fidelity Wireframing Principles Labeling and Annotations
+With Rewards
+200 RP
+Pre Request
+1. UI/UX Level -1
+Assessment Type
+Manual Grading
+3
+UI/UX Level - 3
+Attempts: 0
+1. Components and Layout Mastery Focus on mastering components, auto-layout, and advanced layout techniques.
+2. Introduction to Components
+3. Designing Reusable Components Auto-Layout Fundamentals
+4. Advanced Grids & Layout Techniques Prototyping Basics Interactive Prototyping
+With Rewards
+250 RP
+Pre Request
+1. UI/UX Level - 2
+Assessment Type
+Manual Grading
+4
+UI/UX Level - 4
+Attempts: 0
+1. Advanced Component Design
+2. Dynamic Layouts & Adaptive Design
+3. State-Based UI Design
+4. Microinteractions
+5. Component-Based Page Design
+6. Advanced Auto-Layout
+7. Advanced Grids & Layout Techniques
+8. Color ,Alignment,Frame Creation,Shape,Effects
+With Rewards
+300
+Pre Request
+1. UI/UX Level - 3
+Assessment Type
+Manual Grading
+5
+UI/UX Level - 5
+Attempts: 0
+1. Layout Planning for Multi-Section Web Pages
+2. Web-First Design Thinking
+3. Advanced Auto-Layout & Responsive Web Design
+4. Grid Systems & Visual Hierarchy in Web Layouts
+With Rewards
+350
+Pre Request
+1. UI/UX Level - 4
+Assessment Type
+Manual Grading
+Version control - Git, Github
+Version control - Git, Github
+
+Levels: 1
+Advanced
+course-img
+1
+Version control - Git, Github Level 0
+Attempts: 3
+Completed
+1. Git Commands & Workspace
+With Rewards
+100
+Pre Request
+1. HTML / CSS - Level 1
+Assessment Type
+MCQ
+VLSI Design
+VLSI Design
+
+Levels: 8
+Hardware
+course-img
+1
+VLSI Design - Level 0
+Attempts: 0
+1. Combinational Circuits
+2. Sequential Circuits
+3. Digital Logics
+With Rewards
+100
+Pre Request
+1. Embedded System - Level 1A
+Assessment Type
+MCQ
+2
+VLSI Design - Level 1A
+Attempts: 0
+1. Encoder
+2. Fulladder,Full subtractor
+3. Decoder
+4. D latch, Multiplexer
+5. Priority,Encoder
+6. Magnitude comparator,Prime-number detector
+7. Ripple-carry adder
+8. Number Conversion
+9. Demultiplexer
+With Rewards
+300
+Pre Request
+1. VLSI Design - Level 0
+Assessment Type
+Manual Grading
+3
+VLSI Design - Level 1B
+Attempts: 0
+1. 2’s complement
+2. Carry Lookahead Adder (CLA), Signed Multiplier,Arithmetic Logic Unit (ALU)
+3. Population Counter,Binary Multiplier,Binary Square
+4. Binary To 7Segment
+5. 4-bit comparator
+6. conditional counter,cyclic shift,division
+7. even_odd_checker, logic gate
+8. Parity Generator checker ,ripple_carry_adder,swap numbers
+With Rewards
+400
+Pre Request
+1. VLSI Design - Level 1A
+Assessment Type
+Manual Grading
+4
+VLSI Design - Level 1C
+Attempts: 0
+1. 4-to-2 priority encoder
+2. 2-bit magnitude comparator
+3. 4-bit Binary to Gray Code converter
+4. 8×1 multiplexer using only 2×1 multiplexers
+5. Logic gates using 2x1 MUX
+6. 3-to-8 decoder
+7. N-bit magnitude comparator
+8. 4-bit adder/subtractor
+9. 1-to-16 demultiplexer
+10. 4-bit Carry Look-Ahead Adder (CLA)
+11. Binary to Excess-3 code converter
+12. 8-to-3 encoder with an enable
+13. 4-bit full adder using half adder
+14. Dataflow Modeling
+15. inter-assignment delays
+16. Intra assignment delays
+With Rewards
+300
+Pre Request
+1. VLSI Design - Level 1B
+Assessment Type
+Manual Grading
+5
+VLSI Design - Level 2A
+Attempts: 0
+1. Verilog Test Bench
+2. Combinational Circuits
+3. Digital Logics
+4. Number conversion
+5. Gate level modelling
+6. K-map for both SOP and POS
+With Rewards
+300
+Pre Request
+1. VLSI Design - Level 1C
+Assessment Type
+Manual Grading
+6
+VLSI Design - Level 2B
+Attempts: 0
+1. Combinational Circuits
+2. Digital Logics
+3. Number conversion
+4. Gate level modelling
+5. K-map for both SOP and POS
+6. Flip Flop using Gate Level Modelling
+7. Multiply-Accumulate (MAC)
+8. Universal Shift Register
+9. Ripple Counter using Flip-Flops
+10. Synchronous Counter using Flip-Flops
+11. Johnson Counter
+12. Ring Counter
+13. Mod Counter
+14. Multiplier
+15. Ripple Carry Adder
+16. Logic Gate Using Universal Gates
+17. Verilog Test Bench
+With Rewards
+300
+Pre Request
+1. VLSI Design - Level 2A
+Assessment Type
+Manual Grading
+7
+VLSI Design - Level 2C
+Attempts: 0
+1. Combinational Circuits
+2. Digital Logics
+3. Number conversion
+4. Gate level modelling
+5. K-map for both SOP and POS
+6. Flip Flop using Gate Level Modelling
+7. Multiply-Accumulate (MAC)
+8. Universal Shift Register
+9. Ripple Counter using T Flip-Flops
+10. MUX Reduction Technique
+With Rewards
+300
+Pre Request
+1. VLSI Design - Level 2B
+Assessment Type
+Manual Grading
+8
+VLSI Design - Level 3.0
+Attempts: 0
+1. Verilog operators, assignments, timing and delays, shift operations.
+2. Logic and case statements, registers and counters, signed and unsigned values.
+3. arrays and bit selection, loops and generate blocks, and X/Z values with multiple drivers.
+With Rewards
+200
+Pre Request
+1. VLSI Design - Level 2C
+Assessment Type
+MCQ
+Welding - Gurugulam Assessment
+Welding - Gurugulam Assessment
+
+Levels: 4
+Hardware
+course-img
+1
+Welding - Gurugulam Assessment - Level 1A
+Attempts: 0
+1. Assembly of Welding Machine and Identification of Tools
+With Rewards
+150
+Pre Request
+1. Welding - Gurugulam Assessment - Level 0
+Assessment Type
+Manual Grading
+Register
+2
+Welding - Gurugulam Assessment - Level 1B
+Attempts: 0
+1. Reading and interpreting welding symbols
+With Rewards
+150
+Pre Request
+1. Welding - Gurugulam Assessment - Level 1A
+Assessment Type
+Manual Grading
+3
+Welding - Gurugulam Assessment - Level 1C
+Attempts: 0
+1. Basic joint preparation (Butt Joint, Lap Joint, T-Joint and Corner Joint)
+With Rewards
+150
+Pre Request
+1. Welding - Gurugulam Assessment - Level 1B
+Assessment Type
+Manual Grading
+4
+Welding - Gurugulam Assessment - Level 0
+Attempts: 3
+Completed
+1. Identification of welding tools and equipments
+2. Laboratory protocols and PPE
+3. Types of welding process
+4. Basic Joint types and Welding Position
+5. Understanding of weld symbols
+With Rewards
+100
+Pre Request
+No
+Assessment Type
+MCQ
+YUKTI INNOVATION CHALLENGE - 2026
+Idea / Product Presentation
+
+Levels: 3
+Beginner
+course-img
+1
+Level 1 Group Discussion
+Attempts: 0
+1. Business Ideas
+2. Identification of Real-World Problems in Business Firms
+With Rewards
+Pre Request
+No
+Assessment Type
+GD
+Register
+2
+Level 2 Idea Pitching
+Attempts: 0
+1. Related to Business Ideas
+With Rewards
+Pre Request
+No
+Assessment Type
+GD
+Register
+3
+Level 3 - IDEA PRESENTATION AND VALIDATION
+Attempts: 0
+1. Business Idea Presentation
+With Rewards
+Pre Request
+No
+Assessment Type
+Manual Grading
+Register
