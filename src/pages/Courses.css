@@ -38,17 +38,18 @@
 .courses-main-title {
   font-size: 26px;
   font-weight: 800;
-  color: #0f172a;
+  color: #f8fafc;
   margin: 0 0 4px 0;
   letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   gap: 10px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 .courses-count-subtitle {
   font-size: 13.5px;
-  color: #64748b;
+  color: #94a3b8;
   margin: 0;
   font-weight: 500;
 }
@@ -57,8 +58,8 @@
 .courses-nav-tabs {
   display: flex;
   gap: 12px;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding-bottom: 14px;
   margin-bottom: 20px;
   overflow-x: auto;
 }
@@ -68,38 +69,38 @@
   align-items: center;
   gap: 8px;
   padding: 9px 20px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 30px;
-  color: #475569;
+  color: #cbd5e1;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(8px);
 }
 
 .courses-tab-btn:hover {
-  background: #f8fafc;
-  color: #1e293b;
-  border-color: #94a3b8;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .courses-tab-btn.active {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: #ffffff;
   border-color: transparent;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
 }
 
 .courses-tab-badge {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.25);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
-  color: #334155;
+  color: #cbd5e1;
 }
 
 .courses-tab-btn.active .courses-tab-badge {
