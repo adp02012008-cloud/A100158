@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
 import { isSuperAdminEmail } from "../utils/roles";
@@ -20,6 +21,44 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
   const { auth, currentUser } = useAuth();
 
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
+
+  const completedCourses = useMemo(() => {
+    if (Array.isArray(student.COURSE_DETAILS) && student.COURSE_DETAILS.length > 0) {
+      return student.COURSE_DETAILS.map((c) => {
+        let levelText = c.currentLevel || "Completed";
+        if (Array.isArray(c.completedLevels) && c.completedLevels.length > 0) {
+          levelText = c.completedLevels.join(", ");
+        }
+        return {
+          courseName: c.courseName || "Unknown Course",
+          level: levelText,
+        };
+      });
+    }
+    if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
+      return student.COURSES.map((cStr) => {
+        if (typeof cStr === "object" && cStr !== null) {
+          return {
+            courseName: cStr.courseName || "Unknown Course",
+            level: cStr.currentLevel || cStr.level || "Completed",
+          };
+        }
+        const str = String(cStr).trim();
+        const parts = str.split(" - ");
+        if (parts.length > 1) {
+          return {
+            courseName: parts[0].trim(),
+            level: parts.slice(1).join(" - ").trim(),
+          };
+        }
+        return {
+          courseName: str,
+          level: "Completed",
+        };
+      });
+    }
+    return [];
+  }, [student.COURSE_DETAILS, student.COURSES]);
 
   const skills = [
     student.Primary1, student.Primary2,
@@ -133,7 +172,24 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
         {student.ACTIVITY > avgActivity  && <p className="high">↑ {difference} above avg</p>}
         {Math.abs(student.ACTIVITY - avgActivity) < 0.01 && <p className="equal">= At average</p>}
 
-        <p className="course-count">Courses: {student.COURSE_COUNT}</p>
+        {/* Completed Courses & Levels */}
+        <div className="card-courses-section">
+          <div className="card-courses-header">
+            <span className="card-courses-title">Courses Completed ({completedCourses.length})</span>
+          </div>
+          {completedCourses.length === 0 ? (
+            <div className="card-no-courses">No completed courses yet</div>
+          ) : (
+            <div className="card-courses-list">
+              {completedCourses.map((c, idx) => (
+                <div key={idx} className="card-course-pill" title={`${c.courseName} — ${c.level}`}>
+                  <span className="card-course-pill-name">{c.courseName}</span>
+                  <span className="card-course-pill-level">{c.level}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="skill-preview">
           {skills.map((x, i) => <span key={i}>{x}</span>)}

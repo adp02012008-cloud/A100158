@@ -36,6 +36,7 @@ export async function getAllUsers(req, res) {
       const courseDetails = uProgress.map((p) => ({
         courseName: p.courseId?.name || "Unknown Course",
         currentLevel: p.currentLevel,
+        completedLevels: Array.isArray(p.completedLevels) && p.completedLevels.length > 0 ? p.completedLevels : (p.currentLevel ? [p.currentLevel] : []),
         display: `${p.courseId?.name || "Unknown"} - ${p.currentLevel}`,
       }));
       return {
@@ -239,6 +240,7 @@ export async function getDashboardUsers(req, res) {
       const courseDetails = uProgress.map((p) => ({
         courseName: p.courseId?.name || "Unknown Course",
         currentLevel: p.currentLevel,
+        completedLevels: Array.isArray(p.completedLevels) && p.completedLevels.length > 0 ? p.completedLevels : (p.currentLevel ? [p.currentLevel] : []),
         display: `${p.courseId?.name || "Unknown"} - ${p.currentLevel}`,
       }));
 

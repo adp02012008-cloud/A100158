@@ -279,40 +279,6 @@ export async function updateCourseProgress(req, res) {
     let progress = null;
     await withTransaction(async (session) => {
       progress = await updateUserCourseLevel(targetUserId, courseId, targetLevel, isCompleted, session);
-
-      // Independent points delta calculation
-      const user = await User.findById(targetUserId, null, { session }).exec();
-      if (user && targetLevel) {
-        let pts = Number(pointsEarned) || 0;
-        if (!pts) {
-          const course = await Course.findById(courseId, null, { session }).exec();
-          if (course && Array.isArray(course.levels)) {
-            const matched = course.levels.find(
-              (l) =>
-                String(l.levelName).toUpperCase() === String(targetLevel).toUpperCase() ||
-                String(l.levelNumber) === String(targetLevel).replace(/\D/g, "")
-            );
-            if (matched?.rewardPoints) pts = Number(matched.rewardPoints);
-          }
-          if (!pts) {
-            const rule = await CoursePointRule.findOne({ courseId }, null, { session }).exec();
-            if (rule?.levelPoints) {
-              const sanitized = String(targetLevel).replace(/\.0\b/g, "").replace(/\./g, "-");
-              pts = Number(
-                rule.levelPoints.get
-                  ? rule.levelPoints.get(targetLevel) || rule.levelPoints.get(sanitized)
-                  : rule.levelPoints[targetLevel] || rule.levelPoints[sanitized]
-              ) || 100;
-            }
-          }
-        }
-        if (!pts) pts = 100;
-
-        const delta = isCompleted ? pts : -pts;
-        user.rewardPoints = Math.max(0, (user.rewardPoints || 0) + delta);
-        user.activityPoints = Math.max(0, (user.activityPoints || 0) + delta);
-        await user.save({ session });
-      }
     });
 
     return res.json({ success: true, progress });

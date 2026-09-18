@@ -1,14 +1,8 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { formatDateForInput } from "../utils/dateUtils";
-import AddCourseModal from "./AddCourseModal";
-import ManageCoursesModal from "./ManageCoursesModal";
 import UnsavedChangesModal from "./UnsavedChangesModal";
-
-function getLevelColumns(row) {
-  return Object.keys(row || {}).filter((k) => k.toLowerCase().startsWith("level"));
-}
 
 export default function EditModal({ student, onClose, onSaved }) {
   const { auth } = useAuth();
@@ -33,34 +27,40 @@ export default function EditModal({ student, onClose, onSaved }) {
     STATUS: student.STATUS || student.status || "ACTIVE",
   });
 
-  const [courseEdits, setCourseEdits] = useState(() => {
-    const init = {};
-    (student.COURSE_DETAILS || []).forEach((c) => {
-      if (c && c.courseName) {
-        init[c.courseName] = c.currentLevel || "COMPLETED";
-      }
-    });
-    (student.COURSES || []).forEach((cStr) => {
-      if (typeof cStr === "string" && cStr.trim()) {
-        const cleanName = cStr.replace(/\s*-\s*LEVEL\s*[^\-]+$/i, "").trim();
-        if (!init[cleanName] && !init[cStr.trim()]) {
-          const match = cStr.match(/Level\s*([0-9A-Za-z]+)/i);
-          init[cleanName] = match ? `LEVEL ${match[1].toUpperCase()}` : "COMPLETED";
+  // Read-only list of completed / enrolled courses
+  const [enrolledCourses, setEnrolledCourses] = useState(() => {
+    if (Array.isArray(student.COURSE_DETAILS) && student.COURSE_DETAILS.length > 0) {
+      return student.COURSE_DETAILS.map((c) => ({
+        courseName: c.courseName || "Unknown Course",
+        level: c.currentLevel || (Array.isArray(c.completedLevels) && c.completedLevels.length > 0 ? c.completedLevels.join(", ") : "Completed"),
+      }));
+    }
+    if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
+      return student.COURSES.map((cStr) => {
+        if (typeof cStr === "object" && cStr !== null) {
+          return {
+            courseName: cStr.courseName || "Unknown Course",
+            level: cStr.currentLevel || cStr.level || "Completed",
+          };
         }
-      }
-    });
-    return init;
+        const str = String(cStr).trim();
+        const parts = str.split(" - ");
+        if (parts.length > 1) {
+          return {
+            courseName: parts[0].trim(),
+            level: parts.slice(1).join(" - ").trim(),
+          };
+        }
+        return {
+          courseName: str,
+          level: "Completed",
+        };
+      });
+    }
+    return [];
   });
 
-  const [pointsRows, setPointsRows] = useState([]);
-  const [allCoursesList, setAllCoursesList] = useState([]);
-  const [pointsLoading, setPointsLoading] = useState(true);
-
   const [clusterOptions, setClusterOptions] = useState(["Core", "Computer Cluster"]);
-
-  // Sub-modals & UI state
-  const [showAddCourseModal, setShowAddCourseModal] = useState(false);
-  const [showManageCoursesModal, setShowManageCoursesModal] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [courseFilterSearch, setCourseFilterSearch] = useState("");
 
@@ -69,7 +69,6 @@ export default function EditModal({ student, onClose, onSaved }) {
     personal: { ...personalForm },
     form: { ...form },
     admin: { ...adminForm },
-    courseEdits: { ...courseEdits },
   });
 
   const isDirty = useMemo(() => {
@@ -89,15 +88,8 @@ export default function EditModal({ student, onClose, onSaved }) {
     if (adminForm.ROLE !== init.admin.ROLE) return true;
     if (adminForm.STATUS !== init.admin.STATUS) return true;
 
-    const curKeys = Object.keys(courseEdits);
-    const initKeys = Object.keys(init.courseEdits);
-    if (curKeys.length !== initKeys.length) return true;
-    for (const k of curKeys) {
-      if (courseEdits[k] !== init.courseEdits[k]) return true;
-    }
-
     return false;
-  }, [personalForm, form, adminForm, courseEdits]);
+  }, [personalForm, form, adminForm]);
 
   const handleRequestClose = () => {
     if (isDirty) {
@@ -116,18 +108,12 @@ export default function EditModal({ student, onClose, onSaved }) {
     apiFetch(`/courses/progress?userId=${targetId}`)
       .then((res) => {
         if (!isMounted) return;
-        if (res?.progress && Array.isArray(res.progress)) {
-          setCourseEdits((prev) => {
-            const updated = { ...prev };
-            res.progress.forEach((p) => {
-              const cName = p.courseId?.name;
-              if (cName && (updated[cName] === undefined || updated[cName] === "")) {
-                updated[cName] = p.currentLevel || "COMPLETED";
-              }
-            });
-            initialSnapshotRef.current.courseEdits = { ...updated };
-            return updated;
-          });
+        if (res?.progress && Array.isArray(res.progress) && res.progress.length > 0) {
+          const mapped = res.progress.map((p) => ({
+            courseName: p.courseId?.name || "Unknown Course",
+            level: p.currentLevel || (Array.isArray(p.completedLevels) && p.completedLevels.length > 0 ? p.completedLevels.join(", ") : "Completed"),
+          }));
+          setEnrolledCourses(mapped);
         }
       })
       .catch(() => {});
@@ -171,127 +157,13 @@ export default function EditModal({ student, onClose, onSaved }) {
     };
   }, [student]);
 
-  const loadCoursesData = useCallback(async () => {
-    try {
-      const [rulesRes, coursesRes] = await Promise.allSettled([
-        apiFetch("/points/rules"),
-        apiFetch("/courses"),
-      ]);
-      const rules =
-        rulesRes.status === "fulfilled" && Array.isArray(rulesRes.value?.rules)
-          ? rulesRes.value.rules
-          : [];
-      setPointsRows(rules);
-
-      const namesSet = new Set();
-      rules.forEach((r) => {
-        const n = r.courseName || r.courseId?.name;
-        if (n) namesSet.add(n.trim());
-      });
-
-      if (coursesRes.status === "fulfilled" && Array.isArray(coursesRes.value?.courses)) {
-        coursesRes.value.courses.forEach((c) => {
-          if (c?.name) namesSet.add(c.name.trim());
-        });
-      }
-
-      setAllCoursesList(Array.from(namesSet).sort((a, b) => a.localeCompare(b)));
-    } catch {
-      // Ignore
-    } finally {
-      setPointsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCoursesData();
-  }, [loadCoursesData]);
-
-  const courseLevelOptions = useMemo(() => {
-    const map = {};
-    pointsRows.forEach((row) => {
-      const courseName = row.courseName || row.courseId?.name || "";
-      if (!courseName) return;
-      const levelMap = row.levelPoints || {};
-      const levels = Object.keys(levelMap).filter((l) => Number(levelMap[l] || 0) > 0);
-      if (levels.length > 0) map[courseName] = levels;
-    });
-    return map;
-  }, [pointsRows]);
-
-  const getLevelsForCourse = (courseName) => {
-    const opts = courseLevelOptions[courseName];
-    const cur = courseEdits[courseName] || "COMPLETED";
-    const set = new Set();
-    if (Array.isArray(opts) && opts.length > 0) {
-      opts.forEach((l) => set.add(l));
-    } else {
-      ["LEVEL 0", "LEVEL 1", "LEVEL 2", "LEVEL 3", "COMPLETED"].forEach((l) => set.add(l));
-    }
-    if (cur) set.add(cur);
-    return Array.from(set);
-  };
-
-  const normalizeCourseName = (name = "") =>
-    String(name)
-      .toLowerCase()
-      .trim()
-      .replace(/[\s\-_]+/g, " ");
-
-  const enrolledCourseNames = [
-    ...Object.keys(courseEdits).filter(
-      (k) => courseEdits[k] && !["", "NULL", "NIL"].includes(String(courseEdits[k]).toUpperCase())
-    ),
-    ...(student.COURSE_DETAILS || []).map((c) => c?.courseName).filter(Boolean),
-    ...(student.COURSES || []).map((c) => {
-      if (typeof c === "string") return c.replace(/\s*-\s*LEVEL\s*[^\-]+$/i, "").trim();
-      return "";
-    }).filter(Boolean),
-  ];
-
-  const normalizedEnrolledSet = new Set(
-    enrolledCourseNames.map((n) => normalizeCourseName(n))
-  );
-
-  const isCourseEnrolled = (courseName) => {
-    const norm = normalizeCourseName(courseName);
-    if (normalizedEnrolledSet.has(norm)) return true;
-    for (const enrolled of normalizedEnrolledSet) {
-      if (enrolled === norm || enrolled.startsWith(norm) || norm.startsWith(enrolled)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const displayedCourses = Object.keys(courseEdits).filter(
-    (k) => courseEdits[k] && !["", "NULL", "NIL"].includes(String(courseEdits[k]).toUpperCase())
-  );
-
-  const filteredDisplayedCourses = useMemo(() => {
-    if (!courseFilterSearch.trim()) return displayedCourses;
+  const filteredCourses = useMemo(() => {
+    if (!courseFilterSearch.trim()) return enrolledCourses;
     const q = courseFilterSearch.toLowerCase().trim();
-    return displayedCourses.filter((c) => c.toLowerCase().includes(q));
-  }, [displayedCourses, courseFilterSearch]);
-
-  const addableCourses = allCoursesList.filter((c) => !isCourseEnrolled(c));
-
-  const handleAddCourseDirect = (selectedCourse) => {
-    if (!selectedCourse) return;
-
-    // Automatically resolve default level
-    const levels = courseLevelOptions[selectedCourse] || [];
-    let autoLevel = levels.length > 0 ? levels[0] : "";
-    if (!autoLevel) {
-      const match = selectedCourse.match(/Level\s*([0-9A-Za-z]+)/i);
-      autoLevel = match ? `LEVEL ${match[1].toUpperCase()}` : "LEVEL 1";
-    }
-
-    setCourseEdits((prev) => ({
-      ...prev,
-      [selectedCourse]: autoLevel,
-    }));
-  };
+    return enrolledCourses.filter((c) =>
+      c.courseName.toLowerCase().includes(q) || c.level.toLowerCase().includes(q)
+    );
+  }, [enrolledCourses, courseFilterSearch]);
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -350,7 +222,6 @@ export default function EditModal({ student, onClose, onSaved }) {
           STATUS: adminForm.STATUS,
           status: adminForm.STATUS,
         } : {}),
-        COURSE_UPDATES: courseEdits,
       };
 
       const targetId = student._id || student.userId;
@@ -359,7 +230,7 @@ export default function EditModal({ student, onClose, onSaved }) {
         body: JSON.stringify(payload),
       });
 
-      if (onSaved) onSaved({ ...student, ...payload, COURSE_UPDATES: courseEdits });
+      if (onSaved) onSaved({ ...student, ...payload });
       onClose();
     } catch (err) {
       alert("Failed to save changes: " + err.message);
@@ -462,13 +333,13 @@ export default function EditModal({ student, onClose, onSaved }) {
         <div className="edit-section">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", flexWrap: "wrap", gap: "8px" }}>
             <h4 className="edit-section-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>Enrolled Courses</span>
+              <span>Completed & Enrolled Courses</span>
               <span style={{ fontSize: "11px", fontWeight: "700", background: "rgba(139, 92, 246, 0.2)", border: "1px solid rgba(167, 139, 250, 0.3)", color: "#c4b5fd", padding: "2px 8px", borderRadius: "10px" }}>
-                {displayedCourses.length}
+                {enrolledCourses.length}
               </span>
             </h4>
 
-            {displayedCourses.length > 4 && (
+            {enrolledCourses.length > 4 && (
               <input
                 type="text"
                 placeholder="🔍 Filter enrolled…"
@@ -488,206 +359,81 @@ export default function EditModal({ student, onClose, onSaved }) {
             )}
           </div>
 
-          {pointsLoading ? (
-            <p className="edit-note">Loading course data…</p>
+          {enrolledCourses.length === 0 ? (
+            <p className="edit-note" style={{ margin: "10px 0" }}>No completed courses recorded yet.</p>
           ) : (
-            <>
-              {displayedCourses.length === 0 ? (
-                <p className="edit-note" style={{ margin: "10px 0" }}>No courses enrolled yet. Choose or add a course below.</p>
-              ) : (
-                <div
-                  className="course-edit-list-container"
-                  style={{
-                    maxHeight: "220px",
-                    overflowY: "auto",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    background: "rgba(10, 6, 24, 0.4)",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    borderRadius: "10px",
-                    padding: "8px",
-                  }}
-                >
-                  {filteredDisplayedCourses.length === 0 ? (
-                    <div style={{ fontSize: "12px", color: "#94a3b8", textAlign: "center", padding: "12px" }}>
-                      No matching courses found.
-                    </div>
-                  ) : (
-                    filteredDisplayedCourses.map((courseName) => {
-                      const currentLevel = courseEdits[courseName] || "COMPLETED";
-                      const availableLevels = getLevelsForCourse(courseName);
-
-                      return (
-                        <div
-                          key={courseName}
-                          className="course-compact-row"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            padding: "6px 10px",
-                            background: "rgba(22, 16, 42, 0.75)",
-                            border: "1px solid rgba(255, 255, 255, 0.06)",
-                            borderRadius: "8px",
-                            gap: "8px",
-                            transition: "background 0.15s ease",
-                          }}
-                        >
-                          <span
-                            style={{
-                              color: "#f1f5f9",
-                              fontWeight: "500",
-                              fontSize: "13px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              flex: 1,
-                            }}
-                            title={courseName}
-                          >
-                            {courseName}
-                          </span>
-
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-                            {/* Interactive Level Selector */}
-                            <select
-                              value={currentLevel}
-                              onChange={(e) =>
-                                setCourseEdits((prev) => ({ ...prev, [courseName]: e.target.value }))
-                              }
-                              style={{
-                                fontSize: "11px",
-                                fontWeight: "700",
-                                color: "#38bdf8",
-                                background: "rgba(56, 189, 248, 0.12)",
-                                border: "1px solid rgba(56, 189, 248, 0.35)",
-                                borderRadius: "6px",
-                                padding: "3px 6px",
-                                cursor: "pointer",
-                                outline: "none",
-                              }}
-                              title="Click to change completion level"
-                            >
-                              {availableLevels.map((lvl) => (
-                                <option key={lvl} value={lvl} style={{ background: "#0f172a", color: "#f8fafc" }}>
-                                  {lvl}
-                                </option>
-                              ))}
-                            </select>
-
-                            {/* Compact Remove Button */}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setCourseEdits((prev) => ({ ...prev, [courseName]: "" }))
-                              }
-                              style={{
-                                background: "rgba(239, 68, 68, 0.12)",
-                                border: "1px solid rgba(239, 68, 68, 0.3)",
-                                color: "#f87171",
-                                borderRadius: "6px",
-                                padding: "3px 8px",
-                                fontSize: "11px",
-                                fontWeight: "600",
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                              }}
-                              title="Remove course"
-                            >
-                              ✕ Remove
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
+            <div
+              className="course-edit-list-container"
+              style={{
+                maxHeight: "220px",
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                background: "rgba(10, 6, 24, 0.4)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                borderRadius: "10px",
+                padding: "8px",
+              }}
+            >
+              {filteredCourses.length === 0 ? (
+                <div style={{ fontSize: "12px", color: "#94a3b8", textAlign: "center", padding: "12px" }}>
+                  No matching courses found.
                 </div>
+              ) : (
+                filteredCourses.map((c, idx) => (
+                  <div
+                    key={idx}
+                    className="course-compact-row"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "8px 12px",
+                      background: "rgba(22, 16, 42, 0.75)",
+                      border: "1px solid rgba(255, 255, 255, 0.06)",
+                      borderRadius: "8px",
+                      gap: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#f1f5f9",
+                        fontWeight: "500",
+                        fontSize: "13px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        flex: 1,
+                      }}
+                      title={c.courseName}
+                    >
+                      {c.courseName}
+                    </span>
+
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        color: "#38bdf8",
+                        background: "rgba(56, 189, 248, 0.12)",
+                        border: "1px solid rgba(56, 189, 248, 0.35)",
+                        borderRadius: "6px",
+                        padding: "3px 8px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {c.level || "Completed"}
+                    </span>
+                  </div>
+                ))
               )}
-
-              {/* Add Course & Management Toolbar */}
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  marginTop: "10px",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                <select
-                  className="course-edit-select"
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value === "__CREATE_NEW__") {
-                      setShowAddCourseModal(true);
-                    } else if (e.target.value) {
-                      handleAddCourseDirect(e.target.value);
-                    }
-                  }}
-                  style={{ flex: 1, minWidth: "180px" }}
-                >
-                  <option value="">+ Add an enrolled course…</option>
-                  <option value="__CREATE_NEW__" style={{ color: "#a78bfa", fontWeight: "700" }}>
-                    ➕ Create New Course…
-                  </option>
-                  {addableCourses.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  type="button"
-                  onClick={() => setShowAddCourseModal(true)}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    background: "rgba(139, 92, 246, 0.18)",
-                    border: "1px solid rgba(167, 139, 250, 0.35)",
-                    color: "#c4b5fd",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    whiteSpace: "nowrap",
-                  }}
-                  title="Create a course that does not exist in the catalogue"
-                >
-                  ➕ Add New Course
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowManageCoursesModal(true)}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    background: "rgba(255, 255, 255, 0.06)",
-                    border: "1px solid rgba(255, 255, 255, 0.14)",
-                    color: "#94a3b8",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    whiteSpace: "nowrap",
-                  }}
-                  title="Manage course catalog and point rules"
-                >
-                  ⚙️ Manage Courses
-                </button>
-              </div>
-
-              <p className="edit-note" style={{ marginTop: "8px", fontSize: "11.5px" }}>
-                💡 Changes are saved directly to MongoDB.
-              </p>
-            </>
+            </div>
           )}
+
+          <p className="edit-note" style={{ marginTop: "10px", fontSize: "11.5px", color: "#94a3b8" }}>
+            ℹ️ Course enrollment & level completion are managed on the dedicated Courses page.
+          </p>
         </div>
 
         <div className="edit-actions">
@@ -720,31 +466,6 @@ export default function EditModal({ student, onClose, onSaved }) {
           </button>
         </div>
       </div>
-
-      {/* Direct Add New Course Modal */}
-      {showAddCourseModal && (
-        <AddCourseModal
-          onClose={() => setShowAddCourseModal(false)}
-          onCreated={(newCourseName) => {
-            loadCoursesData().then(() => {
-              if (newCourseName && typeof newCourseName === "string") {
-                handleAddCourseDirect(newCourseName);
-              }
-            });
-            setShowAddCourseModal(false);
-          }}
-        />
-      )}
-
-      {/* Direct Manage Courses Modal */}
-      {showManageCoursesModal && (
-        <ManageCoursesModal
-          onClose={() => {
-            loadCoursesData();
-            setShowManageCoursesModal(false);
-          }}
-        />
-      )}
 
       {/* Unsaved Changes Confirmation Dialog */}
       <UnsavedChangesModal

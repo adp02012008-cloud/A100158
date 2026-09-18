@@ -29,7 +29,6 @@ export async function updateUserCourseLevel(userId, courseId, levelName, isCompl
   if (!levelName || ["NULL", "NIL", ""].includes(String(levelName).toUpperCase())) {
     if (!isCompleted) {
       await UserCourseProgress.deleteOne({ userId, courseId }, queryOpts);
-      await recalculateUserPoints(userId, session);
       return null;
     }
   }
@@ -76,6 +75,5 @@ export async function updateUserCourseLevel(userId, courseId, levelName, isCompl
     }
   }
 
-  await recalculateUserPoints(userId, session);
   return progress;
 }
