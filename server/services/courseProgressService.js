@@ -29,6 +29,7 @@ export async function updateUserCourseLevel(userId, courseId, newLevel, session 
       .map((p) => normalizeStr(p.courseId?.name));
 
     for (const req of course.prerequisites) {
+      if (!req || ["NONE", "NIL", "NULL", "-", "NO"].includes(String(req).toUpperCase().trim())) continue;
       if (!completedCourseNames.includes(normalizeStr(req))) {
         throw new Error(`Prerequisite not met: ${req} is required before taking ${course.name}.`);
       }

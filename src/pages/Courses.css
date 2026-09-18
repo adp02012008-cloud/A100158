@@ -288,8 +288,11 @@
 .networking-banner {
   background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
 }
+.c-banner {
+  background: linear-gradient(135deg, #042f2e 0%, #0d9488 55%, #0284c7 100%);
+}
 .cpp-banner {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #3b82f6 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #4f46e5 100%);
 }
 .python-banner {
   background: linear-gradient(135deg, #0c182d 0%, #1e293b 50%, #ca8a04 100%);
@@ -879,12 +882,97 @@
   box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
 }
 
+.level-switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.level-status-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1.5px solid transparent;
+}
+
+.level-status-pill-btn.completed {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.level-status-pill-btn.completed:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+  transform: translateY(-1px);
+}
+
+.level-status-pill-btn.incomplete {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+.level-status-pill-btn.incomplete:hover:not(:disabled) {
+  background: #e0e7ff;
+  color: #4f46e5;
+  border-color: #c7d2fe;
+  transform: translateY(-1px);
+}
+
+.switch-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.level-status-pill-btn.completed .switch-dot {
+  background-color: #10b981;
+}
+
+.level-status-pill-btn.incomplete .switch-dot {
+  background-color: #94a3b8;
+}
+
 .btn-mark-level.is-completed {
   background: #ecfdf5;
   color: #059669;
   border: 1px solid #a7f3d0;
   box-shadow: none;
-  cursor: default;
+  cursor: pointer;
+}
+
+.btn-mark-level.is-completed:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-mark-level-direct.is-completed {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.btn-mark-level-direct.is-completed:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+  transform: translateY(-1px);
 }
 
 /* Course Form Modal */

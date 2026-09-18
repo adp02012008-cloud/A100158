@@ -83,9 +83,15 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
   const baseUrl = getApiBaseUrl();
   const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
 
+  let body = options.body;
+  if (body && typeof body === "object" && !(body instanceof FormData) && !(body instanceof Blob)) {
+    body = JSON.stringify(body);
+  }
+
   let response = await fetch(url, {
     ...options,
     headers,
+    body,
   });
 
   if (response.status === 401 && !isRetry) {

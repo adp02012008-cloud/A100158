@@ -20,8 +20,10 @@ function CourseBannerGraphic({ course }) {
     theme = "plc";
   } else if (name.includes("network") || name.includes("cyber") || name.includes("cloud")) {
     theme = "networking";
-  } else if (name.includes("c++") || name.includes("c programming") || name.includes("code debug")) {
+  } else if (name.includes("c++") || name.includes("cpp")) {
     theme = "cpp";
+  } else if (name.includes("c programming") || name === "c" || name.startsWith("c -") || name.includes("code debug")) {
+    theme = "c";
   } else if (name.includes("python") || name.includes("machine learning") || name.includes("deep learning") || name.includes("ai")) {
     theme = "python";
   } else if (name.includes("java") && !name.includes("script")) {
@@ -123,18 +125,33 @@ function CourseBannerGraphic({ course }) {
             </svg>
           </div>
         );
+      case "c":
+        return (
+          <div className="banner-art-wrap c-banner">
+            <div className="banner-tag">C PROGRAMMING</div>
+            <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
+              <rect x="25" y="20" width="135" height="80" rx="6" fill="#042f2e" stroke="#14b8a6" strokeWidth="2" />
+              <path d="M40 42 L55 55 L40 68" stroke="#2dd4bf" strokeWidth="2.5" fill="none" />
+              <text x="65" y="55" fill="#5eead4" fontFamily="monospace" fontSize="12.5" fontWeight="bold">#include &lt;stdio.h&gt;</text>
+              <text x="40" y="80" fill="#99f6e4" fontFamily="monospace" fontSize="11" fontWeight="bold">printf("C Foundation");</text>
+              {/* Pure C Emblem Badge */}
+              <circle cx="230" cy="60" r="32" fill="#0f766e" stroke="#2dd4bf" strokeWidth="3" />
+              <text x="219" y="72" fill="#ffffff" fontFamily="sans-serif" fontSize="34" fontWeight="900">C</text>
+            </svg>
+          </div>
+        );
       case "cpp":
         return (
           <div className="banner-art-wrap cpp-banner">
-            <div className="banner-tag">C / C++ PROGRAMMING</div>
+            <div className="banner-tag">C++ PROGRAMMING</div>
             <svg viewBox="0 0 300 120" className="banner-svg" fill="none">
-              <rect x="30" y="20" width="120" height="80" rx="6" fill="#0f172a" stroke="#60a5fa" strokeWidth="2" />
-              <path d="M45 42 L60 55 L45 68" stroke="#34d399" strokeWidth="2.5" fill="none" />
-              <text x="70" y="60" fill="#93c5fd" fontFamily="monospace" fontSize="16" fontWeight="bold">#include</text>
-              <line x1="45" y1="80" x2="110" y2="80" stroke="#475569" strokeWidth="2" />
-              {/* Big C++ Badge */}
-              <circle cx="225" cy="60" r="32" fill="#1e40af" stroke="#93c5fd" strokeWidth="3" />
-              <text x="212" y="69" fill="#ffffff" fontFamily="sans-serif" fontSize="24" fontWeight="900">C++</text>
+              <rect x="25" y="20" width="135" height="80" rx="6" fill="#0f172a" stroke="#60a5fa" strokeWidth="2" />
+              <path d="M40 42 L55 55 L40 68" stroke="#34d399" strokeWidth="2.5" fill="none" />
+              <text x="65" y="55" fill="#93c5fd" fontFamily="monospace" fontSize="12.5" fontWeight="bold">#include &lt;iostream&gt;</text>
+              <text x="40" y="80" fill="#a5b4fc" fontFamily="monospace" fontSize="11" fontWeight="bold">std::cout &lt;&lt; "C++";</text>
+              {/* Distinct C++ Badge */}
+              <circle cx="230" cy="60" r="32" fill="#1e40af" stroke="#93c5fd" strokeWidth="3" />
+              <text x="210" y="69" fill="#ffffff" fontFamily="sans-serif" fontSize="24" fontWeight="900">C++</text>
             </svg>
           </div>
         );
@@ -576,19 +593,42 @@ export default function Courses({ search: initialSearch = "" }) {
     });
   }, [myCourseLevelItems, selectedCategory, search, sortBy]);
 
-  // Handle Mark Level Completed
-  const handleMarkLevelCompleted = async (course, levelObj) => {
+  // Handle Toggle Level Completed / Not Completed
+  const handleToggleLevelProgress = async (course, levelObj, levelIndex) => {
+    if (!course?._id) return;
     try {
       setActionLoading(true);
       const targetUserId = currentUser?._id || auth.userId;
+      const prog = getCourseProgress(course);
+      const isCurrentlyCompleted = prog.completedIndices.has(levelIndex);
+
+      let newLevel = "";
+      let pointsEarned = 0;
+
+      if (isCurrentlyCompleted) {
+        // Toggle OFF: switch this level to Not Completed
+        if (levelIndex > 0 && Array.isArray(course.levels) && course.levels[levelIndex - 1]) {
+          newLevel = course.levels[levelIndex - 1].levelName || `Level ${levelIndex - 1}`;
+          pointsEarned = course.levels[levelIndex - 1].rewardPoints || 0;
+        } else {
+          // If level 0 is toggled off, reset course progress
+          newLevel = "";
+          pointsEarned = 0;
+        }
+      } else {
+        // Toggle ON: mark as Completed
+        newLevel = levelObj?.levelName || `Level ${levelIndex}`;
+        pointsEarned = levelObj?.rewardPoints || 100;
+      }
+
       const res = await apiFetch("/courses/progress/update", {
         method: "POST",
-        body: {
+        body: JSON.stringify({
           userId: targetUserId,
           courseId: course._id,
-          newLevel: levelObj.levelName || `Level ${levelObj.levelNumber}`,
-          pointsEarned: levelObj.rewardPoints || 100,
-        },
+          newLevel,
+          pointsEarned,
+        }),
       });
 
       if (res?.success) {
@@ -598,7 +638,7 @@ export default function Courses({ search: initialSearch = "" }) {
         }
       }
     } catch (err) {
-      alert("Failed to update progress: " + err.message);
+      alert("Failed to update progress: " + (err.message || "Unknown error"));
     } finally {
       setActionLoading(false);
     }
@@ -993,16 +1033,15 @@ export default function Courses({ search: initialSearch = "" }) {
                         📖 View Full Course
                       </button>
 
-                      {!isDone && (
-                        <button
-                          type="button"
-                          className="btn-mark-level-direct"
-                          disabled={actionLoading}
-                          onClick={() => handleMarkLevelCompleted(item.parentCourse, item.levelObj)}
-                        >
-                          {actionLoading ? "Saving…" : "Mark Completed ✓"}
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        className={`btn-mark-level-direct ${isDone ? "is-completed" : ""}`}
+                        disabled={actionLoading}
+                        onClick={() => handleToggleLevelProgress(item.parentCourse, item.levelObj, item.levelIndex)}
+                        title={isDone ? "Click to switch back to Not Completed" : "Click to mark as Completed"}
+                      >
+                        {actionLoading ? "Saving…" : isDone ? "✓ Completed (Switch)" : "Mark Completed ✓"}
+                      </button>
                     </div>
                   </div>
                 );
@@ -1112,13 +1151,28 @@ export default function Courses({ search: initialSearch = "" }) {
                           <span className="level-meta-value">{lvl.assessmentType || "MCQ"}</span>
                         </div>
 
+                        <div className="level-switch-row">
+                          <span className="level-meta-label">Status</span>
+                          <button
+                            type="button"
+                            className={`level-status-pill-btn ${isCompleted ? "completed" : "incomplete"}`}
+                            disabled={actionLoading}
+                            onClick={() => handleToggleLevelProgress(detailCourse, lvl, index)}
+                            title={isCompleted ? "Click to switch to Not Completed" : "Click to switch to Completed"}
+                          >
+                            <span className="switch-dot" />
+                            <span>{actionLoading ? "Saving…" : isCompleted ? "Completed" : "Not Completed"}</span>
+                          </button>
+                        </div>
+
                         <button
                           type="button"
                           className={`btn-mark-level ${isCompleted ? "is-completed" : ""}`}
-                          disabled={actionLoading || isCompleted}
-                          onClick={() => handleMarkLevelCompleted(detailCourse, lvl)}
+                          disabled={actionLoading}
+                          onClick={() => handleToggleLevelProgress(detailCourse, lvl, index)}
+                          title={isCompleted ? "Click to switch to Not Completed" : "Click to mark as Completed"}
                         >
-                          {isCompleted ? "✓ Completed" : actionLoading ? "Saving…" : "Mark Completed"}
+                          {actionLoading ? "Saving…" : isCompleted ? "✓ Completed (Click to Undo)" : "Mark Completed"}
                         </button>
                       </div>
                     </div>

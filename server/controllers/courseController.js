@@ -267,43 +267,59 @@ export async function updateCourseProgress(req, res) {
     const { userId, courseId, newLevel, pointsEarned } = req.body;
     const targetUserId = userId || req.user._id;
 
+    if (!courseId) {
+      return res.status(400).json({ success: false, message: "Course ID is required." });
+    }
+
     let progress = null;
     await withTransaction(async (session) => {
+      // Find previous progress record to calculate delta
+      const prevProgress = await UserCourseProgress.findOne({ userId: targetUserId, courseId }, null, { session });
+      const prevLevel = prevProgress?.currentLevel;
+
       progress = await updateUserCourseLevel(targetUserId, courseId, newLevel, session);
 
-      // If completing a level, award reward points and activity points
-      if (newLevel && !["NULL", "NIL", ""].includes(String(newLevel).toUpperCase())) {
-        const user = await User.findById(targetUserId, null, { session }).exec();
-        if (user) {
-          let points = Number(pointsEarned) || 0;
-          if (!points) {
-            const course = await Course.findById(courseId, null, { session }).exec();
-            if (course && Array.isArray(course.levels)) {
-              const matchedLvl = course.levels.find(
-                (l) =>
-                  String(l.levelName).toUpperCase() === String(newLevel).toUpperCase() ||
-                  String(l.levelNumber) === String(newLevel).replace(/\D/g, "")
-              );
-              if (matchedLvl?.rewardPoints) points = Number(matchedLvl.rewardPoints);
-            }
-            if (!points) {
-              const rule = await CoursePointRule.findOne({ courseId }, null, { session }).exec();
-              if (rule?.levelPoints) {
-                const sanitizedLvl = String(newLevel).replace(/\.0\b/g, "").replace(/\./g, "-");
-                points =
-                  Number(
-                    rule.levelPoints.get
-                      ? rule.levelPoints.get(newLevel) || rule.levelPoints.get(sanitizedLvl)
-                      : rule.levelPoints[newLevel] || rule.levelPoints[sanitizedLvl]
-                  ) || 100;
-              }
-            }
+      // Points delta calculation
+      const user = await User.findById(targetUserId, null, { session }).exec();
+      if (user) {
+        let prevPts = 0;
+        let newPts = 0;
+        const rule = await CoursePointRule.findOne({ courseId }, null, { session }).exec();
+        const course = await Course.findById(courseId, null, { session }).exec();
+
+        const getPtsForLvl = (lvlName) => {
+          if (!lvlName || ["NULL", "NIL", ""].includes(String(lvlName).toUpperCase())) return 0;
+          if (course && Array.isArray(course.levels)) {
+            const matched = course.levels.find(
+              (l) =>
+                String(l.levelName).toUpperCase() === String(lvlName).toUpperCase() ||
+                String(l.levelNumber) === String(lvlName).replace(/\D/g, "")
+            );
+            if (matched?.rewardPoints) return Number(matched.rewardPoints);
           }
-          if (points > 0) {
-            user.rewardPoints = (user.rewardPoints || 0) + points;
-            user.activityPoints = (user.activityPoints || 0) + points;
-            await user.save({ session });
+          if (rule?.levelPoints) {
+            const sanitized = String(lvlName).replace(/\.0\b/g, "").replace(/\./g, "-");
+            return (
+              Number(
+                rule.levelPoints.get
+                  ? rule.levelPoints.get(lvlName) || rule.levelPoints.get(sanitized)
+                  : rule.levelPoints[lvlName] || rule.levelPoints[sanitized]
+              ) || 100
+            );
           }
+          return 100;
+        };
+
+        if (prevLevel) prevPts = getPtsForLvl(prevLevel);
+        if (newLevel && !["NULL", "NIL", ""].includes(String(newLevel).toUpperCase())) {
+          newPts = Number(pointsEarned) || getPtsForLvl(newLevel);
+        }
+
+        const delta = newPts - prevPts;
+        if (delta !== 0) {
+          user.rewardPoints = Math.max(0, (user.rewardPoints || 0) + delta);
+          user.activityPoints = Math.max(0, (user.activityPoints || 0) + delta);
+          await user.save({ session });
         }
       }
     });
