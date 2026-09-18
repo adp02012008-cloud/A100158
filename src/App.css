@@ -57,7 +57,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ── App shell ────────────────────────────────────────────── */
 .app {
   min-height: 100vh;
-  padding: 16px 20px 40px;
+  padding: 0 20px 40px;
   background: var(--color-bg-dark);
   color: var(--color-text-body);
   width: 100%;
@@ -67,12 +67,12 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .app {
-    padding: 10px 10px 30px;
+    padding: 0 10px 30px;
   }
 }
 
 .page-content {
-  margin-top: 16px;
+  margin-top: 10px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -81,10 +81,14 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Unified Modern Navbar ────────────────────────────────── */
 /* ── Enterprise Pro Navbar ────────────────────────────────── */
 .navbar-sticky-wrapper {
+  position: -webkit-sticky;
   position: sticky;
-  top: 12px;
+  top: 0;
   z-index: 1200;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  padding-top: 12px;
+  padding-bottom: 6px;
+  background: var(--color-bg-dark);
 }
 
 .navbar-card {
@@ -869,8 +873,11 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile Devices (Under 768px) */
 @media (max-width: 768px) {
   .navbar-sticky-wrapper {
-    top: 8px;
+    top: 0;
     margin-bottom: 16px;
+    padding-top: 8px;
+    padding-bottom: 4px;
+    background: var(--color-bg-dark);
   }
   .navbar-card {
     padding: 10px 14px;
@@ -2423,11 +2430,14 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile Specific Responsive Adjustments */
 @media (max-width: 768px) {
   .app {
-    padding: 12px 12px 30px;
+    padding: 0 12px 30px;
   }
   .navbar-sticky-wrapper {
-    top: 8px;
+    top: 0;
     margin-bottom: 14px;
+    padding-top: 8px;
+    padding-bottom: 4px;
+    background: var(--color-bg-dark);
   }
   .navbar-card {
     padding: 12px 14px;

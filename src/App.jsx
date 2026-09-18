@@ -1,5 +1,5 @@
 // src/App.jsx
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import LoginGate from "./components/LoginGate";
 import InstallPWA from "./components/InstallPWA";
@@ -37,7 +37,18 @@ export default function App() {
       !isTeamMember && TEAM_PAGE_KEYS.includes(nextPage) ? "dashboard" : nextPage;
     setSearch("");
     setPage(allowedPage);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    const pageContent = document.querySelector(".page-content");
+    if (pageContent) pageContent.scrollTop = 0;
+  }, [visiblePage]);
 
   return (
     <LoginGate>

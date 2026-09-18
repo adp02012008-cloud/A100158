@@ -173,6 +173,9 @@ export default function Navbar({ page, setPage, search, setSearch }) {
     setTeamDropdownOpen(false);
     setAdminDropdownOpen(false);
     setUserDropdownOpen(false);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
 
   // Close dropdowns on outside click

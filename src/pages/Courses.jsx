@@ -958,6 +958,98 @@ export default function Courses({ search: initialSearch = "" }) {
     }
   };
 
+  // Handle Toggle Level Completed / Not Completed
+  const handleToggleLevelProgress = async (course, levelObj, levelIndex) => {
+    if (!course?._id) return;
+    try {
+      setActionLoading(true);
+      const targetUserId = currentUser?._id || auth.userId;
+      const prog = getCourseProgress(course);
+      const isCurrentlyCompleted = prog.completedIndices.has(levelIndex);
+      const willBeCompleted = !isCurrentlyCompleted;
+
+      const levelName = levelObj?.levelName || `Level ${levelIndex}`;
+      const pointsEarned = Number(levelObj?.rewardPoints) || 100;
+
+      const res = await apiFetch("/courses/progress/update", {
+        method: "POST",
+        body: {
+          userId: targetUserId,
+          courseId: course._id,
+          levelName,
+          completed: willBeCompleted,
+          pointsEarned,
+        },
+      });
+
+      if (res?.success) {
+        await loadData();
+      }
+    } catch (err) {
+      console.error("Failed to toggle level progress:", err);
+      alert("Failed to update status. Please try again.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handle Mark Entire Course Completed / Not Completed
+  const handleToggleEntireCourse = async (course) => {
+    if (!course?._id) return;
+    try {
+      setActionLoading(true);
+      const targetUserId = currentUser?._id || auth.userId;
+      const prog = getCourseProgress(course);
+      const isAllCompleted = prog.completedCount === prog.totalLevels;
+      const willBeCompleted = !isAllCompleted;
+
+      const levels = course.levels || [];
+      for (let i = 0; i < levels.length; i++) {
+        const lvl = levels[i];
+        const isLvlDone = prog.completedIndices.has(i);
+        if (willBeCompleted !== isLvlDone) {
+          await apiFetch("/courses/progress/update", {
+            method: "POST",
+            body: {
+              userId: targetUserId,
+              courseId: course._id,
+              levelName: lvl.levelName || `Level ${i}`,
+              completed: willBeCompleted,
+              pointsEarned: Number(lvl.rewardPoints) || 100,
+            },
+          });
+        }
+      }
+
+      await loadData();
+    } catch (err) {
+      console.error("Failed to toggle entire course progress:", err);
+      alert("Failed to update course completion. Please try again.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenDetail = (course) => {
+    setDetailCourse(course);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
+  const handleBackToCourses = () => {
+    setDetailCourse(null);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [detailCourse, activeTab]);
+
   if (loading) {
     return (
       <UnifiedLoader
@@ -981,14 +1073,14 @@ export default function Courses({ search: initialSearch = "" }) {
             <button
               type="button"
               className="btn-back-courses"
-              onClick={() => setDetailCourse(null)}
+              onClick={handleBackToCourses}
             >
               ← Back to {activeTab === "available" ? "Courses Available" : "My Courses"}
             </button>
             <div className="course-breadcrumb-trail">
               <span
                 className="breadcrumb-root"
-                onClick={() => setDetailCourse(null)}
+                onClick={handleBackToCourses}
               >
                 {activeTab === "available" ? "Courses Available" : "My Courses"}
               </span>
@@ -997,90 +1089,193 @@ export default function Courses({ search: initialSearch = "" }) {
             </div>
           </div>
 
-          {/* Hero Banner Card matching Image 4 */}
-          <div className="course-details-hero-card">
-            <div className="hero-card-left">
-              <h1 className="hero-course-title">{detailCourse.name}</h1>
-              <p className="hero-course-desc">
-                {detailCourse.description ||
-                  "Comprehensive modular curriculum designed for mastery and practical application."}
-              </p>
-              <div className="hero-tags-row">
-                <span className="hero-pill-badge">
-                  📄 Levels: {(detailCourse.levels || []).length || 2}
-                </span>
-                <span className="hero-pill-badge category">
-                  🎓 {detailCourse.category || "General"}
-                </span>
-              </div>
-            </div>
-            <div className="hero-card-right">
-              <CourseBannerGraphic course={detailCourse} />
-            </div>
-          </div>
-
-          {/* College Level Cards matching Image 4 */}
-          <div className="course-details-levels-container">
-            {(detailCourse.levels || []).map((lvl, index) => {
-              const topicsList =
-                Array.isArray(lvl.topics) && lvl.topics.length > 0
-                  ? lvl.topics
-                  : [
-                      `1. Introduction to ${detailCourse.name}`,
-                      `2. Core Technical Concepts & Implementation`,
-                      `3. Practical Evaluation & Problem Solving`,
-                    ];
-
-              return (
-                <div key={index} className="college-level-card">
-                  <div className="college-level-header">
-                    <div className="college-level-title-wrap">
-                      <div className="college-level-number-badge">{index + 1}</div>
-                      <h3 className="college-level-title">
-                        {detailCourse.name} - {lvl.levelName || `Level ${index}`}
-                      </h3>
-                    </div>
-                    <span className="college-attempts-badge">Attempts: 0</span>
+          {/* Hero Banner Card with Status Switch */}
+          {(() => {
+            const detailProg = getCourseProgress(detailCourse);
+            const isAllCompleted = detailProg.completedCount === detailProg.totalLevels;
+            return (
+              <div className="course-details-hero-card">
+                <div className="hero-card-left">
+                  <h1 className="hero-course-title">{detailCourse.name}</h1>
+                  <p className="hero-course-desc">
+                    {detailCourse.description ||
+                      "Comprehensive modular curriculum designed for mastery and practical application."}
+                  </p>
+                  <div className="hero-tags-row">
+                    <span className="hero-pill-badge">
+                      📄 Levels: {(detailCourse.levels || []).length || 2}
+                    </span>
+                    <span className="hero-pill-badge category">
+                      🎓 {detailCourse.category || "General"}
+                    </span>
+                    <span
+                      className={`hero-status-pill ${
+                        isAllCompleted
+                          ? "completed"
+                          : detailProg.completedCount > 0
+                          ? "in-progress"
+                          : "not-completed"
+                      }`}
+                    >
+                      {isAllCompleted
+                        ? "✓ Course Completed"
+                        : detailProg.completedCount > 0
+                        ? `⏳ In Progress (${detailProg.completedCount}/${detailProg.totalLevels} Levels)`
+                        : "○ Not Completed"}
+                    </span>
                   </div>
 
-                  <div className="college-level-body">
-                    {/* Left: Syllabus Topics List with grey rounded pills */}
-                    <div className="college-topics-column">
-                      {topicsList.map((topic, tIdx) => (
-                        <div key={tIdx} className="college-topic-pill">
-                          {topic}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Right: Meta Details (Rewards, Pre Request, Assessment Type) */}
-                    <div className="college-meta-column">
-                      <div className="college-meta-item">
-                        <span className="college-meta-label">With Rewards</span>
-                        <span className="college-meta-value highlight-gold">
-                          🪙 {lvl.rewardPoints || 100}
-                        </span>
-                      </div>
-
-                      <div className="college-meta-item">
-                        <span className="college-meta-label">Pre Request</span>
-                        <span className="college-meta-value">
-                          {lvl.prerequisites || "None"}
-                        </span>
-                      </div>
-
-                      <div className="college-meta-item">
-                        <span className="college-meta-label">Assessment Type</span>
-                        <span className="college-meta-value">
-                          {lvl.assessmentType || "MCQ"}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="hero-action-buttons">
+                    <button
+                      type="button"
+                      className={`hero-course-toggle-btn ${
+                        isAllCompleted ? "btn-mark-incomplete" : "btn-mark-complete"
+                      }`}
+                      disabled={actionLoading}
+                      onClick={() => handleToggleEntireCourse(detailCourse)}
+                    >
+                      {actionLoading
+                        ? "Saving…"
+                        : isAllCompleted
+                        ? "↺ Mark Entire Course Not Completed"
+                        : "✓ Mark Entire Course Completed"}
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+                <div className="hero-card-right">
+                  <CourseBannerGraphic course={detailCourse} />
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* College Level Cards with Completion Status Toggle */}
+          {(() => {
+            const detailProg = getCourseProgress(detailCourse);
+            return (
+              <div className="course-details-levels-container">
+                {(detailCourse.levels || []).map((lvl, index) => {
+                  const isLevelDone = detailProg.completedIndices.has(index);
+                  const topicsList =
+                    Array.isArray(lvl.topics) && lvl.topics.length > 0
+                      ? lvl.topics
+                      : [
+                          `1. Introduction to ${detailCourse.name}`,
+                          `2. Core Technical Concepts & Implementation`,
+                          `3. Practical Evaluation & Problem Solving`,
+                        ];
+
+                  return (
+                    <div
+                      key={index}
+                      className={`college-level-card ${isLevelDone ? "level-is-completed" : ""}`}
+                    >
+                      <div className="college-level-header">
+                        <div className="college-level-title-wrap">
+                          <div
+                            className={`college-level-number-badge ${
+                              isLevelDone ? "completed" : ""
+                            }`}
+                          >
+                            {isLevelDone ? "✓" : index + 1}
+                          </div>
+                          <h3 className="college-level-title">
+                            {detailCourse.name} - {lvl.levelName || `Level ${index}`}
+                          </h3>
+                        </div>
+
+                        <div className="college-level-header-right">
+                          <span className="college-attempts-badge">Attempts: 0</span>
+
+                          {/* Interactive Status Switcher */}
+                          <button
+                            type="button"
+                            className={`level-status-pill-btn ${
+                              isLevelDone ? "completed" : "incomplete"
+                            }`}
+                            disabled={actionLoading}
+                            onClick={() =>
+                              handleToggleLevelProgress(detailCourse, lvl, index)
+                            }
+                            title={
+                              isLevelDone
+                                ? "Click to switch to Not Completed"
+                                : "Click to switch to Completed"
+                            }
+                          >
+                            <span className="switch-dot" />
+                            <span>
+                              {actionLoading
+                                ? "Saving…"
+                                : isLevelDone
+                                ? "Completed"
+                                : "Not Completed"}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="college-level-body">
+                        {/* Left: Syllabus Topics List with grey rounded pills */}
+                        <div className="college-topics-column">
+                          {topicsList.map((topic, tIdx) => (
+                            <div key={tIdx} className="college-topic-pill">
+                              {topic}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Right: Meta Details (Rewards, Pre Request, Assessment Type, Action Button) */}
+                        <div className="college-meta-column">
+                          <div className="college-meta-item">
+                            <span className="college-meta-label">With Rewards</span>
+                            <span className="college-meta-value highlight-gold">
+                              🪙 {lvl.rewardPoints || 100} Points
+                            </span>
+                          </div>
+
+                          <div className="college-meta-item">
+                            <span className="college-meta-label">Pre Request</span>
+                            <span className="college-meta-value">
+                              {lvl.prerequisites || "None"}
+                            </span>
+                          </div>
+
+                          <div className="college-meta-item">
+                            <span className="college-meta-label">Assessment Type</span>
+                            <span className="college-meta-value">
+                              {lvl.assessmentType || "MCQ"}
+                            </span>
+                          </div>
+
+                          {/* Action Button */}
+                          <div className="college-meta-item level-action-box">
+                            <span className="college-meta-label">Status Action</span>
+                            <button
+                              type="button"
+                              className={`btn-level-status-action ${
+                                isLevelDone ? "is-completed" : ""
+                              }`}
+                              disabled={actionLoading}
+                              onClick={() =>
+                                handleToggleLevelProgress(detailCourse, lvl, index)
+                              }
+                            >
+                              {actionLoading
+                                ? "Saving…"
+                                : isLevelDone
+                                ? "✓ Completed (Click to Undo)"
+                                : "Mark Completed"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       ) : (
         /* =========================================================================
@@ -1215,7 +1410,7 @@ export default function Courses({ search: initialSearch = "" }) {
                       <div
                         key={course._id}
                         className="portal-course-card"
-                        onClick={() => setDetailCourse(course)}
+                        onClick={() => handleOpenDetail(course)}
                       >
                         {/* Top Visual Thematic Banner */}
                         <CourseBannerGraphic course={course} />
@@ -1301,7 +1496,7 @@ export default function Courses({ search: initialSearch = "" }) {
                       <div
                         key={course._id}
                         className="portal-course-card"
-                        onClick={() => setDetailCourse(course)}
+                        onClick={() => handleOpenDetail(course)}
                       >
                         {/* Top Visual Thematic Banner */}
                         <CourseBannerGraphic course={course} />
