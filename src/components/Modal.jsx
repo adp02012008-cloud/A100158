@@ -12,6 +12,152 @@ function getStatus(activity, avgActivity) {
   return                          { text: "Needs Improvement", className: "status-low",     icon: "🔴" };
 }
 
+function getCourseKey(name = "") {
+  return name
+    .toLowerCase()
+    .replace(/gurugulam|assessment|modelling/gi, "")
+    .replace(/[^a-z0-9]/gi, "");
+}
+
+function cleanLevelName(rawLevel, courseName = "") {
+  if (!rawLevel) return "Completed";
+  let s = String(rawLevel).trim();
+
+  // If courseName is provided, strip redundant mentions of course name
+  if (courseName) {
+    if (/^C\b/i.test(courseName)) {
+      s = s.replace(/\bC\b/gi, "");
+    }
+    const cClean = courseName.replace(/[^a-zA-Z0-9]/g, " ").trim();
+    const words = cClean.split(/\s+/).filter((w) => w.length >= 2);
+    for (const w of words) {
+      const reg = new RegExp(`\\b${w}\\b`, "gi");
+      s = s.replace(reg, "");
+    }
+  }
+
+  // Remove filler phrases & common synonyms
+  s = s.replace(/gurugulam\s*assessment/gi, "");
+  s = s.replace(/assessment/gi, "");
+  s = s.replace(/gurugulam/gi, "");
+  s = s.replace(/modell?ing/gi, "");
+  s = s.replace(/prototype/gi, "");
+  s = s.replace(/\bgerman\b/gi, "");
+
+  // Detect written test
+  const isWrittenTest = /written\s*test/i.test(s);
+  s = s.replace(/written\s*test/gi, "");
+
+  // Clean hyphens, slashes, multiple spaces
+  s = s.replace(/^[-–—:,/ ]+/, "");
+  s = s.replace(/level\s*[-–—:]*\s*/gi, "Level ");
+  s = s.replace(/[-–—:,/ ]+$/, "");
+  s = s.replace(/\s+/g, " ").trim();
+
+  // Special course level formatting (e.g. 1A 1B or 1C 1D)
+  if (/1A.*1B/i.test(s)) {
+    s = "Level 1A, 1B, 1C or 1D";
+  }
+
+  // Capitalize Level nicely
+  if (/^Level\s*\d+[a-zA-Z]*/i.test(s)) {
+    s = s.replace(/^level/i, "Level");
+  } else if (/^\d+[a-zA-Z]*/.test(s)) {
+    s = `Level ${s}`;
+  }
+
+  if (isWrittenTest) {
+    s = `${s} (Written Test)`;
+  }
+
+  s = s.replace(/^[-–—:,/ ]+/, "").replace(/[-–—:,/ ]+$/, "").trim();
+
+  if (!s || s.toLowerCase() === "completed") {
+    return "Completed";
+  }
+
+  return s;
+}
+
+function parseCourseItem(rawCourse, rawDetails) {
+  let courseName = "Course";
+  let rawLevelsList = [];
+
+  if (rawDetails && typeof rawDetails === "object") {
+    courseName = rawDetails.courseName || rawDetails.name || rawDetails.title || courseName;
+    if (Array.isArray(rawDetails.completedLevels) && rawDetails.completedLevels.length > 0) {
+      rawLevelsList = rawDetails.completedLevels;
+    } else if (rawDetails.currentLevel) {
+      rawLevelsList = [rawDetails.currentLevel];
+    } else if (rawDetails.level) {
+      rawLevelsList = [rawDetails.level];
+    }
+  }
+
+  if (rawLevelsList.length === 0 && rawCourse) {
+    if (typeof rawCourse === "object" && rawCourse !== null) {
+      courseName = rawCourse.courseName || rawCourse.name || rawCourse.title || courseName;
+      if (Array.isArray(rawCourse.completedLevels) && rawCourse.completedLevels.length > 0) {
+        rawLevelsList = rawCourse.completedLevels;
+      } else if (rawCourse.currentLevel || rawCourse.level) {
+        rawLevelsList = [rawCourse.currentLevel || rawCourse.level];
+      }
+    } else {
+      const str = String(rawCourse).trim();
+      const parts = str.split(" - ");
+      if (parts.length >= 2) {
+        if (parts.length >= 4 && parts[0].trim() === parts[2].trim()) {
+          courseName = `${parts[0].trim()} - ${parts[1].trim()}`;
+          rawLevelsList = [parts.slice(3).join(" - ")];
+        } else if (parts.length >= 3 && parts[0].trim() === parts[1].trim()) {
+          courseName = parts[0].trim();
+          rawLevelsList = [parts.slice(2).join(" - ")];
+        } else if (/level/i.test(parts[parts.length - 1])) {
+          rawLevelsList = [parts[parts.length - 1]];
+          courseName = parts.slice(0, parts.length - 1).join(" - ").trim();
+          const sub = courseName.split(" - ");
+          if (sub.length === 2 && sub[0].trim() === sub[1].trim()) {
+            courseName = sub[0].trim();
+          }
+        } else {
+          courseName = parts[0].trim();
+          rawLevelsList = [parts.slice(1).join(" - ")];
+        }
+      } else {
+        courseName = str;
+        rawLevelsList = ["Completed"];
+      }
+    }
+  }
+
+  const expanded = [];
+  for (const item of rawLevelsList) {
+    if (typeof item === "string" && item.includes(",")) {
+      expanded.push(...item.split(","));
+    } else {
+      expanded.push(item);
+    }
+  }
+
+  const cleaned = expanded
+    .map((lvl) => cleanLevelName(lvl, courseName))
+    .filter(Boolean);
+
+  const unique = Array.from(new Set(cleaned));
+
+  unique.sort((a, b) => {
+    const numA = parseFloat((a.match(/\d+/) || [999])[0]);
+    const numB = parseFloat((b.match(/\d+/) || [999])[0]);
+    if (numA !== numB) return numA - numB;
+    return a.localeCompare(b);
+  });
+
+  return {
+    courseName,
+    levels: unique.length > 0 ? unique : ["Completed"],
+  };
+}
+
 export default function Modal({ student, onClose }) {
   const [tab, setTab]               = useState("details");
   const [priorityMode, setPriorityMode] = useState("best");
@@ -49,41 +195,51 @@ export default function Modal({ student, onClose }) {
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
 
   const userCourses = useMemo(() => {
+    const courseMap = new Map();
+
+    const addCourseEntry = (courseName, levels) => {
+      if (!courseName) return;
+      const key = getCourseKey(courseName);
+      if (courseMap.has(key)) {
+        const existing = courseMap.get(key);
+        // Retain cleaner course title if existing contains hyphenated duplicate
+        if (courseName.length < existing.courseName.length && !courseName.includes("-")) {
+          existing.courseName = courseName;
+        }
+        const merged = Array.from(new Set([...existing.levels, ...levels]));
+        merged.sort((a, b) => {
+          const numA = parseFloat((a.match(/\d+/) || [999])[0]);
+          const numB = parseFloat((b.match(/\d+/) || [999])[0]);
+          if (numA !== numB) return numA - numB;
+          return a.localeCompare(b);
+        });
+        existing.levels = merged;
+      } else {
+        courseMap.set(key, { courseName, levels });
+      }
+    };
+
+    // 1. Process COURSE_DETAILS first (detailed objects)
     if (Array.isArray(student.COURSE_DETAILS) && student.COURSE_DETAILS.length > 0) {
-      return student.COURSE_DETAILS.map((c) => {
-        let levelText = c.currentLevel || "Completed";
-        if (Array.isArray(c.completedLevels) && c.completedLevels.length > 0) {
-          levelText = c.completedLevels.join(", ");
+      student.COURSE_DETAILS.forEach((c) => {
+        const item = parseCourseItem(null, c);
+        if (item.courseName) {
+          addCourseEntry(item.courseName, item.levels);
         }
-        return {
-          courseName: c.courseName || "Unknown Course",
-          level: levelText,
-        };
       });
     }
+
+    // 2. Process COURSES array (strings or objects)
     if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
-      return student.COURSES.map((cStr) => {
-        if (typeof cStr === "object" && cStr !== null) {
-          return {
-            courseName: cStr.courseName || "Unknown Course",
-            level: cStr.currentLevel || cStr.level || "Completed",
-          };
+      student.COURSES.forEach((cStr) => {
+        const item = parseCourseItem(cStr, null);
+        if (item.courseName) {
+          addCourseEntry(item.courseName, item.levels);
         }
-        const str = String(cStr).trim();
-        const parts = str.split(" - ");
-        if (parts.length > 1) {
-          return {
-            courseName: parts[0].trim(),
-            level: parts.slice(1).join(" - ").trim(),
-          };
-        }
-        return {
-          courseName: str,
-          level: "Completed",
-        };
       });
     }
-    return [];
+
+    return Array.from(courseMap.values());
   }, [student.COURSE_DETAILS, student.COURSES]);
 
   const skills = [
@@ -100,57 +256,55 @@ export default function Modal({ student, onClose }) {
     priorityMode === "best"    ? "⭐ BEST OPTION"    :
     priorityMode === "fastest" ? "⚡ FASTEST OPTION" : "💡 EASY OPTION";
 
-  const copyId = async () => {
-    try {
-      await navigator.clipboard.writeText(student["ENROLMENT NUMBER"] || "");
-      alert("Enrolment ID copied!");
-    } catch {
-      alert("Copy failed — please copy manually.");
+  const copyId = () => {
+    const id = student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"] || student.enrolmentNumber || "";
+    if (id) {
+      navigator.clipboard.writeText(id).catch(() => {});
     }
   };
 
   return (
-    <div className="modal" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        {/* Close Button */}
+        <button className="modal-close-btn" onClick={onClose}>✕</button>
 
-        <div className="tabs">
-          {["details", "courses", "suggestions"].map((t) => (
-            <button key={t} className={tab === t ? "active" : ""} onClick={() => setTab(t)}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
+        {/* Header */}
+        <div className="modal-header">
+          <div className="avatar-placeholder modal-avatar">
+            {getInitials(student.NAME)}
+          </div>
+          <div>
+            <h2 className="modal-title">{student.NAME}</h2>
+            <p className="modal-sub">
+              {student.CLUSTER ? `${student.CLUSTER} Cluster • ` : ""}
+              {student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"]}
+            </p>
+            <span className={`status-pill ${status.className}`}>
+              {status.icon} {status.text}
+            </span>
+          </div>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="modal-tabs">
+          <button className={`modal-tab ${tab === "details" ? "active" : ""}`}
+            onClick={() => setTab("details")}>
+            Details
+          </button>
+          <button className={`modal-tab ${tab === "courses" ? "active" : ""}`}
+            onClick={() => setTab("courses")}>
+            Courses
+          </button>
+          <button className={`modal-tab ${tab === "suggestions" ? "active" : ""}`}
+            onClick={() => setTab("suggestions")}>
+            Suggestions
+          </button>
         </div>
 
         {/* ── DETAILS ─────────────────────────────────────────── */}
         {tab === "details" && (
           <>
-            <div className="modal-header modal-profile">
-              <div className="modal-profile-left">
-                <div className="avatar large-avatar">{getInitials(student.Name)}</div>
-                <div>
-                  <h2>{student.Name}</h2>
-                  <p>{student.POSITION}</p>
-                  <div className={`status-tag ${status.className}`}>{status.icon} {status.text}</div>
-                </div>
-              </div>
-
-              <div className="social-icons">
-                {student.LINKEDIN && (
-                  <a href={fixLink(student.LINKEDIN)} target="_blank" rel="noreferrer" title="LinkedIn">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png"
-                      className="social-icon linkedin-icon" alt="LinkedIn" />
-                  </a>
-                )}
-                {student.GITHUB && (
-                  <a href={fixLink(student.GITHUB)} target="_blank" rel="noreferrer" title="GitHub">
-                    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-                      className="social-icon github-icon" alt="GitHub" />
-                  </a>
-                )}
-              </div>
-            </div>
-
             <div className="quick-actions">
               {student.LINKEDIN && (
                 <a className="quick-action-btn" href={fixLink(student.LINKEDIN)} target="_blank" rel="noreferrer">
@@ -181,17 +335,39 @@ export default function Modal({ student, onClose }) {
         {/* ── COURSES ─────────────────────────────────────────── */}
         {tab === "courses" && (
           <div className="modal-tab-pane">
-            <h3 style={{ margin: "0 0 14px 0" }}>Courses Completed & Enrolled ({userCourses.length || student.COURSE_COUNT || 0})</h3>
+            <div className="modal-courses-header-row">
+              <h3 className="modal-courses-pane-title">
+                Courses Completed & Enrolled ({userCourses.length || student.COURSE_COUNT || 0})
+              </h3>
+            </div>
             {userCourses.length > 0 ? (
               <div className="modal-courses-grid">
                 {userCourses.map((c, i) => (
                   <div key={i} className="modal-course-card">
                     <div className="modal-course-card-top">
-                      <span className="modal-course-icon">🎓</span>
-                      <span className="modal-course-name">{c.courseName}</span>
+                      <div className="modal-course-icon-wrap">
+                        <span className="modal-course-icon">🎓</span>
+                      </div>
+                      <div className="modal-course-title-wrap">
+                        <h4 className="modal-course-name" title={c.courseName}>
+                          {c.courseName}
+                        </h4>
+                        <span className="modal-course-levels-count">
+                          {c.levels.length} {c.levels.length === 1 ? "Level" : "Levels"} Completed
+                        </span>
+                      </div>
                     </div>
-                    <div className="modal-course-card-bottom">
-                      <span className="modal-course-badge">{c.level}</span>
+
+                    <div className="modal-course-levels-section">
+                      <span className="modal-levels-label">Completed Levels</span>
+                      <div className="modal-levels-wrap">
+                        {c.levels.map((lvl, li) => (
+                          <span key={li} className="modal-level-chip">
+                            <span className="chip-check">✓</span>
+                            <span className="chip-text">{lvl}</span>
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
