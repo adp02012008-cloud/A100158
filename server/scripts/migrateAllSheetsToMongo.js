@@ -159,17 +159,44 @@ export async function migrateAllSheetsToMongoDB(spreadsheetId = "1vWjwJS8Tmfvhuh
   const courseMap = new Map();
   let progressConvertedCount = 0;
 
+  // Pre-load existing parent courses
+  const existingParentCourses = await Course.find({ "levels.0": { $exists: true } }).lean();
+  const parentLookup = new Map();
+  existingParentCourses.forEach((p) => {
+    parentLookup.set(normalizeStr(p.name), p);
+  });
+
+  const levelSuffixRegex = /\s*[-–]?\s*level\s*[-–]?\s*([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*).*/i;
+
   for (const cRow of rawCourses) {
     const keys = Object.keys(cRow);
     const courseName = String(cRow[keys[0]] || "").trim();
     if (!courseName) continue;
 
-    const courseId = `CRS-${normalizeStr(courseName).toUpperCase()}`;
-    const courseDoc = await Course.findOneAndUpdate(
-      { name: courseName },
-      { courseId, name: courseName, status: "ACTIVE" },
-      { upsert: true, new: true }
-    );
+    // Extract base parent course name
+    const baseCourseName = courseName.replace(levelSuffixRegex, "").trim() || courseName;
+    let courseDoc = parentLookup.get(normalizeStr(baseCourseName));
+
+    if (!courseDoc) {
+      // Fuzzy lookup
+      for (const [normPName, p] of parentLookup.entries()) {
+        const normBase = normalizeStr(baseCourseName);
+        if (normBase.length >= 4 && (normPName.startsWith(normBase) || normBase.startsWith(normPName))) {
+          courseDoc = p;
+          break;
+        }
+      }
+    }
+
+    if (!courseDoc) {
+      const courseId = `CRS-${normalizeStr(baseCourseName).toUpperCase()}`;
+      courseDoc = await Course.findOneAndUpdate(
+        { name: baseCourseName },
+        { courseId, name: baseCourseName, status: "ACTIVE" },
+        { upsert: true, new: true }
+      );
+      parentLookup.set(normalizeStr(baseCourseName), courseDoc);
+    }
     courseMap.set(courseName, courseDoc);
 
     // Matrix pivot for student level columns

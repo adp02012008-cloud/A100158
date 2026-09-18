@@ -413,16 +413,25 @@ export default function Courses({ search: initialSearch = "" }) {
     [userProgress]
   );
 
+  // Available Parent Courses (Excludes any rogue standalone level duplicates)
+  const availableParentCourses = useMemo(() => {
+    const levelSuffixRegex = /\s*[-–]?\s*level\s*[-–]?\s*([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*).*/i;
+    return courses.filter((c) => {
+      if (Array.isArray(c.levels) && c.levels.length > 0) return true;
+      return !levelSuffixRegex.test(c.name || "");
+    });
+  }, [courses]);
+
   // Dynamic Categories
   const categoryOptions = useMemo(() => {
     const defaultCats = ["Software", "Hardware", "GENERAL Skill", "Beginner", "Advanced"];
-    const dynamicCats = courses.map((c) => c.category).filter(Boolean);
+    const dynamicCats = availableParentCourses.map((c) => c.category).filter(Boolean);
     return Array.from(new Set(["All", ...defaultCats, ...dynamicCats]));
-  }, [courses]);
+  }, [availableParentCourses]);
 
   // Available Courses (1 Card Per Course with Segmented Progress Bar)
   const filteredAvailableCourses = useMemo(() => {
-    let list = courses;
+    let list = availableParentCourses;
 
     if (selectedCategory !== "All") {
       list = list.filter(
@@ -460,7 +469,7 @@ export default function Courses({ search: initialSearch = "" }) {
       }
       return 0;
     });
-  }, [courses, selectedCategory, search, sortBy, getCourseProgress]);
+  }, [availableParentCourses, selectedCategory, search, sortBy, getCourseProgress]);
 
   // "My Courses": Unrolled Separate Div for Each Level
   const myCourseLevelItems = useMemo(() => {
@@ -753,7 +762,7 @@ export default function Courses({ search: initialSearch = "" }) {
             onClick={() => setActiveTab("available")}
           >
             <span>📖 Courses Available</span>
-            <span className="courses-tab-badge">{courses.length}</span>
+            <span className="courses-tab-badge">{availableParentCourses.length}</span>
           </button>
 
           <button

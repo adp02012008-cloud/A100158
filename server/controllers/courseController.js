@@ -7,7 +7,15 @@ import { withTransaction } from "../utils/dbTransaction.js";
 
 export async function getCourses(req, res) {
   try {
-    const courses = await Course.find({ status: "ACTIVE" }).sort({ name: 1 }).lean().exec();
+    const rawCourses = await Course.find({ status: "ACTIVE" }).sort({ name: 1 }).lean().exec();
+    
+    // Safeguard: Filter out any standalone level entries that might match legacy naming patterns if levels is empty
+    const levelSuffixRegex = /\s*[-–]?\s*level\s*[-–]?\s*([0-9]+(?:\.[0-9]+)?[A-Z]?|[A-Z][0-9]*).*/i;
+    const courses = rawCourses.filter((c) => {
+      if (Array.isArray(c.levels) && c.levels.length > 0) return true;
+      return !levelSuffixRegex.test(c.name || "");
+    });
+
     const pointRules = await CoursePointRule.find({}).lean().exec();
     const ruleMap = new Map();
     pointRules.forEach((r) => {
@@ -400,84 +408,86 @@ export async function bulkImportCourses(req, res) {
       const clusterAccess = (item.clusterAccess || item["Cluster Access"] || item["cluster"] || "Both").trim();
       const status = (item.status || item["Status"] || "ACTIVE").toUpperCase().trim();
 
-      // Construct Course Name: If rawName doesn't already include rawLevel, append rawLevel
-      let courseName = rawName;
-      if (rawLevel) {
-        const escapedLvl = rawLevel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const hasLevelInName = new RegExp(`(?:-|–|_|\\s)\\s*${escapedLvl}`, "i").test(rawName);
-        if (!hasLevelInName) {
-          courseName = `${rawName} - ${rawLevel}`;
-        }
-      }
+      // Determine base parent course name
+      const baseCourseName = extractBaseCourseName(rawName, rawCategory);
+      const levelName = extractLevelName(rawLevel, rawName);
 
-      // Construct Course ID: Use rawCourseId if provided, else slugify courseName
-      let courseId = rawCourseId;
-      if (!courseId) {
-        courseId = `CRS-${courseName.toUpperCase().replace(/[^A-Z0-9]/g, "-")}`;
-      }
-
-      // Prerequisites parsing
-      let prerequisites = [];
-      const rawPrereqs = item.prerequisites || item["Prerequisites"] || item["prerequisite"] || [];
-      if (Array.isArray(rawPrereqs)) {
-        prerequisites = rawPrereqs.map((p) => String(p).trim()).filter(Boolean);
-      } else if (typeof rawPrereqs === "string" && rawPrereqs.trim()) {
-        prerequisites = rawPrereqs.split(/[,;]/).map((p) => p.trim()).filter(Boolean);
-      }
-
-      // Extract points
-      const rawPoints = item["Points"] || item.points || item["Level Points"] || item.levelPoints;
-      let pointsVal = null;
-      if (rawPoints !== undefined && rawPoints !== null && String(rawPoints).trim() !== "") {
-        const num = Number(String(rawPoints).trim());
-        if (!isNaN(num)) pointsVal = num;
-      }
-
-      const levelName = extractLevelName(rawLevel, courseName);
       if (pointsVal === null) {
         const levelNumMatch = levelName.match(/\d+/);
-        const levelNum = levelNumMatch ? parseInt(levelNumMatch[0], 10) : i;
+        const levelNum = levelNumMatch ? parseInt(levelNumMatch[0], 10) : 0;
         pointsVal = (levelNum + 1) * 100;
       }
 
-      const category = rawCategory || rawName || "General";
+      const category = rawCategory || "General";
 
-      // Find or create Course in MongoDB
-      const escapedName = courseName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // Find or create Parent Course in MongoDB
+      const escapedBaseName = baseCourseName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       let course = await Course.findOne({
-        $or: [
-          { courseId: courseId },
-          { name: { $regex: new RegExp(`^${escapedName}$`, "i") } },
-        ],
+        name: { $regex: new RegExp(`^${escapedBaseName}$`, "i") },
       });
 
+      const courseId = rawCourseId || course?.courseId || `CRS-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
       if (course) {
-        course.courseId = courseId;
-        course.name = courseName;
-        course.category = category;
-        if (description) course.description = description;
-        if (prerequisites.length > 0) course.prerequisites = prerequisites;
-        course.clusterAccess = clusterAccess;
+        if (category && course.category === "General") course.category = category;
+        if (description && !course.description) course.description = description;
+        if (clusterAccess) course.clusterAccess = clusterAccess;
         course.status = status;
+
+        // Ensure levels array exists and update or add the level
+        if (!Array.isArray(course.levels)) course.levels = [];
+        const existingLvlIdx = course.levels.findIndex(
+          (l) => (l.levelName || "").toLowerCase() === levelName.toLowerCase()
+        );
+
+        if (existingLvlIdx >= 0) {
+          course.levels[existingLvlIdx].rewardPoints = pointsVal;
+          if (prerequisites.length > 0) course.levels[existingLvlIdx].prerequisites = prerequisites.join(", ");
+        } else {
+          course.levels.push({
+            levelNumber: course.levels.length,
+            levelName,
+            rewardPoints: pointsVal,
+            prerequisites: prerequisites.length > 0 ? prerequisites.join(", ") : (course.levels.length > 0 ? course.levels[course.levels.length - 1].levelName : "None"),
+            assessmentType: "MCQ",
+            topics: [`Foundations of ${baseCourseName} - ${levelName}`],
+          });
+        }
         await course.save();
         updatedCount++;
       } else {
         course = await Course.create({
           courseId,
-          name: courseName,
+          name: baseCourseName,
           category,
-          description,
-          prerequisites,
+          description: description || `Comprehensive modular curriculum for ${baseCourseName}.`,
+          prerequisites: [],
           clusterAccess,
           status,
+          levels: [
+            {
+              levelNumber: 0,
+              levelName,
+              rewardPoints: pointsVal,
+              prerequisites: prerequisites.length > 0 ? prerequisites.join(", ") : "None",
+              assessmentType: "MCQ",
+              topics: [`Foundations of ${baseCourseName} - ${levelName}`],
+            },
+          ],
         });
         createdCount++;
       }
 
       // Build levelPoints map for CoursePointRule
-      const levelPointsMap = {
-        [levelName]: pointsVal,
-      };
+      const sanitizedLevelPoints = {};
+      (course.levels || []).forEach((lvl) => {
+        const safeK = String(lvl.levelName).replace(/\.0\b/g, "").replace(/\./g, "-");
+        sanitizedLevelPoints[safeK] = Number(lvl.rewardPoints) || 100;
+        const numMatch = safeK.match(/([0-9]+[A-Z]?)/i);
+        if (numMatch) {
+          sanitizedLevelPoints[`LEVEL ${numMatch[1].toUpperCase()}`] = Number(lvl.rewardPoints) || 100;
+        }
+      });
 
       // Update CoursePointRule in MongoDB
       await CoursePointRule.findOneAndUpdate(
@@ -485,7 +495,7 @@ export async function bulkImportCourses(req, res) {
         {
           courseId: course._id,
           courseName: course.name,
-          levelPoints: levelPointsMap,
+          levelPoints: sanitizedLevelPoints,
           clusterAccess: course.clusterAccess,
         },
         { upsert: true, new: true }
