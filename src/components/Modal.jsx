@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import UserAvatar from "./UserAvatar";
+import "./Modal.css";
 
 function getStatus(activity, avgActivity) {
   const diff = activity - avgActivity;
@@ -252,51 +253,81 @@ export default function Modal({ student, onClose }) {
     priorityMode === "best"    ? "⭐ BEST OPTION"    :
     priorityMode === "fastest" ? "⚡ FASTEST OPTION" : "💡 EASY OPTION";
 
+  const [copied, setCopied] = useState(false);
+
   const copyId = () => {
-    const id = student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"] || student.enrolmentNumber || "";
+    const id = student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"] || student.enrolmentNumber || student.registerNumber || "";
     if (id) {
-      navigator.clipboard.writeText(id).catch(() => {});
+      navigator.clipboard.writeText(id).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {});
     }
   };
+
+  const studentName = student.Name || student.NAME || student.name || "Team Member";
+  const rawCluster = student.CLUSTER || student.Cluster || student.cluster || "";
+  const cleanCluster = rawCluster.replace(/\s*cluster\s*$/i, "").trim();
+  const enrolmentId = student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"] || student.enrolmentNumber || student.registerNumber || "";
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        {/* Close Button */}
-        <button className="modal-close-btn" onClick={onClose}>✕</button>
+        {/* Floating Top-Right Close Button */}
+        <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
+          ✕
+        </button>
 
         {/* Header */}
         <div className="modal-header">
-          <UserAvatar
-            src={student.avatar || student.photoURL}
-            name={student.NAME || student.Name}
-            size={60}
-            className="avatar-placeholder modal-avatar"
-          />
-          <div>
-            <h2 className="modal-title">{student.NAME}</h2>
-            <p className="modal-sub">
-              {student.CLUSTER ? `${student.CLUSTER} Cluster • ` : ""}
-              {student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"]}
-            </p>
+          <div className="modal-header-profile">
+            <div className="modal-avatar-wrapper">
+              <UserAvatar
+                src={student.avatar || student.photoURL}
+                name={studentName}
+                size={68}
+                className="modal-avatar"
+              />
+            </div>
+            <div className="modal-profile-info">
+              <h2 className="modal-title">{studentName}</h2>
+              <div className="modal-sub">
+                {cleanCluster && <span>{cleanCluster} Cluster</span>}
+                {cleanCluster && enrolmentId && <span>•</span>}
+                {enrolmentId && <span className="id-badge">{enrolmentId}</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-header-status">
             <span className={`status-pill ${status.className}`}>
-              {status.icon} {status.text}
+              <span className="status-dot" />
+              <span>{status.text}</span>
             </span>
           </div>
         </div>
 
         {/* Tab Switcher */}
         <div className="modal-tabs">
-          <button className={`modal-tab ${tab === "details" ? "active" : ""}`}
-            onClick={() => setTab("details")}>
+          <button
+            type="button"
+            className={`modal-tab ${tab === "details" ? "active" : ""}`}
+            onClick={() => setTab("details")}
+          >
             Details
           </button>
-          <button className={`modal-tab ${tab === "courses" ? "active" : ""}`}
-            onClick={() => setTab("courses")}>
-            Courses
+          <button
+            type="button"
+            className={`modal-tab ${tab === "courses" ? "active" : ""}`}
+            onClick={() => setTab("courses")}
+          >
+            Courses {userCourses.length > 0 && `(${userCourses.length})`}
           </button>
-          <button className={`modal-tab ${tab === "suggestions" ? "active" : ""}`}
-            onClick={() => setTab("suggestions")}>
+          <button
+            type="button"
+            className={`modal-tab ${tab === "suggestions" ? "active" : ""}`}
+            onClick={() => setTab("suggestions")}
+          >
             Suggestions
           </button>
         </div>
@@ -307,27 +338,49 @@ export default function Modal({ student, onClose }) {
             <div className="quick-actions">
               {student.LINKEDIN && (
                 <a className="quick-action-btn" href={fixLink(student.LINKEDIN)} target="_blank" rel="noreferrer">
-                  Open LinkedIn
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+                  <span>LinkedIn Profile</span>
                 </a>
               )}
               {student.GITHUB && (
                 <a className="quick-action-btn" href={fixLink(student.GITHUB)} target="_blank" rel="noreferrer">
-                  Open GitHub
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+                  <span>GitHub Profile</span>
                 </a>
               )}
-              <button className="quick-action-btn" onClick={copyId}>Copy ID</button>
+              <button type="button" className="quick-action-btn" onClick={copyId}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>{copied ? "✓ Copied ID!" : "Copy Roll / ID"}</span>
+              </button>
             </div>
 
             <div className="modal-stats-grid">
-              <div className="modal-stat-card"><span>Joined</span><strong>{student.JOINED}</strong></div>
-              <div className="modal-stat-card"><span>Activity</span><strong>{student.ACTIVITY}</strong></div>
-              <div className="modal-stat-card"><span>Reward</span><strong>{student.REWARD}</strong></div>
-              <div className="modal-stat-card"><span>Average</span><strong>{student.AVG_ACTIVITY?.toFixed(2)}</strong></div>
+              <div className="modal-stat-card">
+                <span>Joined Date</span>
+                <strong>{student.JOINED || student.Joined || "Active"}</strong>
+              </div>
+              <div className="modal-stat-card">
+                <span>Activity Points</span>
+                <strong>{(student.ACTIVITY || 0).toLocaleString()}</strong>
+              </div>
+              <div className="modal-stat-card">
+                <span>Reward Points</span>
+                <strong>{(student.REWARD || 0).toLocaleString()}</strong>
+              </div>
+              <div className="modal-stat-card">
+                <span>Cohort Average</span>
+                <strong>{Number(student.AVG_ACTIVITY || 0).toFixed(2)}</strong>
+              </div>
             </div>
 
-            <div className="skill-preview">
-              {skills.map((x, i) => <span key={i}>{x}</span>)}
-            </div>
+            {skills.length > 0 && (
+              <div className="skill-preview-section">
+                <div className="skill-preview-title">Verified Domain Skills</div>
+                <div className="skill-preview">
+                  {skills.map((x, i) => <span key={i}>{x}</span>)}
+                </div>
+              </div>
+            )}
           </>
         )}
 
