@@ -120,6 +120,15 @@ const userSchema = new mongoose.Schema(
       uppercase: true,
       index: true,
     },
+    lastLogin: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
+    lastInactivityEmailSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

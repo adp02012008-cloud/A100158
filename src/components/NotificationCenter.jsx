@@ -32,6 +32,8 @@ function getNotifCategoryIcon(type) {
       return "🏆";
     case "ACCOUNT_UPDATED":
       return "👤";
+    case "REMINDER":
+      return "⚡";
     default:
       return "🔔";
   }
@@ -142,6 +144,8 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
         targetPage = "opportunities";
       } else if (notif.type?.startsWith("CERTIFICATE")) {
         targetPage = "certificates";
+      } else if (notif.type === "REMINDER") {
+        targetPage = notif.targetPage || "profile";
       }
     }
     const refId = notif.referenceId || notif.taskId;

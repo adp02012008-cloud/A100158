@@ -18,6 +18,7 @@ import projectRoutes from "./routes/projectRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
 import opportunityRoutes from "./routes/opportunityRoutes.js";
 import customCollectionRoutes from "./routes/customCollectionRoutes.js";
+import { startInactivityReminderScheduler } from "./services/inactivityReminderService.js";
 
 dotenv.config();
 
@@ -74,6 +75,7 @@ if (process.env.NODE_ENV !== "test") {
   connectDB()
     .then(() => {
       console.log("✅ Database initialized successfully.");
+      startInactivityReminderScheduler();
     })
     .catch((err) => {
       console.warn("⚠️ Database connection error:", err.message);

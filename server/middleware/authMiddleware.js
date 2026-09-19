@@ -146,6 +146,13 @@ export async function verifyAuthToken(req, res, next) {
       return res.status(403).json({ success: false, message: "Account is inactive. Access denied." });
     }
 
+    // Refresh lastLogin if older than 1 hour or unset
+    const now = new Date();
+    if (!dbUser.lastLogin || now.getTime() - new Date(dbUser.lastLogin).getTime() > 60 * 60 * 1000) {
+      dbUser.lastLogin = now;
+      await dbUser.save().catch((err) => console.warn("Could not update lastLogin:", err.message));
+    }
+
     req.user = {
       _id: dbUser._id,
       userId: dbUser.userId,
