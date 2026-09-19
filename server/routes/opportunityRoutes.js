@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAuthToken } from "../middleware/authMiddleware.js";
+import { verifyAuthToken, requireAdmin } from "../middleware/authMiddleware.js";
 import {
   getOpportunities,
   createOpportunity,
@@ -15,9 +15,9 @@ const router = express.Router();
 router.use(verifyAuthToken);
 
 router.get("/", getOpportunities);
-router.post("/", createOpportunity);
-router.put("/:id", updateOpportunity);
-router.delete("/:id", deleteOpportunity);
+router.post("/", requireAdmin, createOpportunity);
+router.put("/:id", requireAdmin, updateOpportunity);
+router.delete("/:id", requireAdmin, deleteOpportunity);
 
 // Social Collaboration: Interest RSVP & Thoughts Discussion
 router.post("/:id/interest", toggleInterest);
