@@ -966,22 +966,11 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       borderRadius: "12px",
                     }}
                   >
-                    <div
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        background: "linear-gradient(135deg, #10b981 0%, #0284c7 100%)",
-                        color: "#fff",
-                        fontSize: "12px",
-                        fontWeight: "800",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {getInitials(name)}
-                    </div>
+                    <UserAvatar
+                      src={typeof m === "object" ? (m.avatar || m.photoURL) : (users.find((u) => u.name === name || u.email === email)?.avatar || "")}
+                      name={name}
+                      size={34}
+                    />
                     <div>
                       <div style={{ fontWeight: "700", color: "#f8fafc", fontSize: "14px" }}>
                         {name}

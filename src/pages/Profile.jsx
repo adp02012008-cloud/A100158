@@ -7,7 +7,7 @@ import UserAvatar from "../components/UserAvatar";
 import { auth as firebaseAuth } from "../firebase";
 
 export default function Profile() {
-  const { auth } = useAuth();
+  const { auth, currentUser } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,10 +48,19 @@ export default function Profile() {
       setLoading(true);
       setError("");
       const res = await fetchMyProfile();
+      const googlePhoto = firebaseAuth.currentUser?.photoURL || currentUser?.avatar || "";
+
       if (res?.user) {
-        setProfile(res.user);
-        initFormData(res.user);
-        await loadShowcaseData(res.user);
+        const resolvedAvatar = res.user.avatar || googlePhoto;
+        const userWithAvatar = { ...res.user, avatar: resolvedAvatar };
+        setProfile(userWithAvatar);
+        initFormData(userWithAvatar);
+        await loadShowcaseData(userWithAvatar);
+
+        // Auto-save Google photo into DB so it persists everywhere
+        if (googlePhoto && !res.user.avatar) {
+          updateMyProfile({ avatar: googlePhoto }).catch(() => {});
+        }
       } else {
         setError("Failed to load user profile.");
       }
@@ -179,9 +188,10 @@ export default function Profile() {
   }, [auth.isLoggedIn]);
 
   const initFormData = (user) => {
+    const googlePhoto = firebaseAuth.currentUser?.photoURL || currentUser?.avatar || "";
     setFormData({
       name: user.name || "",
-      avatar: user.avatar || "",
+      avatar: user.avatar || googlePhoto || "",
       personalEmail: user.personalEmail || "",
       bitEmail: user.bitEmail || "",
       mobile: user.mobile || "",
@@ -391,8 +401,8 @@ export default function Profile() {
           {/* Squircle Avatar */}
           <div className="profile-hero-avatar" style={{ overflow: "hidden" }}>
             <UserAvatar
-              src={profile?.avatar}
-              name={profile?.name}
+              src={profile?.avatar || currentUser?.avatar || firebaseAuth.currentUser?.photoURL}
+              name={profile?.name || currentUser?.name || auth.email}
               size="100%"
               shape="squircle"
               style={{ borderRadius: "20px" }}
@@ -588,8 +598,8 @@ export default function Profile() {
             {/* Profile Picture / Google Photo Sync Section */}
             <div style={{ gridColumn: "1 / -1", padding: "16px", background: "rgba(30, 41, 59, 0.5)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
               <UserAvatar
-                src={formData.avatar}
-                name={formData.name || "User"}
+                src={formData.avatar || profile?.avatar || currentUser?.avatar || firebaseAuth.currentUser?.photoURL}
+                name={formData.name || currentUser?.name || "User"}
                 size={64}
                 shape="squircle"
                 showBorder={true}

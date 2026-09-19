@@ -4,6 +4,7 @@ import logo from "../assets/logo.png";
 import NotificationCenter from "./NotificationCenter";
 import UserAvatar from "./UserAvatar";
 import { prefetchPage } from "../utils/prefetcher";
+import { auth as firebaseAuth } from "../firebase";
 
 // Crisp modern SVG vector icons
 const Icons = {
@@ -228,8 +229,20 @@ export default function Navbar({ page, setPage, search, setSearch }) {
     opportunities: "Search opportunities…",
   };
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   return (
-    <header className="navbar-sticky-wrapper">
+    <header className={`navbar-sticky-wrapper ${mobileMenuOpen ? "menu-open" : ""}`}>
       <div className={`navbar-card ${mobileMenuOpen ? "menu-open" : ""}`}>
         <div className="nav-main-bar">
           {/* Left: Brand Identity */}
@@ -447,7 +460,7 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                   aria-label="User Account Menu"
                 >
                   <UserAvatar
-                    src={currentUser?.avatar}
+                    src={currentUser?.avatar || firebaseAuth.currentUser?.photoURL}
                     name={displayName}
                     size="100%"
                     shape="rounded"
@@ -461,7 +474,7 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                     {/* User Summary Card */}
                     <div className="dropdown-user-header">
                       <UserAvatar
-                        src={currentUser?.avatar}
+                        src={currentUser?.avatar || firebaseAuth.currentUser?.photoURL}
                         name={displayName}
                         size={36}
                         shape="rounded"
@@ -554,7 +567,7 @@ export default function Navbar({ page, setPage, search, setSearch }) {
             {/* User Profile Card */}
             <div className="mobile-user-card">
               <UserAvatar
-                src={currentUser?.avatar}
+                src={currentUser?.avatar || firebaseAuth.currentUser?.photoURL}
                 name={displayName}
                 size={44}
                 shape="rounded"

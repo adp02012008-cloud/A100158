@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
 import UnifiedLoader from "../components/UnifiedLoader";
+import UserAvatar from "../components/UserAvatar";
 import "./Opportunities.css";
 
 const CATEGORIES = ["All", "Hackathon", "Internship", "Contest", "Workshop", "Scholarship"];
@@ -875,9 +876,13 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                         title={`${interestedList.length} squad members interested — Click to view names & contact info`}
                       >
                         {interestedList.slice(0, 3).map((u, idx) => (
-                          <div key={idx} className="opp-avatar-bubble">
-                            {(u.name || u.email || "?").charAt(0).toUpperCase()}
-                          </div>
+                          <UserAvatar
+                            key={idx}
+                            src={u.avatar || u.photoURL}
+                            name={u.name || u.email}
+                            size={24}
+                            className="opp-avatar-bubble"
+                          />
                         ))}
                         {interestedList.length > 3 && (
                           <div className="opp-avatar-more">
@@ -1655,9 +1660,12 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                           <div key={item._id || item.id} className="opp-thought-card">
                             <div className="opp-thought-header">
                               <div className="opp-thought-user">
-                                <div className="opp-thought-avatar">
-                                  {(item.userName || item.userEmail || "?").charAt(0).toUpperCase()}
-                                </div>
+                                <UserAvatar
+                                  src={item.userAvatar || item.avatar}
+                                  name={item.userName || item.userEmail}
+                                  size={32}
+                                  className="opp-thought-avatar"
+                                />
                                 <div>
                                   <div className="opp-thought-name">
                                     {item.userName || item.userEmail}
@@ -1786,9 +1794,12 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                         return (
                           <div key={idx} className="opp-member-row-card">
                             <div className="opp-member-info-wrap">
-                              <div className="opp-member-avatar">
-                                {name.charAt(0).toUpperCase()}
-                              </div>
+                              <UserAvatar
+                                src={u.avatar || u.photoURL}
+                                name={name}
+                                size={38}
+                                className="opp-member-avatar"
+                              />
                               <div>
                                 <div className="opp-member-name">
                                   {name}

@@ -57,7 +57,8 @@ h1, h2, h3, h4, h5, h6 {
 /* ── App shell ────────────────────────────────────────────── */
 .app {
   min-height: 100vh;
-  padding: 0 20px 40px;
+  min-height: 100dvh;
+  padding: 0 20px calc(40px + env(safe-area-inset-bottom, 0px));
   background: var(--color-bg-dark);
   color: var(--color-text-body);
   width: 100%;
@@ -67,7 +68,11 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .app {
-    padding: 0 10px 30px;
+    padding: 0 10px calc(50px + env(safe-area-inset-bottom, 24px));
+  }
+  .page-content {
+    padding-bottom: calc(40px + env(safe-area-inset-bottom, 24px));
+    box-sizing: border-box;
   }
 }
 
@@ -656,6 +661,11 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   animation: fadeInDown 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Safe clearance specifically preventing overlap with Android 3-button system navigation bar */
+  padding-bottom: max(56px, calc(env(safe-area-inset-bottom, 24px) + 40px));
 }
 
 .mobile-user-card {
@@ -666,6 +676,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
 }
 .mobile-avatar {
   width: 36px;
@@ -679,6 +690,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 800;
   font-size: 15px;
   flex-shrink: 0;
+  object-fit: cover;
 }
 .mobile-user-info {
   display: flex;
@@ -706,9 +718,8 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 65vh;
-  overflow-y: auto;
   padding-right: 4px;
+  flex-shrink: 0;
 }
 
 .mobile-nav-group {
@@ -730,7 +741,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 11px 14px;
+  padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid transparent;
   background: rgba(255, 255, 255, 0.03);
@@ -739,6 +750,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
   text-align: left;
   cursor: pointer;
+  touch-action: manipulation;
   transition: all 0.15s ease;
 }
 .mobile-nav-item:hover {
@@ -766,9 +778,13 @@ h1, h2, h3, h4, h5, h6 {
 .mobile-drawer-footer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
+  gap: 10px;
+  padding-top: 14px;
+  margin-top: 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  /* Extra bottom padding to stay well above Android back/home/recents navigation bar */
+  padding-bottom: max(32px, calc(env(safe-area-inset-bottom, 24px) + 20px));
 }
 .mobile-view-toggle {
   display: flex;
@@ -776,12 +792,13 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 11px 16px;
+  padding: 12px 16px;
   border-radius: 10px;
   border: 1px solid;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  touch-action: manipulation;
 }
 .mobile-view-toggle.is-admin {
   background: rgba(245, 158, 11, 0.12);
@@ -798,20 +815,28 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
-  padding: 11px 16px;
-  border-radius: 10px;
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  color: #f87171;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.mobile-logout-btn:hover {
-  background: rgba(239, 68, 68, 0.18);
+  min-height: 48px;
+  padding: 13px 18px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
   color: #fca5a5;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+.mobile-logout-btn:hover,
+.mobile-logout-btn:active {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 /* ── Responsive Device Breakpoints ── */
@@ -878,6 +903,43 @@ h1, h2, h3, h4, h5, h6 {
     padding-top: 8px;
     padding-bottom: 4px;
     background: var(--color-bg-dark);
+  }
+  .navbar-sticky-wrapper.menu-open {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 9999;
+    margin: 0;
+    padding: max(8px, env(safe-area-inset-top, 8px)) 12px 0 12px;
+    background: rgba(9, 6, 22, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+  .navbar-sticky-wrapper.menu-open .navbar-card {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: rgba(13, 10, 29, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+  }
+  .navbar-sticky-wrapper.menu-open .mobile-drawer-overlay {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: max(60px, calc(env(safe-area-inset-bottom, 24px) + 36px));
   }
   .navbar-card {
     padding: 10px 14px;
@@ -2430,7 +2492,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile Specific Responsive Adjustments */
 @media (max-width: 768px) {
   .app {
-    padding: 0 12px 30px;
+    padding: 0 12px max(32px, calc(env(safe-area-inset-bottom, 24px) + 24px));
   }
   .navbar-sticky-wrapper {
     top: 0;

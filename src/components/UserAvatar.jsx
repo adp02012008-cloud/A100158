@@ -78,7 +78,6 @@ export default function UserAvatar({
             src={cleanSrc}
             alt={alt || name || "User Avatar"}
             referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
             loading="lazy"
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}

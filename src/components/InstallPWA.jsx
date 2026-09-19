@@ -54,7 +54,7 @@ export default function InstallPWA() {
 const styles = {
   banner: {
     position: "fixed",
-    bottom: "20px",
+    bottom: "calc(20px + env(safe-area-inset-bottom, 16px))",
     right: "20px",
     left: "20px",
     maxWidth: "480px",
