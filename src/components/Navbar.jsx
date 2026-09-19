@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 import NotificationCenter from "./NotificationCenter";
 import UserAvatar from "./UserAvatar";
+import { prefetchPage } from "../utils/prefetcher";
 
 // Crisp modern SVG vector icons
 const Icons = {
@@ -259,6 +260,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
               type="button"
               className={`nav-tab-btn ${page === "dashboard" ? "active" : ""}`}
               onClick={() => handleNavClick("dashboard")}
+              onMouseEnter={() => prefetchPage("dashboard")}
+              onTouchStart={() => prefetchPage("dashboard")}
             >
               <Icons.Dashboard />
               <span>Dashboard</span>
@@ -268,6 +271,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
               type="button"
               className={`nav-tab-btn ${page === "leaderboard" ? "active" : ""}`}
               onClick={() => handleNavClick("leaderboard")}
+              onMouseEnter={() => prefetchPage("leaderboard")}
+              onTouchStart={() => prefetchPage("leaderboard")}
             >
               <Icons.Leaderboard />
               <span>Leaderboard</span>
@@ -277,6 +282,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
               type="button"
               className={`nav-tab-btn ${page === "courses" ? "active" : ""}`}
               onClick={() => handleNavClick("courses")}
+              onMouseEnter={() => prefetchPage("courses")}
+              onTouchStart={() => prefetchPage("courses")}
             >
               <Icons.Courses />
               <span>Courses</span>
@@ -288,6 +295,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                 <button
                   type="button"
                   className={`nav-tab-btn dropdown-trigger ${isTeamPageActive ? "active" : ""}`}
+                  onMouseEnter={() => TEAM_LINKS.forEach((l) => prefetchPage(l.key))}
+                  onTouchStart={() => TEAM_LINKS.forEach((l) => prefetchPage(l.key))}
                   onClick={() => {
                     setTeamDropdownOpen(!teamDropdownOpen);
                     setAdminDropdownOpen(false);
@@ -313,6 +322,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                             type="button"
                             className={`luxury-dropdown-item ${isCurrent ? "active" : ""}`}
                             onClick={() => handleNavClick(link.key)}
+                            onMouseEnter={() => prefetchPage(link.key)}
+                            onTouchStart={() => prefetchPage(link.key)}
                           >
                             <div className="dropdown-icon-box">
                               <IconComp />
@@ -337,6 +348,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                 <button
                   type="button"
                   className={`nav-tab-btn dropdown-trigger ${isAdminPageActive ? "active" : ""}`}
+                  onMouseEnter={() => ADMIN_LINKS.forEach((l) => prefetchPage(l.key))}
+                  onTouchStart={() => ADMIN_LINKS.forEach((l) => prefetchPage(l.key))}
                   onClick={() => {
                     setAdminDropdownOpen(!adminDropdownOpen);
                     setTeamDropdownOpen(false);
@@ -362,6 +375,8 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                             type="button"
                             className={`luxury-dropdown-item ${isCurrent ? "active" : ""}`}
                             onClick={() => handleNavClick(link.key)}
+                            onMouseEnter={() => prefetchPage(link.key)}
+                            onTouchStart={() => prefetchPage(link.key)}
                           >
                             <div className="dropdown-icon-box admin-box">
                               <IconComp />

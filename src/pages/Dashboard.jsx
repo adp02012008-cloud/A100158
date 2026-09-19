@@ -1,6 +1,6 @@
 // src/pages/Dashboard.jsx
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { apiFetch } from "../utils/api";
+import { apiFetch, getCachedApi } from "../utils/api";
 import { exportToExcel, exportToPDF } from "../utils/exportUtils";
 import { useAuth } from "../context/AuthContext";
 import { isSuperAdminEmail } from "../utils/roles";
@@ -164,12 +164,46 @@ function buildSuggestions(student, avgActivity, pointsRows) {
   return { gap, allOptions: opts, combinations: buildCombinationSuggestions(opts, gap) };
 }
 
+function processDashboardData(res, clustersRes) {
+  const cleaned = (res?.users || []).filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.emailId));
+  const pRows = res?.pointsRules || [];
+  const clusters = clustersRes?.clusters || [];
+
+  const total = cleaned.reduce((s, x) => s + (x["ACTIVITY POINT"] || 0), 0);
+  const avgActivity = cleaned.length > 0 ? total / cleaned.length : 0;
+
+  const enriched = cleaned.map((student) => {
+    const s = buildSuggestions(student, avgActivity, pRows);
+    return {
+      ...student,
+      ACTIVITY: Number(student["ACTIVITY POINT"] || 0),
+      REWARD: Number(student["REWARD POINT"] || 0),
+      GAP_TO_AVG: s.gap,
+      ALL_SUGGESTIONS: s.allOptions,
+      SUGGESTION_COMBINATIONS: s.combinations,
+      AVG_ACTIVITY: avgActivity,
+    };
+  });
+
+  return { enriched, pRows, clusters };
+}
+
 export default function Dashboard({ search, setPage }) {
   const { auth } = useAuth();
 
-  const [students, setStudents] = useState([]);
-  const [pointsRows, setPointsRows] = useState([]);
-  const [systemClusters, setSystemClusters] = useState([]);
+  // Instant hydration from cache if preloaded or previously visited
+  const initialCache = useMemo(() => {
+    const cachedUsers = getCachedApi("/users/dashboard");
+    const cachedClusters = getCachedApi("/clusters");
+    if (cachedUsers?.users) {
+      return processDashboardData(cachedUsers, cachedClusters);
+    }
+    return null;
+  }, []);
+
+  const [students, setStudents] = useState(() => initialCache?.enriched || []);
+  const [pointsRows, setPointsRows] = useState(() => initialCache?.pRows || []);
+  const [systemClusters, setSystemClusters] = useState(() => initialCache?.clusters || []);
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
 
@@ -180,7 +214,7 @@ export default function Dashboard({ search, setPage }) {
   const [showManageClusters, setShowManageClusters] = useState(false);
 
   const [clusterFilter, setClusterFilter] = useState("All");
-  const [dataLoaded, setDataLoaded] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(() => Boolean(initialCache));
 
   const loadData = useCallback(async () => {
     try {
@@ -189,38 +223,17 @@ export default function Dashboard({ search, setPage }) {
         apiFetch("/clusters").catch(() => ({ clusters: [] })),
       ]);
 
-      const cleaned = (res.users || []).filter((u) => !isSuperAdminEmail(u.email) && !isSuperAdminEmail(u.emailId));
-      const pRows = res.pointsRules || [];
-      setPointsRows(pRows);
-
-      if (clustersRes?.clusters) {
-        setSystemClusters(clustersRes.clusters);
-      }
-
-      const total = cleaned.reduce((s, x) => s + (x["ACTIVITY POINT"] || 0), 0);
-      const avgActivity = cleaned.length > 0 ? total / cleaned.length : 0;
-
-      const enriched = cleaned.map((student) => {
-        const s = buildSuggestions(student, avgActivity, pRows);
-        return {
-          ...student,
-          ACTIVITY: Number(student["ACTIVITY POINT"] || 0),
-          REWARD: Number(student["REWARD POINT"] || 0),
-          GAP_TO_AVG: s.gap,
-          ALL_SUGGESTIONS: s.allOptions,
-          SUGGESTION_COMBINATIONS: s.combinations,
-          AVG_ACTIVITY: avgActivity,
-        };
-      });
-
-      setStudents(enriched);
+      const processed = processDashboardData(res, clustersRes);
+      setPointsRows(processed.pRows);
+      setSystemClusters(processed.clusters);
+      setStudents(processed.enriched);
       setDataLoaded(true);
     } catch (err) {
       console.error("Error loading dashboard from MongoDB:", err);
-      setStudents([]);
+      if (!initialCache) setStudents([]);
       setDataLoaded(true);
     }
-  }, []);
+  }, [initialCache]);
 
   useEffect(() => { loadData(); }, [loadData]);
 

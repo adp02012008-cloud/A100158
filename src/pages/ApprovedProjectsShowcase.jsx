@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { apiFetch } from "../utils/api";
+import { apiFetch, getCachedApi } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import UnifiedLoader from "../components/UnifiedLoader";
 import UserAvatar from "../components/UserAvatar";
@@ -43,9 +43,14 @@ function getPresentationEmbedUrl(url = "") {
 
 export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) {
   const { auth, currentUser } = useAuth();
-  const [approvedSubmissions, setApprovedSubmissions] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // Instant SWR cache hydration: zero delay if preloaded
+  const cachedSubs = getCachedApi("/submissions?status=APPROVED&publicView=true");
+  const cachedUsers = getCachedApi("/users");
+
+  const [approvedSubmissions, setApprovedSubmissions] = useState(() => cachedSubs?.submissions || []);
+  const [users, setUsers] = useState(() => cachedUsers?.users || []);
+  const [loading, setLoading] = useState(() => !cachedSubs?.submissions);
 
   // Filter & Search states
   const [localSearch, setLocalSearch] = useState("");
@@ -113,7 +118,9 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
 
   // Fetch projects and users
   const loadData = async () => {
-    setLoading(true);
+    if (!getCachedApi("/submissions?status=APPROVED&publicView=true")) {
+      setLoading(true);
+    }
     try {
       const [subRes, userRes] = await Promise.all([
         apiFetch("/submissions?status=APPROVED&publicView=true"),

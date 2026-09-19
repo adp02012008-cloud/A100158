@@ -63,68 +63,187 @@ export async function getIdToken(forceRefresh = false) {
   }
 }
 
+// In-memory SWR (Stale-While-Revalidate) Cache & In-Flight Request Deduplication
+const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const apiCache = new Map();
+const inFlightRequests = new Map();
+
 /**
- * Universal Express API Client Wrapper
- * Handles 401 token refresh retry, status code attribution (401, 403, 404, 409, 422, 500),
- * and MongoDB backend API routing.
+ * Synchronously retrieves cached data for an endpoint if present and unexpired.
+ */
+export function getCachedApi(endpoint) {
+  const cached = apiCache.get(endpoint);
+  if (!cached) return null;
+  if (Date.now() - cached.timestamp > cached.ttl) {
+    apiCache.delete(endpoint);
+    return null;
+  }
+  return cached.data;
+}
+
+/**
+ * Manually updates the cache for an endpoint.
+ */
+export function setCachedApi(endpoint, data, ttlMs = DEFAULT_CACHE_TTL_MS) {
+  apiCache.set(endpoint, {
+    data,
+    timestamp: Date.now(),
+    ttl: ttlMs,
+  });
+}
+
+/**
+ * Invalidates cached API responses by exact key, prefix, or regex.
+ */
+export function invalidateApiCache(pattern = null) {
+  if (!pattern) {
+    apiCache.clear();
+    return;
+  }
+  for (const key of apiCache.keys()) {
+    if (typeof pattern === "string" && key.includes(pattern)) {
+      apiCache.delete(key);
+    } else if (pattern instanceof RegExp && pattern.test(key)) {
+      apiCache.delete(key);
+    }
+  }
+}
+
+/**
+ * Low-priority background prefetcher for API endpoints.
+ */
+export function prefetchApi(endpoint, options = {}) {
+  // If already in cache and fresh within 1 minute, don't refetch
+  const cached = apiCache.get(endpoint);
+  if (cached && Date.now() - cached.timestamp < 60 * 1000) {
+    return Promise.resolve(cached.data);
+  }
+  return apiFetch(endpoint, { ...options, background: true }).catch(() => null);
+}
+
+/**
+ * Universal Express API Client Wrapper with SWR Caching & Deduplication
  */
 export async function apiFetch(endpoint, options = {}, isRetry = false) {
-  let token = await getIdToken();
+  const method = (options.method || "GET").toUpperCase();
+  const isGet = method === "GET";
+  const bypassCache = Boolean(options.bypassCache);
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const baseUrl = getApiBaseUrl();
-  const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
-
-  let body = options.body;
-  if (body && typeof body === "object" && !(body instanceof FormData) && !(body instanceof Blob)) {
-    body = JSON.stringify(body);
-  }
-
-  let response = await fetch(url, {
-    ...options,
-    headers,
-    body,
-  });
-
-  if (response.status === 401 && !isRetry) {
-    console.warn("Received 401 Unauthorized. Retrying request with refreshed Firebase ID Token...");
-    try {
-      token = await getIdToken(true);
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-        response = await fetch(url, {
-          ...options,
-          headers,
-        });
+  // Return cached result immediately for GET requests if available
+  if (isGet && !bypassCache) {
+    const cached = apiCache.get(endpoint);
+    if (cached && Date.now() - cached.timestamp < cached.ttl) {
+      // If cached data is older than 30s, trigger a silent background revalidation
+      if (Date.now() - cached.timestamp > 30 * 1000 && !inFlightRequests.has(endpoint)) {
+        apiFetch(endpoint, { ...options, bypassCache: true }).catch(() => {});
       }
-    } catch (refreshErr) {
-      console.error("Token force-refresh failed:", refreshErr.message);
+      return cached.data;
     }
   }
 
-  if (!response.ok) {
-    let errMsg = `API error ${response.status}`;
-    try {
-      const errJson = await response.json();
-      if (errJson.message) errMsg = errJson.message;
-    } catch {
-      // Ignore JSON parse error
-    }
-    const error = new Error(errMsg);
-    error.status = response.status;
-    throw error;
+  // Deduplicate identical in-flight GET requests
+  if (isGet && inFlightRequests.has(endpoint)) {
+    return inFlightRequests.get(endpoint);
   }
 
-  return response.json();
+  const fetchPromise = (async () => {
+    let token = await getIdToken();
+
+    const headers = {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const baseUrl = getApiBaseUrl();
+    const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
+
+    let body = options.body;
+    if (body && typeof body === "object" && !(body instanceof FormData) && !(body instanceof Blob)) {
+      body = JSON.stringify(body);
+    }
+
+    let response = await fetch(url, {
+      ...options,
+      headers,
+      body,
+    });
+
+    if (response.status === 401 && !isRetry) {
+      console.warn("Received 401 Unauthorized. Retrying request with refreshed Firebase ID Token...");
+      try {
+        token = await getIdToken(true);
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+          response = await fetch(url, {
+            ...options,
+            headers,
+          });
+        }
+      } catch (refreshErr) {
+        console.error("Token force-refresh failed:", refreshErr.message);
+      }
+    }
+
+    if (!response.ok) {
+      let errMsg = `API error ${response.status}`;
+      try {
+        const errJson = await response.json();
+        if (errJson.message) errMsg = errJson.message;
+      } catch {
+        // Ignore JSON parse error
+      }
+      const error = new Error(errMsg);
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+
+    // Cache successful GET requests
+    if (isGet) {
+      apiCache.set(endpoint, {
+        data,
+        timestamp: Date.now(),
+        ttl: options.cacheTtlMs || DEFAULT_CACHE_TTL_MS,
+      });
+    } else {
+      // Invalidate relevant caches on mutation
+      const cleanEndpoint = endpoint.split("?")[0].replace(/\/[0-9a-fA-F]{24}$/, "");
+      invalidateApiCache(cleanEndpoint);
+      if (cleanEndpoint.includes("task") || cleanEndpoint.includes("submission") || cleanEndpoint.includes("review")) {
+        invalidateApiCache("/tasks");
+        invalidateApiCache("/submissions");
+        invalidateApiCache("/reviews");
+      }
+      if (cleanEndpoint.includes("cluster") || cleanEndpoint.includes("user")) {
+        invalidateApiCache("/users");
+        invalidateApiCache("/clusters");
+      }
+      if (cleanEndpoint.includes("course")) {
+        invalidateApiCache("/courses");
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("bugslayers-cache-invalidated", { detail: { endpoint } }));
+      }
+    }
+
+    return data;
+  })();
+
+  if (isGet) {
+    inFlightRequests.set(endpoint, fetchPromise);
+    fetchPromise.finally(() => {
+      inFlightRequests.delete(endpoint);
+    });
+  }
+
+  return fetchPromise;
 }
+
 
 /**
  * MongoDB Roster Helper: fetches active user roster from MongoDB backend
@@ -207,6 +326,27 @@ export async function listTeamRecords(sheetName) {
   }
   return fetchSheetData(sheetName);
 }
+
+export function getCachedTeamRecords(sheetName) {
+  const endpointMap = {
+    Tasks: "/tasks",
+    TaskSubmissions: "/submissions",
+    Notifications: "/notifications",
+    TaskReviews: "/reviews",
+    Hackathons: "/hackathons",
+    Gallery: "/gallery",
+    Projects: "/projects",
+    Certificates: "/certificates",
+    Opportunities: "/opportunities",
+  };
+  const ep = endpointMap[sheetName];
+  if (!ep) return null;
+  const cached = getCachedApi(ep);
+  if (!cached) return null;
+  const key = sheetName.toLowerCase();
+  return cached[key] || cached.tasks || cached.submissions || cached.notifications || cached.reviews || cached.hackathons || cached.gallery || cached.projects || cached.certificates || cached.opportunities || null;
+}
+
 
 export async function addTeamRecord(sheetName, record) {
   const endpointMap = {

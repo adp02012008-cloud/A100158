@@ -23,11 +23,19 @@ const AdminSubmissionsReview = lazy(() => import("./pages/AdminSubmissionsReview
 const UserRosterAdmin = lazy(() => import("./pages/UserRosterAdmin"));
 
 import UnifiedLoader from "./components/UnifiedLoader";
+import { initGlobalPrefetchPipeline, prefetchPage } from "./utils/prefetcher";
 
 export default function App() {
   const { auth, isTeamMember } = useAuth();
   const [page, setPage] = useState("dashboard");
   const [search, setSearch] = useState("");
+
+  // Start the background prefetch pipeline as soon as the user is authenticated
+  useEffect(() => {
+    if (auth?.isLoggedIn) {
+      initGlobalPrefetchPipeline(auth.role);
+    }
+  }, [auth?.isLoggedIn, auth?.role]);
 
   const visiblePage =
     !isTeamMember && TEAM_PAGE_KEYS.includes(page) ? "dashboard" : page;
@@ -35,6 +43,7 @@ export default function App() {
   const changePage = (nextPage) => {
     const allowedPage =
       !isTeamMember && TEAM_PAGE_KEYS.includes(nextPage) ? "dashboard" : nextPage;
+    prefetchPage(allowedPage);
     setSearch("");
     setPage(allowedPage);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });

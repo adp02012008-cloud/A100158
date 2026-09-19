@@ -1,6 +1,6 @@
 // src/pages/Courses.jsx
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { apiFetch } from "../utils/api";
+import { apiFetch, getCachedApi } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import UnifiedLoader from "../components/UnifiedLoader";
 import "./Courses.css";
@@ -567,9 +567,14 @@ export default function Courses({ search: initialSearch = "" }) {
   const { auth, currentUser } = useAuth();
 
   const [activeTab, setActiveTab] = useState("available"); // "available" | "my-courses"
-  const [courses, setCourses] = useState([]);
-  const [userProgress, setUserProgress] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // Instant SWR cache hydration: zero delay if preloaded
+  const cachedCourses = getCachedApi("/courses");
+  const cachedProgress = getCachedApi("/courses/progress");
+
+  const [courses, setCourses] = useState(() => cachedCourses?.courses || []);
+  const [userProgress, setUserProgress] = useState(() => cachedProgress?.progress || []);
+  const [loading, setLoading] = useState(() => !cachedCourses?.courses);
   const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name"); // "name" | "category" | "progress" | "levels" | "points" | "status"
@@ -609,7 +614,9 @@ export default function Courses({ search: initialSearch = "" }) {
 
   const loadData = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!getCachedApi("/courses")) {
+        setLoading(true);
+      }
       const [coursesRes, progressRes] = await Promise.all([
         apiFetch("/courses"),
         apiFetch("/courses/progress"),

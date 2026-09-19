@@ -6,6 +6,8 @@ import {
   listTeamRecords,
   updateTeamRecord,
   apiFetch,
+  getCachedTeamRecords,
+  getCachedApi,
 } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import UnifiedLoader from "./UnifiedLoader";
@@ -123,6 +125,16 @@ function MemberSelectionSelector({ value = "", onChange, readOnly }) {
 
   useEffect(() => {
     let isMounted = true;
+    const cachedUsers = getCachedApi("/users/assignable");
+    if (cachedUsers?.users?.length > 0) {
+      const users = cachedUsers.users.map((u) => ({
+        name: u.name || u.NAME || u.email || "",
+        role: u.role || u.ROLE || "Team Member",
+      })).filter((u) => u.name);
+      setGroupUsers(users.length > 0 ? users : DEFAULT_USERS);
+      setLoadingMembers(false);
+    }
+
     apiFetch("/users/assignable")
       .then((res) => {
         if (!isMounted) return;
@@ -912,8 +924,10 @@ function sleep(milliseconds) {
 export default function TeamCollectionPage({ config, search = "" }) {
   const { auth, isTeamMember, isAdmin } = useAuth();
 
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Instant SWR cache hydration: zero delay if preloaded
+  const cachedInitial = getCachedTeamRecords(config.sheetName);
+  const [records, setRecords] = useState(() => cachedInitial || []);
+  const [loading, setLoading] = useState(() => !cachedInitial);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [selected, setSelected] = useState(null);
@@ -925,7 +939,7 @@ export default function TeamCollectionPage({ config, search = "" }) {
 
   const loadRecords = useCallback(
     async ({ silent = false } = {}) => {
-      if (!silent) setLoading(true);
+      if (!silent && !getCachedTeamRecords(config.sheetName)) setLoading(true);
       setError("");
 
       try {

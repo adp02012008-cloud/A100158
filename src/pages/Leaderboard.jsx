@@ -1,31 +1,37 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { apiFetch } from "../utils/api";
+import { apiFetch, getCachedApi } from "../utils/api";
 import { isSuperAdminEmail } from "../utils/roles";
 import UnifiedLoader from "../components/UnifiedLoader";
 import UserAvatar from "../components/UserAvatar";
 
+function processLeaderboardUsers(res) {
+  return (res?.users || [])
+    .filter((s) => !isSuperAdminEmail(s.email) && !isSuperAdminEmail(s.emailId))
+    .map((s) => ({
+      ...s,
+      Name: (s.Name || s.name || "").trim(),
+      ACTIVITY: Number(s["ACTIVITY POINT"] ?? s.activityPoints ?? 0),
+      REWARD: Number(s["REWARD POINT"] ?? s.rewardPoints ?? 0),
+      POSITION: (s.POSITION || s.position || "").trim(),
+    }));
+}
+
 export default function Leaderboard({ search }) {
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedApi("/users/dashboard");
+  const [students, setStudents] = useState(() => (cached?.users ? processLeaderboardUsers(cached) : []));
+  const [loading, setLoading] = useState(() => !cached?.users);
   const [filter, setFilter] = useState("activity");
   const [open, setOpen] = useState(false);
   const [rankChanges, setRankChanges] = useState({});
   const previousRanksRef = useRef({});
 
   useEffect(() => {
-    setLoading(true);
+    if (!getCachedApi("/users/dashboard")) {
+      setLoading(true);
+    }
     apiFetch("/users/dashboard")
       .then((res) => {
-        const cleaned = (res.users || [])
-          .filter((s) => !isSuperAdminEmail(s.email) && !isSuperAdminEmail(s.emailId))
-          .map((s) => ({
-            ...s,
-            Name: (s.Name || s.name || "").trim(),
-            ACTIVITY: Number(s["ACTIVITY POINT"] ?? s.activityPoints ?? 0),
-            REWARD: Number(s["REWARD POINT"] ?? s.rewardPoints ?? 0),
-            POSITION: (s.POSITION || s.position || "").trim(),
-          }));
-        setStudents(cleaned);
+        setStudents(processLeaderboardUsers(res));
       })
       .catch((err) => console.error("Leaderboard load error from MongoDB:", err))
       .finally(() => setLoading(false));
