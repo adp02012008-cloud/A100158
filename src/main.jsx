@@ -13,13 +13,15 @@ if ("serviceWorker" in navigator) {
   }).catch(() => {});
 }
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </StrictMode>
-);
+if (!window.location.pathname.startsWith("/__/")) {
+  createRoot(document.getElementById("root")).render(
+    <StrictMode>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </StrictMode>
+  );
+}
 
 
 // // Import the functions you need from the SDKs you need
