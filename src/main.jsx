@@ -5,11 +5,21 @@ import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import "./index.css";
 
+// Clean up any legacy or stale service workers that intercept Firebase auth handler URLs
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
     for (let registration of registrations) {
-      registration.update();
+      registration.unregister();
     }
+  }).catch(() => {});
+}
+if (typeof window !== "undefined" && "caches" in window) {
+  caches.keys().then((names) => {
+    names.forEach((name) => {
+      if (name.includes("workbox") || name.includes("precache") || name.includes("bug-slayers")) {
+        caches.delete(name);
+      }
+    });
   }).catch(() => {});
 }
 

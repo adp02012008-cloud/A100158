@@ -293,11 +293,11 @@ export default function LoginGate({ children }) {
         }
         await completeRegisteredLogin(googleEmail);
       } catch (popupErr) {
-        if (
-          popupErr?.code === "auth/popup-blocked" ||
-          popupErr?.code === "auth/popup-closed-by-user"
-        ) {
+        if (popupErr?.code === "auth/popup-blocked") {
           await signInWithRedirect(firebaseAuth, googleProvider);
+        } else if (popupErr?.code === "auth/popup-closed-by-user") {
+          // User closed popup
+          return;
         } else {
           throw popupErr;
         }
