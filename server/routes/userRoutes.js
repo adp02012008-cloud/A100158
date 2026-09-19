@@ -11,6 +11,7 @@ import {
   updateUserRole,
   updateUserStatus,
   deleteUser,
+  cleanupTestData,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -27,6 +28,7 @@ router.get("/me", getCurrentUser);
 router.patch("/me", updateSelfProfile);
 router.put("/me", updateSelfProfile);
 router.get("/assignable", getAssignableUsers);
+router.post("/cleanup-test-data", cleanupTestData);
 router.put("/:id", updateUserProfile);
 router.put("/:id/role", updateUserRole);
 router.put("/:id/status", updateUserStatus);

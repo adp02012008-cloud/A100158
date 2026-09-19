@@ -5,6 +5,8 @@ import { Course } from "../models/Course.js";
 import { CoursePointRule } from "../models/CoursePointRule.js";
 import { AuditLog } from "../models/AuditLog.js";
 import { Notification } from "../models/Notification.js";
+import { Task } from "../models/Task.js";
+import { TaskSubmission } from "../models/TaskSubmission.js";
 import { isAdmin } from "../services/authorizationService.js";
 import { isSuperAdminEmail } from "../config/adminEmails.js";
 import { recalculateUserPoints } from "../services/pointsService.js";
@@ -687,4 +689,58 @@ export async function deleteUser(req, res) {
     return res.status(500).json({ success: false, message: err.message });
   }
 }
+
+/**
+ * POST /api/users/cleanup-test-data
+ * Admin triggers cleanup of any mock/test tasks, submissions, notifications, and test users.
+ */
+export async function cleanupTestData(req, res) {
+  try {
+    if (!isAdmin(req.user)) {
+      return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
+    }
+
+    const testPattern = /(test|mock|dummy|fake|sample)/i;
+
+    const delTasks = await Task.deleteMany({
+      $or: [
+        { title: { $regex: testPattern } },
+        { taskId: { $regex: testPattern } },
+      ],
+    });
+
+    const delSubs = await TaskSubmission.deleteMany({
+      $or: [
+        { submissionId: { $regex: testPattern } },
+        { notes: { $regex: testPattern } },
+      ],
+    });
+
+    const delNotifs = await Notification.deleteMany({
+      $or: [
+        { recipientEmail: { $regex: /(test|example\.com)/i } },
+        { title: { $regex: testPattern } },
+      ],
+    });
+
+    const delUsers = await User.deleteMany({
+      email: { $regex: /(test|example\.com|mockuser)/i },
+      role: { $ne: "ADMIN" },
+    });
+
+    return res.json({
+      success: true,
+      message: "Test data purge completed successfully.",
+      purged: {
+        tasks: delTasks.deletedCount,
+        submissions: delSubs.deletedCount,
+        notifications: delNotifs.deletedCount,
+        users: delUsers.deletedCount,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
 
