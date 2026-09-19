@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiFetch, getCachedApi } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import UnifiedLoader from "../components/UnifiedLoader";
+import BulkImportCoursesModal from "../components/BulkImportCoursesModal";
 import "./Courses.css";
 
 // Precise domain-aware thematic classifier for educational courses
@@ -583,6 +584,7 @@ export default function Courses({ search: initialSearch = "" }) {
   const [detailCourse, setDetailCourse] = useState(null);
   const [editCourse, setEditCourse] = useState(null);
   const [showAddCourse, setShowAddCourse] = useState(false);
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Form State for Add / Edit
@@ -1303,13 +1305,27 @@ export default function Courses({ search: initialSearch = "" }) {
               </div>
 
               {auth.role === "admin" && (
-                <button
-                  type="button"
-                  className="btn-add-course"
-                  onClick={handleOpenAdd}
-                >
-                  <span>➕</span> Add New Course
-                </button>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    className="btn-add-course"
+                    onClick={() => setShowBulkImportModal(true)}
+                    style={{
+                      background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+                      boxShadow: "0 4px 14px rgba(37, 99, 235, 0.35)",
+                    }}
+                  >
+                    <span>📤</span> Bulk Import (CSV / JSON)
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-add-course"
+                    onClick={handleOpenAdd}
+                  >
+                    <span>➕</span> Add New Course
+                  </button>
+                </div>
               )}
             </div>
 
@@ -1767,6 +1783,17 @@ export default function Courses({ search: initialSearch = "" }) {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Bulk Import Courses Modal */}
+      {showBulkImportModal && (
+        <BulkImportCoursesModal
+          onClose={() => setShowBulkImportModal(false)}
+          onSuccess={() => {
+            setShowBulkImportModal(false);
+            loadData();
+          }}
+        />
       )}
     </div>
   );

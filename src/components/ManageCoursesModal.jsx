@@ -107,7 +107,10 @@ export default function ManageCoursesModal({ onClose }) {
         style={{
           maxWidth: "840px",
           width: "95%",
-          padding: "28px",
+          padding: "24px 28px",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
           borderRadius: "18px",
           background: "#131127",
           border: "1px solid rgba(255, 255, 255, 0.12)",
@@ -305,15 +308,38 @@ export default function ManageCoursesModal({ onClose }) {
               display: "flex",
               flexDirection: "column",
               gap: "14px",
-              maxHeight: "460px",
+              maxHeight: "calc(90vh - 220px)",
               overflowY: "auto",
               paddingRight: "8px",
+              paddingBottom: "8px",
             }}
           >
             {filteredCourses.map((course) => {
               const rule = getRuleForCourse(course);
               const levelMap = rule?.levelPoints || {};
-              const levelEntries = Object.entries(levelMap);
+
+              // Deduplicate and standardize level entries
+              let cleanLevels = [];
+              if (Array.isArray(course.levels) && course.levels.length > 0) {
+                cleanLevels = course.levels.map((lvl, idx) => ({
+                  name: lvl.levelName || `Level ${idx}`,
+                  pts: lvl.rewardPoints || (levelMap[lvl.levelName] ? Number(levelMap[lvl.levelName]) : 100),
+                }));
+              } else {
+                const seenLevelNums = new Set();
+                Object.entries(levelMap).forEach(([k, v]) => {
+                  const match = k.match(/level\s*[-–]?\s*([0-9]+)/i);
+                  const lvlNum = match ? match[1] : k;
+                  if (!seenLevelNums.has(lvlNum)) {
+                    seenLevelNums.add(lvlNum);
+                    cleanLevels.push({
+                      name: match ? `Level ${lvlNum}` : k,
+                      pts: v,
+                    });
+                  }
+                });
+              }
+
               const isDeleting = deletingId === course._id;
 
               return (
@@ -447,23 +473,23 @@ export default function ManageCoursesModal({ onClose }) {
                     }}
                   >
                     <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
-                      {levelEntries.length > 0 ? (
-                        levelEntries.map(([lvlName, pts]) => (
+                      {cleanLevels.length > 0 ? (
+                        cleanLevels.map((lvl) => (
                           <span
-                            key={lvlName}
+                            key={lvl.name}
                             style={{
                               fontSize: "11px",
-                              padding: "3px 9px",
-                              background: "rgba(255, 255, 255, 0.05)",
-                              border: "1px solid rgba(255, 255, 255, 0.08)",
+                              padding: "4px 10px",
+                              background: "rgba(99, 102, 241, 0.12)",
+                              border: "1px solid rgba(99, 102, 241, 0.25)",
                               borderRadius: "6px",
-                              color: "#cbd5e1",
+                              color: "#c7d2fe",
                               display: "inline-flex",
                               gap: "4px",
                               alignItems: "center",
                             }}
                           >
-                            <strong style={{ color: "#e2e8f0" }}>{lvlName}:</strong> {pts} pts
+                            <strong style={{ color: "#e2e8f0" }}>{lvl.name}:</strong> {lvl.pts} pts
                           </span>
                         ))
                       ) : (
@@ -480,12 +506,13 @@ export default function ManageCoursesModal({ onClose }) {
         )}
 
         {/* Modal Actions Footer */}
-        <div className="edit-actions" style={{ marginTop: "22px", display: "flex", justifyContent: "flex-end" }}>
+        <div className="edit-actions" style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
           <button
+            type="button"
             className="edit-cancel-btn"
             onClick={onClose}
             style={{
-              padding: "9px 24px",
+              padding: "10px 26px",
               borderRadius: "10px",
               fontWeight: "600",
               fontSize: "13px",

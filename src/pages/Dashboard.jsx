@@ -312,7 +312,7 @@ export default function Dashboard({ search, setPage }) {
 
             <button
               className="dashboard-action-btn btn-courses"
-              onClick={() => setShowManageCourses(true)}
+              onClick={() => (setPage ? setPage("courses") : setShowManageCourses(true))}
             >
               📚 Manage Courses
             </button>
