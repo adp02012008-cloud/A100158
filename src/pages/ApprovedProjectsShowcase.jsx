@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import UnifiedLoader from "../components/UnifiedLoader";
+import UserAvatar from "../components/UserAvatar";
 import "./ApprovedProjectsShowcase.css";
 
 // Vector & emoji icons per domain
@@ -629,14 +630,15 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       <div className="facepile-avatars">
                         {contributorsList.slice(0, 5).map((m, idx) => {
                           const name = getDisplayName(m);
+                          const avatarSrc = typeof m === "object" ? (m.avatar || m.photoURL) : "";
                           return (
-                            <div
+                            <UserAvatar
                               key={typeof m === "object" ? m._id || idx : `${m}-${idx}`}
+                              src={avatarSrc}
+                              name={name}
+                              size={28}
                               className="facepile-avatar-circle"
-                              title={name}
-                            >
-                              {getInitials(name)}
-                            </div>
+                            />
                           );
                         })}
                       </div>

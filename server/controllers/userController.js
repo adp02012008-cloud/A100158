@@ -80,6 +80,8 @@ export async function updateSelfProfile(req, res) {
 
     const {
       name,
+      avatar,
+      photoURL,
       personalEmail,
       bitEmail,
       mobile,
@@ -101,6 +103,11 @@ export async function updateSelfProfile(req, res) {
         return res.status(400).json({ success: false, message: "Name cannot be empty." });
       }
       user.name = trimmedName;
+    }
+
+    const finalAvatar = avatar !== undefined ? avatar : photoURL;
+    if (finalAvatar !== undefined) {
+      user.avatar = String(finalAvatar).trim();
     }
 
     if (personalEmail !== undefined) {
@@ -200,6 +207,8 @@ export async function getAssignableUsers(req, res) {
       userId: u.userId,
       email: u.email,
       name: u.name,
+      avatar: u.avatar || "",
+      photoURL: u.avatar || "",
       role: u.role === "ADMIN" ? "System Admin" : "Team Member",
       rawRole: u.role,
       githubUrl: u.githubUrl || u.github || "",
@@ -249,6 +258,8 @@ export async function getDashboardUsers(req, res) {
         userId: u.userId,
         Name: u.name,
         email: u.email,
+        avatar: u.avatar || "",
+        photoURL: u.avatar || "",
         role: u.role,
         ROLE: u.role,
         "ENROLMENT NUMBER": u.enrolmentNumber || u.userId || "",
@@ -281,7 +292,7 @@ export async function createUser(req, res) {
       return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
     }
 
-    const { email, name, role, position, clusterName, enrolmentNumber, joinedDate } = req.body;
+    const { email, name, role, position, clusterName, enrolmentNumber, joinedDate, avatar, photoURL } = req.body;
     if (!email || !name) {
       return res.status(400).json({ success: false, message: "Email and name are required." });
     }
@@ -295,6 +306,7 @@ export async function createUser(req, res) {
       userId: enrolmentNumber ? `USR-${enrolmentNumber}` : `USR-${Date.now()}`,
       email: email.trim().toLowerCase(),
       name: name.trim(),
+      avatar: (avatar || photoURL || "").trim(),
       role: (role || "MEMBER").toUpperCase(),
       position: position || "Member",
       clusterName: clusterName || "Core",
@@ -369,6 +381,11 @@ export async function updateUserProfile(req, res) {
         return res.status(400).json({ success: false, message: "Name cannot be empty." });
       }
       user.name = trimmed;
+    }
+
+    const finalAvatar = req.body.avatar !== undefined ? req.body.avatar : req.body.photoURL;
+    if (finalAvatar !== undefined) {
+      user.avatar = String(finalAvatar).trim();
     }
 
     const finalPosition = POSITION !== undefined ? POSITION : position;

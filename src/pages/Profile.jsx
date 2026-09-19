@@ -1,9 +1,10 @@
-// src/pages/Profile.jsx
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { fetchMyProfile, updateMyProfile, apiFetch, fetchSheetData } from "../utils/api";
 import { normalizeEmail } from "../utils/roles";
 import UnifiedLoader from "../components/UnifiedLoader";
+import UserAvatar from "../components/UserAvatar";
+import { auth as firebaseAuth } from "../firebase";
 
 export default function Profile() {
   const { auth } = useAuth();
@@ -24,6 +25,7 @@ export default function Profile() {
 
   const [formData, setFormData] = useState({
     name: "",
+    avatar: "",
     personalEmail: "",
     bitEmail: "",
     mobile: "",
@@ -179,6 +181,7 @@ export default function Profile() {
   const initFormData = (user) => {
     setFormData({
       name: user.name || "",
+      avatar: user.avatar || "",
       personalEmail: user.personalEmail || "",
       bitEmail: user.bitEmail || "",
       mobile: user.mobile || "",
@@ -196,6 +199,16 @@ export default function Profile() {
       activityPoints: user.activityPoints ?? "",
       rewardPoints: user.rewardPoints ?? "",
     });
+  };
+
+  const handleSyncGooglePhoto = () => {
+    const googlePhoto = firebaseAuth.currentUser?.photoURL;
+    if (googlePhoto) {
+      setFormData((prev) => ({ ...prev, avatar: googlePhoto }));
+      setSuccessMsg("Synced Google profile photo! Click Save to apply.");
+    } else {
+      setError("No Google profile photo found in active session.");
+    }
   };
 
   const handleStartEdit = () => {
@@ -224,6 +237,7 @@ export default function Profile() {
 
       const payload = {
         name: formData.name.trim(),
+        avatar: formData.avatar ? formData.avatar.trim() : "",
         personalEmail: formData.personalEmail.trim(),
         bitEmail: formData.bitEmail.trim(),
         mobile: formData.mobile.trim(),
@@ -375,8 +389,14 @@ export default function Profile() {
       <div className="profile-hero-card">
         <div className="profile-hero-user-info">
           {/* Squircle Avatar */}
-          <div className="profile-hero-avatar">
-            {initials}
+          <div className="profile-hero-avatar" style={{ overflow: "hidden" }}>
+            <UserAvatar
+              src={profile?.avatar}
+              name={profile?.name}
+              size="100%"
+              shape="squircle"
+              style={{ borderRadius: "20px" }}
+            />
           </div>
 
           <div className="profile-hero-details">
@@ -565,6 +585,52 @@ export default function Profile() {
           </h3>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
+            {/* Profile Picture / Google Photo Sync Section */}
+            <div style={{ gridColumn: "1 / -1", padding: "16px", background: "rgba(30, 41, 59, 0.5)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
+              <UserAvatar
+                src={formData.avatar}
+                name={formData.name || "User"}
+                size={64}
+                shape="squircle"
+                showBorder={true}
+              />
+              <div style={{ flex: 1, minWidth: "240px" }}>
+                <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>
+                  Profile Photo URL (Google / Custom)
+                </label>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <input
+                    type="url"
+                    placeholder="https://lh3.googleusercontent.com/... or image link"
+                    value={formData.avatar}
+                    onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
+                    style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: "13px" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSyncGooglePhoto}
+                    style={{
+                      padding: "10px 16px",
+                      background: "linear-gradient(135deg, #4285F4 0%, #34A853 100%)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "8px",
+                      fontWeight: "700",
+                      fontSize: "12px",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                    title="Fetch profile photo from logged-in Google account"
+                  >
+                    🔄 Sync Google Photo
+                  </button>
+                </div>
+                <span style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px", display: "block" }}>
+                  Automatically synced from your Google sign-in. You can also paste an image URL or clear to use initials.
+                </span>
+              </div>
+            </div>
+
             <div>
               <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>Full Name *</label>
               <input

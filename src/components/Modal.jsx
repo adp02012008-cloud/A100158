@@ -1,9 +1,5 @@
-// src/components/Modal.jsx
 import { useMemo, useState } from "react";
-
-function getInitials(name = "") {
-  return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
-}
+import UserAvatar from "./UserAvatar";
 
 function getStatus(activity, avgActivity) {
   const diff = activity - avgActivity;
@@ -271,9 +267,12 @@ export default function Modal({ student, onClose }) {
 
         {/* Header */}
         <div className="modal-header">
-          <div className="avatar-placeholder modal-avatar">
-            {getInitials(student.NAME)}
-          </div>
+          <UserAvatar
+            src={student.avatar || student.photoURL}
+            name={student.NAME || student.Name}
+            size={60}
+            className="avatar-placeholder modal-avatar"
+          />
           <div>
             <h2 className="modal-title">{student.NAME}</h2>
             <p className="modal-sub">

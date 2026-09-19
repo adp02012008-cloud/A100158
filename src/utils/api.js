@@ -141,6 +141,7 @@ export async function fetchSheetData(sheetName = "Sheet1") {
         "ENROLMENT NUMBER": u["ENROLMENT NUMBER"] || u.enrolmentNumber || "",
         "POSITION": u.POSITION || u.position || "Member",
         "CLUSTER": u.CLUSTER || u.clusterName || "Core",
+        avatar: u.avatar || u.photoURL || "",
       }));
     }
   } catch (err) {
@@ -157,6 +158,7 @@ export async function fetchSheetData(sheetName = "Sheet1") {
         "GITHUB URL": u.githubUrl || "",
         "ENROLMENT NUMBER": u.enrolmentNumber || "",
         "POSITION": u.position || "Member",
+        avatar: u.avatar || u.photoURL || "",
       }));
     }
   } catch (assignableErr) {

@@ -1,10 +1,10 @@
-// src/pages/UserRosterAdmin.jsx
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { apiFetch } from "../utils/api";
 import { isSuperAdminEmail } from "../utils/roles";
 import EditModal from "../components/EditModal";
 import AddMemberModal from "../components/AddMemberModal";
 import UnifiedLoader from "../components/UnifiedLoader";
+import UserAvatar from "../components/UserAvatar";
 
 export default function UserRosterAdmin({ search = "" }) {
   const [users, setUsers] = useState([]);
@@ -231,7 +231,10 @@ export default function UserRosterAdmin({ search = "" }) {
                 {/* Left Metadata Area - Spacious, Uncluttered & Structured */}
                 <div className="user-roster-left">
                   {/* Styled Avatar Circle */}
-                  <div
+                  <UserAvatar
+                    src={user.avatar || user.photoURL}
+                    name={user.name}
+                    size={52}
                     className="user-roster-avatar"
                     style={{
                       background: isTargetAdmin
@@ -241,9 +244,7 @@ export default function UserRosterAdmin({ search = "" }) {
                         ? "0 4px 14px rgba(245, 158, 11, 0.35)"
                         : "0 4px 14px rgba(99, 102, 241, 0.35)",
                     }}
-                  >
-                    {(user.name || "U")[0]?.toUpperCase()}
-                  </div>
+                  />
 
                   {/* Details Block */}
                   <div className="user-roster-details">

@@ -2,10 +2,7 @@ import { useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
 import { isSuperAdminEmail } from "../utils/roles";
-
-function getInitials(name = "") {
-  return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
-}
+import UserAvatar from "./UserAvatar";
 
 function getStatus(activity, avgActivity) {
   const diff = activity - avgActivity;
@@ -66,7 +63,12 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
 
         <div className="card-top">
           <div className="profile-block">
-            <div className="avatar">{getInitials(student.Name)}</div>
+            <UserAvatar
+              src={student.avatar || student.photoURL}
+              name={student.Name}
+              className="avatar"
+              size={52}
+            />
 
             <div className="profile-meta">
               <div className="name-row">

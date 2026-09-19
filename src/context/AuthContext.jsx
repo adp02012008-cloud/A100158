@@ -46,7 +46,20 @@ export function AuthProvider({ children }) {
       fetchMyProfile()
         .then((res) => {
           if (res?.user) {
-            setCurrentUser(res.user);
+            const googlePhoto = firebaseAuth.currentUser?.photoURL || "";
+            const userWithAvatar = {
+              ...res.user,
+              avatar: res.user.avatar || googlePhoto,
+            };
+            setCurrentUser(userWithAvatar);
+
+            // If user has Google photo but DB has no avatar yet, persist it
+            if (googlePhoto && !res.user.avatar) {
+              import("../utils/api").then(({ updateMyProfile }) => {
+                updateMyProfile({ avatar: googlePhoto }).catch(() => {});
+              });
+            }
+
             const serverRole = String(res.user.role || "").toUpperCase() === "ADMIN" ? "admin" : "student";
             setAuth((prev) => {
               if (

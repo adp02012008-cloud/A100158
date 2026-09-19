@@ -94,6 +94,11 @@ const userSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    avatar: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     activityPoints: {
       type: Number,
       default: 0,

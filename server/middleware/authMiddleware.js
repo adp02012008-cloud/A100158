@@ -47,6 +47,7 @@ export async function verifyAuthToken(req, res, next) {
           uid: decoded.uid,
           email: (decoded.email || "").trim().toLowerCase(),
           displayName: decoded.name || (decoded.email ? decoded.email.split("@")[0] : "User"),
+          photoUrl: decoded.picture || "",
         };
       } catch (adminErr) {
         console.warn("Firebase Admin verifyIdToken failed, using REST lookup fallback:", adminErr.message);
@@ -78,6 +79,7 @@ export async function verifyAuthToken(req, res, next) {
           uid: fbUser.localId,
           email: (fbUser.email || "").trim().toLowerCase(),
           displayName: fbUser.displayName || (fbUser.email ? fbUser.email.split("@")[0] : "User"),
+          photoUrl: fbUser.photoUrl || "",
         };
       } catch (err) {
         return res.status(401).json({ success: false, message: "Authentication failed: " + err.message });
@@ -101,6 +103,9 @@ export async function verifyAuthToken(req, res, next) {
       if (dbUser) {
         // Link firebaseUid to existing user record
         dbUser.firebaseUid = firebaseUid;
+        if (decodedToken.photoUrl && !dbUser.avatar) {
+          dbUser.avatar = decodedToken.photoUrl;
+        }
         await dbUser.save();
       }
     }
@@ -112,9 +117,15 @@ export async function verifyAuthToken(req, res, next) {
         firebaseUid,
         email: cleanEmail,
         name: decodedToken.displayName || cleanEmail.split("@")[0],
+        avatar: decodedToken.photoUrl || "",
         role: initialRole,
         status: "ACTIVE",
       });
+    }
+
+    if (dbUser && decodedToken.photoUrl && (!dbUser.avatar || dbUser.avatar !== decodedToken.photoUrl)) {
+      dbUser.avatar = decodedToken.photoUrl;
+      await dbUser.save();
     }
 
     if (dbUser && cleanEmail) {

@@ -1,8 +1,8 @@
-// src/components/Navbar.jsx - Executive SaaS Navigation Bar
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 import NotificationCenter from "./NotificationCenter";
+import UserAvatar from "./UserAvatar";
 
 // Crisp modern SVG vector icons
 const Icons = {
@@ -431,7 +431,13 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                   title={auth.email}
                   aria-label="User Account Menu"
                 >
-                  <span className="avatar-initials">{initials}</span>
+                  <UserAvatar
+                    src={currentUser?.avatar}
+                    name={displayName}
+                    size="100%"
+                    shape="rounded"
+                    style={{ borderRadius: "9px" }}
+                  />
                   <div className="avatar-status-dot" />
                 </button>
 
@@ -439,7 +445,14 @@ export default function Navbar({ page, setPage, search, setSearch }) {
                   <div className="nav-dropdown-menu user-profile-dropdown">
                     {/* User Summary Card */}
                     <div className="dropdown-user-header">
-                      <div className="dropdown-user-avatar">{initials}</div>
+                      <UserAvatar
+                        src={currentUser?.avatar}
+                        name={displayName}
+                        size={36}
+                        shape="rounded"
+                        className="dropdown-user-avatar"
+                        style={{ borderRadius: "9px" }}
+                      />
                       <div className="dropdown-user-details">
                         <strong className="dropdown-user-name">{displayName}</strong>
                         <span className="dropdown-user-email">{auth.email}</span>
@@ -525,7 +538,14 @@ export default function Navbar({ page, setPage, search, setSearch }) {
           <div className="mobile-drawer-overlay">
             {/* User Profile Card */}
             <div className="mobile-user-card">
-              <div className="mobile-avatar">{initials}</div>
+              <UserAvatar
+                src={currentUser?.avatar}
+                name={displayName}
+                size={44}
+                shape="rounded"
+                className="mobile-avatar"
+                style={{ borderRadius: "10px" }}
+              />
               <div className="mobile-user-info">
                 <strong className="mobile-user-name">{displayName}</strong>
                 <span className="mobile-user-email">{auth.email}</span>

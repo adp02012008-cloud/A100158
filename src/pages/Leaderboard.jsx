@@ -1,12 +1,8 @@
-// src/pages/Leaderboard.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../utils/api";
 import { isSuperAdminEmail } from "../utils/roles";
 import UnifiedLoader from "../components/UnifiedLoader";
-
-function getInitials(name = "") {
-  return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() || "").join("");
-}
+import UserAvatar from "../components/UserAvatar";
 
 export default function Leaderboard({ search }) {
   const [students, setStudents] = useState([]);
@@ -110,7 +106,12 @@ export default function Leaderboard({ search }) {
                     <div className="top-rank-badge">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</div>
                     {i === 0 && <div className="crown-badge">👑</div>}
                   </div>
-                  <div className="leader-avatar large">{getInitials(s.Name)}</div>
+                  <UserAvatar
+                    src={s.avatar || s.photoURL}
+                    name={s.Name}
+                    size={58}
+                    className="leader-avatar large"
+                  />
                   <div className="top-rank-number">#{i + 1}</div>
                   <h2>{s.Name}</h2>
                   {s.POSITION && <p className="top-position">{s.POSITION}</p>}
@@ -131,7 +132,12 @@ export default function Leaderboard({ search }) {
                 <div key={i} className="leader-row-card rank-animate" style={{ animationDelay: `${i * 0.05}s` }}>
                   <div className="leader-row-left">
                     <div className="leader-row-rank">#{i + 4}</div>
-                    <div className="leader-avatar">{getInitials(s.Name)}</div>
+                    <UserAvatar
+                      src={s.avatar || s.photoURL}
+                      name={s.Name}
+                      size={46}
+                      className="leader-avatar"
+                    />
                     <div className="leader-row-info">
                       <h2>{s.Name}</h2>
                       {s.POSITION && <p>{s.POSITION}</p>}
