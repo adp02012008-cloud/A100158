@@ -107,6 +107,7 @@ export async function createReview(req, res) {
             type: "REVIEW_DECISION",
             taskId: submission.taskId,
             submissionId: submission._id,
+            targetPage: "my-tasks",
             title,
             message,
             eventKey,

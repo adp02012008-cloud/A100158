@@ -21,6 +21,8 @@ function getNotifCategoryIcon(type) {
       return "⏰";
     case "TASK_ASSIGNED":
       return "🎯";
+    case "TASK_REASSIGNED":
+      return "🔄";
     case "NEW_SUBMISSION":
     case "RESUBMISSION_DELIVERED":
       return "📥";
@@ -35,6 +37,20 @@ function getNotifCategoryIcon(type) {
   }
 }
 
+function formatRelativeTime(dateString) {
+  if (!dateString) return "";
+  const now = Date.now();
+  const diffMs = now - new Date(dateString).getTime();
+  const diffMin = Math.floor(diffMs / (60 * 1000));
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays <= 7) return `${diffDays}d ago`;
+  return new Date(dateString).toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
 export default function NotificationCenter({ onSelectTask, onNavigate }) {
   const { auth } = useAuth();
   const [open, setOpen] = useState(false);
@@ -45,7 +61,7 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
   const userEmail = auth.email || "";
 
   const loadNotifs = async () => {
-    if (!auth?.isLoggedIn || !auth?.token || !userEmail) return;
+    if (!auth?.isLoggedIn || !userEmail) return;
     try {
       const list = await getNotificationsForUser(userEmail);
       setNotifications(list || []);
@@ -55,14 +71,14 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
   };
 
   useEffect(() => {
-    if (!auth?.isLoggedIn || !auth?.token || !userEmail) {
+    if (!auth?.isLoggedIn || !userEmail) {
       setNotifications([]);
       return;
     }
     loadNotifs();
     const interval = setInterval(loadNotifs, 5000);
     return () => clearInterval(interval);
-  }, [userEmail, auth?.isLoggedIn, auth?.token]);
+  }, [userEmail, auth?.isLoggedIn]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -116,7 +132,18 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
     setOpen(false);
 
     // Deep link navigation
-    const targetPage = notif.targetPage || (notif.taskId ? "my-tasks" : null);
+    let targetPage = notif.targetPage;
+    if (!targetPage) {
+      if (notif.type === "NEW_SUBMISSION" || notif.type === "RESUBMISSION_DELIVERED") {
+        targetPage = "review-deliverables";
+      } else if (notif.taskId) {
+        targetPage = "my-tasks";
+      } else if (notif.type?.startsWith("OPPORTUNITY")) {
+        targetPage = "opportunities";
+      } else if (notif.type?.startsWith("CERTIFICATE")) {
+        targetPage = "certificates";
+      }
+    }
     const refId = notif.referenceId || notif.taskId;
 
     if (onNavigate && targetPage) {
@@ -208,10 +235,7 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
                       <div className="notif-item-title">{n.title}</div>
                       <div className="notif-item-msg">{n.message}</div>
                       <div className="notif-item-time">
-                        {new Date(n.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatRelativeTime(n.createdAt)}
                       </div>
                     </div>
                   </div>

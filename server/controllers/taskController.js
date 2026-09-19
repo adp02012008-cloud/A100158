@@ -183,6 +183,7 @@ export async function createTask(req, res) {
             targetEmail: assigneeEmail,
             type: "TASK_ASSIGNED",
             taskId,
+            targetPage: "my-tasks",
             title: "New Task Assigned 🎯",
             message: `You were assigned to task "${newTask.title}" (${newTask.domain}).`,
             eventKey,
@@ -354,6 +355,7 @@ export async function updateTask(req, res) {
                   targetEmail: email,
                   type: "TASK_ASSIGNED",
                   taskId: task.taskId,
+                  targetPage: "my-tasks",
                   title: "Task Assignment Updated 📌",
                   message: `You were assigned to "${task.title}".`,
                   eventKey,
@@ -365,7 +367,7 @@ export async function updateTask(req, res) {
           }
         }
 
-        // Handle removals (mark REMOVED, preserve history)
+        // Handle removals (mark REMOVED, preserve history, and notify)
         for (const [email, asn] of activeMap.entries()) {
           if (!targetEmails.includes(email)) {
             asn.status = "REMOVED";
@@ -381,6 +383,25 @@ export async function updateTask(req, res) {
                   actorEmail: actorEmail,
                   eventType: "ASSIGNMENT_REMOVED",
                   details: { assigneeEmail: email },
+                },
+              ],
+              queryOpts
+            );
+
+            // Notify unassigned member
+            const unassignEventKey = `NTF-UNASSIGN-${task.taskId}-${email}-${Date.now()}`;
+            await Notification.create(
+              [
+                {
+                  notificationId: `NTF-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                  targetEmail: email,
+                  type: "TASK_REASSIGNED",
+                  taskId: task.taskId,
+                  targetPage: "my-tasks",
+                  title: "Task Reassigned ℹ️",
+                  message: `You were unassigned from "${task.title}".`,
+                  eventKey: unassignEventKey,
+                  readAt: null,
                 },
               ],
               queryOpts

@@ -134,6 +134,7 @@ export async function createSubmission(req, res) {
             type: nextVersion > 1 ? "RESUBMISSION_DELIVERED" : "NEW_SUBMISSION",
             taskId: task.taskId,
             submissionId: newSubmission._id,
+            targetPage: "review-deliverables",
             title,
             message,
             eventKey,

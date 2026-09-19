@@ -213,7 +213,8 @@ export default function TaskAssignmentAdmin({ search = "" }) {
     try {
       await saveTask(
         {
-          id: editingTask?.id || null,
+          id: editingTask?.taskId || editingTask?.id || editingTask?._id || null,
+          taskId: editingTask?.taskId || editingTask?.id || editingTask?._id || null,
           title: formTitle.trim(),
           domain: finalDomain,
           description: formDescription.trim(),

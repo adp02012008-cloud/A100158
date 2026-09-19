@@ -75,12 +75,13 @@ export async function getNotificationsForUser(userEmail = "") {
   if (!clean) return [];
 
   const cutoff7d = Date.now() - 7 * 24 * 3600 * 1000;
+  const isWithin7d = (n) => !n.createdAt || new Date(n.createdAt).getTime() >= cutoff7d;
 
   try {
     const data = await apiFetch("/notifications");
     if (Array.isArray(data?.notifications)) {
       const parsed = data.notifications
-        .filter((n) => !n.readAt || new Date(n.readAt).getTime() >= cutoff7d)
+        .filter(isWithin7d)
         .map((n) => ({
           ...n,
           id: n.notificationId || n._id,
@@ -97,7 +98,7 @@ export async function getNotificationsForUser(userEmail = "") {
 
   const local = getLocalNotifications(clean);
   return local
-    .filter((n) => !n.readAt || new Date(n.readAt).getTime() >= cutoff7d)
+    .filter(isWithin7d)
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 }
 

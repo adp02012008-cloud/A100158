@@ -83,23 +83,21 @@ export async function getNotifications(req, res) {
     // Run throttled deadline check for active tasks
     await checkUpcomingDeadlines(user);
 
-    // 7-Day Cutoff for Read Notifications (disappears 7 days after viewed)
+    // 7-Day Hard Cutoff: all notifications are deleted/expired after 7 days
     const cutoff7d = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+
+    // Proactively purge any notifications older than 7 days
+    await Notification.deleteMany({ createdAt: { $lt: cutoff7d } }).catch(() => {});
 
     const userFilter = [
       { targetUserId: user._id },
       ...(cleanEmail ? [{ targetEmail: cleanEmail }] : []),
     ];
 
-    const readStateFilter = [
-      { readAt: null },
-      { readAt: { $gte: cutoff7d } },
-    ];
-
     const filter = {
       $and: [
         { $or: userFilter },
-        { $or: readStateFilter },
+        { createdAt: { $gte: cutoff7d } },
       ],
     };
 

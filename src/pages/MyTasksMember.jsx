@@ -178,7 +178,7 @@ export default function MyTasksMember({ search = "" }) {
         .map((f) => f.dataUrl || f.url || f);
 
       await saveSubmission({
-        taskId: activeTask.id,
+        taskId: activeTask.taskId || activeTask.id || activeTask._id,
         studentEmail: userEmail,
         studentName: auth.email ? auth.email.split("@")[0] : "Member",
         githubUrl: githubUrl.trim(),

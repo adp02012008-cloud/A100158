@@ -77,4 +77,7 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
+// 7-day automatic deletion TTL index on createdAt (604,800 seconds)
+notificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7 * 24 * 60 * 60 });
+
 export const Notification = mongoose.model("Notification", notificationSchema);
