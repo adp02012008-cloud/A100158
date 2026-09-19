@@ -5,9 +5,16 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 
 // Replace these with your actual Firebase project values
+// Use custom Vercel domain as authDomain to bypass ISP blocks on *.firebaseapp.com
+const resolvedAuthDomain =
+  import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ||
+  (typeof window !== "undefined" && window.location.hostname.includes("vercel.app")
+    ? window.location.hostname
+    : "bug-slayers-dashboard.vercel.app");
+
 const firebaseConfig = {
   apiKey: "AIzaSyA-IZJElov16omfcApWpfWEVNA-F8ILX78",
-  authDomain: "a100158.firebaseapp.com",
+  authDomain: resolvedAuthDomain,
   projectId: "a100158",
   storageBucket: "a100158.firebasestorage.app",
   messagingSenderId: "749340432600",
