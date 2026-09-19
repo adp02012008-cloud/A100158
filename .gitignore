@@ -11,6 +11,10 @@ node_modules
 dist
 dev-dist
 dist-ssr
+# Environment files (CRITICAL SECURITY)
+.env
+.env.*
+!.env.example
 *.local
 
 # Editor directories and files
