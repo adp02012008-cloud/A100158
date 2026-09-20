@@ -13,7 +13,8 @@
    ============================================================ */
 
 :root {
-  --font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-editorial: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --font-heading: 'Playfair Display', 'Manrope', Georgia, serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
   --color-primary: #3B82F6;
@@ -21,16 +22,16 @@
   --color-purple-accent: #8B5CF6;
   --color-purple-hover: #7C3AED;
   
-  --color-bg-dark: #12072B;
-  --color-bg-section: #180C38;
-  --color-card-bg: #231244;
-  --color-card-inner: #1A0D36;
+  --color-bg-dark: #0a0614;
+  --color-bg-section: rgba(18, 12, 34, 0.75);
+  --color-card-bg: rgba(22, 14, 42, 0.72);
+  --color-card-inner: rgba(15, 9, 30, 0.78);
   
   --color-text-heading: #FFFFFF;
-  --color-text-body: #CBD5E1;
-  --color-text-muted: #A78BFA;
+  --color-text-body: #E2E8F0;
+  --color-text-muted: #CBD5E1;
   
-  --color-border: rgba(167, 139, 250, 0.18);
+  --color-border: rgba(255, 255, 255, 0.12);
   
   --color-status-green: #22C55E;
   --color-status-red: #EF4444;
@@ -41,7 +42,7 @@ body {
   margin: 0;
   font-family: var(--font-body);
   color: var(--color-text-body);
-  background-color: #070312;
+  background-color: #080412;
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
@@ -49,46 +50,44 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Option 4 Layer 1: Living Ambient Aurora Mesh (Smooth GPU Float) ── */
+/* ── Concept 1: Cinematic Architectural Motion Canvas ── */
 body::before {
   content: "";
   position: fixed;
-  top: -30%;
-  left: -30%;
-  width: 160%;
-  height: 160%;
-  background-image: 
-    radial-gradient(circle at 20% 25%, rgba(139, 92, 246, 0.32) 0%, transparent 45%),
-    radial-gradient(circle at 80% 25%, rgba(56, 189, 248, 0.24) 0%, transparent 42%),
-    radial-gradient(circle at 45% 75%, rgba(168, 85, 247, 0.22) 0%, transparent 48%),
-    radial-gradient(circle at 85% 80%, rgba(99, 102, 241, 0.25) 0%, transparent 40%);
-  filter: blur(55px);
+  top: -4%;
+  left: -4%;
+  width: 108%;
+  height: 108%;
+  background: url('/cinematic-bg.jpg') center center / cover no-repeat;
+  animation: cinematicKenBurns 40s ease-in-out infinite alternate;
+  transform-origin: 65% 45%;
+  will-change: transform;
   z-index: -2;
   pointer-events: none;
-  animation: ambientAuroraFloat 24s ease-in-out infinite alternate;
-  will-change: transform;
 }
 
-/* ── Option 4 Layer 2: Precision Cyber Dot Matrix Overlay ── */
+/* ── Concept 1: Rich Vignette & Contrast Overlay ── */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(167, 139, 250, 0.14) 1.5px, transparent 1.5px);
-  background-size: 26px 26px;
+  background: 
+    linear-gradient(180deg, rgba(8, 4, 18, 0.68) 0%, rgba(10, 6, 22, 0.78) 45%, rgba(8, 4, 18, 0.90) 100%),
+    radial-gradient(ellipse at 85% 25%, rgba(212, 175, 55, 0.14) 0%, transparent 60%);
+  backdrop-filter: blur(1.5px);
   z-index: -1;
   pointer-events: none;
 }
 
-@keyframes ambientAuroraFloat {
+@keyframes cinematicKenBurns {
   0% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    transform: scale(1) translate3d(0, 0, 0);
   }
   50% {
-    transform: translate3d(-3%, 3%, 0) scale(1.08) rotate(3deg);
+    transform: scale(1.06) translate3d(-1.5%, 1%, 0);
   }
   100% {
-    transform: translate3d(3%, -3%, 0) scale(0.96) rotate(-3deg);
+    transform: scale(1.03) translate3d(1%, -1%, 0);
   }
 }
 
