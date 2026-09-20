@@ -492,6 +492,7 @@ export async function bulkImportCourses(req, res) {
             assessmentType: "MCQ",
             topics: [`Foundations of ${baseCourseName} - ${levelName}`],
           });
+        }
         course.levels = sortCourseLevels(course.levels).map((l, i) => ({ ...l, levelNumber: i }));
         await course.save();
         updatedCount++;
