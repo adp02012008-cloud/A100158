@@ -1,4 +1,4 @@
-// src/utils/prefetcher.js - YouTube-style Intelligent Background Preloader
+// src/utils/prefetcher.js - High-Performance Speculative Background Preloading Engine
 import { prefetchApi, getCachedApi } from "./api";
 
 // Page component module chunk loaders
@@ -23,14 +23,15 @@ const PAGE_CHUNK_LOADERS = {
 const PAGE_ENDPOINTS = {
   dashboard: ["/users/dashboard", "/clusters"],
   courses: ["/courses", "/courses/progress"],
-  projects: ["/submissions?status=APPROVED&publicView=true", "/users"],
-  showcase: ["/submissions?status=APPROVED&publicView=true", "/users"],
+  projects: ["/submissions?status=APPROVED&publicView=true", "/users", "/projects"],
+  showcase: ["/submissions?status=APPROVED&publicView=true", "/users", "/projects"],
   leaderboard: ["/users/dashboard"],
   "my-tasks": ["/tasks", "/submissions"],
   opportunities: ["/opportunities"],
   hackathons: ["/hackathons"],
   gallery: ["/gallery"],
   certificates: ["/certificates"],
+  profile: ["/users/me", "/submissions?status=APPROVED&publicView=true", "/hackathons", "/certificates", "/courses/progress"],
   "manage-users": ["/users/dashboard", "/users/assignable"],
   "assign-tasks": ["/tasks", "/users/assignable"],
   "review-deliverables": ["/submissions", "/reviews", "/tasks"],
@@ -54,7 +55,7 @@ export function preloadPageChunk(pageKey) {
 }
 
 /**
- * Preload API endpoints for a specific page
+ * Preload API endpoints for a specific page into memory cache
  */
 export function preloadPageData(pageKey) {
   const endpoints = PAGE_ENDPOINTS[pageKey] || [];
@@ -69,8 +70,8 @@ export function preloadPageData(pageKey) {
 }
 
 /**
- * Fast hover / focus prefetcher: called when user hovers or taps a nav item.
- * Runs instantly during the 150-300ms before click, ensuring zero latency on click.
+ * Fast hover / focus / touch prefetcher:
+ * Runs instantly when hovering or tapping near a nav item.
  */
 export function prefetchPage(pageKey) {
   preloadPageChunk(pageKey);
@@ -82,49 +83,58 @@ export function prefetchPage(pageKey) {
 }
 
 /**
- * Executes tasks during browser idle periods with non-blocking priority
+ * Executes tasks during browser idle periods without starving main thread UI
  */
-function runWhenIdle(callback, timeout = 1200) {
+function runWhenIdle(callback, timeout = 1000) {
   if (typeof window !== "undefined" && "requestIdleCallback" in window) {
     window.requestIdleCallback(callback, { timeout });
   } else {
-    setTimeout(callback, 200);
+    setTimeout(callback, 80);
   }
 }
 
-let pipelineStarted = false;
+let pipelineRunForRole = "";
 
 /**
- * Global Background Prefetch Pipeline
- * Sequentially loads the remaining site chunks & data in the background
- * once the user is authenticated and the active page has rendered.
+ * Global Background Speculative Preload Pipeline
+ * Runs quietly in the background while the user stays on their current page,
+ * ensuring all other pages have their code chunks and API data preloaded
+ * before the user ever clicks on them.
  */
 export function initGlobalPrefetchPipeline(userRole = "member") {
-  if (pipelineStarted) return;
-  pipelineStarted = true;
+  const roleKey = String(userRole || "member").toLowerCase();
+  if (pipelineRunForRole === roleKey) return;
+  pipelineRunForRole = roleKey;
 
-  // Staggered queue so background work never starves the main thread
-  const primaryPages = ["courses", "projects", "leaderboard", "opportunities"];
-  const secondaryPages = ["my-tasks", "hackathons", "gallery", "certificates", "profile"];
-  const adminPages = userRole === "admin" ? ["assign-tasks", "review-deliverables", "manage-users"] : [];
+  // Staggered priority tiers
+  const primaryPages = ["courses", "leaderboard", "opportunities", "projects"];
+  const secondaryPages = ["profile", "my-tasks", "hackathons", "gallery", "certificates"];
+  const adminPages = roleKey === "admin" ? ["manage-users", "assign-tasks", "review-deliverables"] : [];
 
-  const fullQueue = [...primaryPages, ...secondaryPages, ...adminPages];
+  // 1. Warm primary pages swiftly after initial render (100ms)
+  setTimeout(() => {
+    primaryPages.forEach((pageKey) => {
+      runWhenIdle(() => {
+        prefetchPage(pageKey);
+      }, 600);
+    });
+  }, 100);
 
-  // Wait 400ms after login so current page is 100% painted first
+  // 2. Warm secondary pages sequentially during idle frames
   setTimeout(() => {
     let index = 0;
+    const remaining = [...secondaryPages, ...adminPages];
 
     function processNext() {
-      if (index >= fullQueue.length) return;
-      const pageKey = fullQueue[index++];
+      if (index >= remaining.length) return;
+      const pageKey = remaining[index++];
 
       runWhenIdle(() => {
         prefetchPage(pageKey);
-        // Continue to the next after a short breathing interval
-        setTimeout(processNext, 180);
-      });
+        setTimeout(processNext, 120);
+      }, 800);
     }
 
     processNext();
-  }, 400);
+  }, 600);
 }

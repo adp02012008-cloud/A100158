@@ -1,7 +1,6 @@
-// src/pages/Opportunities.jsx - Executive Hackathon & Opportunities Hub
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { apiFetch } from "../utils/api";
+import { apiFetch, getCachedApi } from "../utils/api";
 import UnifiedLoader from "../components/UnifiedLoader";
 import UserAvatar from "../components/UserAvatar";
 import "./Opportunities.css";
@@ -11,8 +10,11 @@ const CATEGORIES = ["All", "Hackathon", "Internship", "Contest", "Workshop", "Sc
 export default function Opportunities({ search: navbarSearch = "" }) {
   const { auth, currentUser, isTeamMember, isAdmin } = useAuth();
 
-  const [opportunities, setOpportunities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cachedOpp = getCachedApi("/opportunities");
+  const initialList = Array.isArray(cachedOpp) ? cachedOpp : cachedOpp?.opportunities || [];
+
+  const [opportunities, setOpportunities] = useState(() => initialList);
+  const [loading, setLoading] = useState(() => initialList.length === 0);
   const [error, setError] = useState("");
 
   // Filters & Sorting
@@ -81,7 +83,9 @@ export default function Opportunities({ search: navbarSearch = "" }) {
 
   // Load Opportunities from API
   const loadOpportunities = async () => {
-    setLoading(true);
+    if (!getCachedApi("/opportunities")) {
+      setLoading(true);
+    }
     setError("");
     try {
       const res = await apiFetch("/opportunities");
@@ -89,7 +93,9 @@ export default function Opportunities({ search: navbarSearch = "" }) {
       setOpportunities(list);
     } catch (err) {
       console.error("Failed to load opportunities:", err);
-      setError("Unable to load opportunities right now. Please try again later.");
+      if (opportunities.length === 0) {
+        setError("Unable to load opportunities right now. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }

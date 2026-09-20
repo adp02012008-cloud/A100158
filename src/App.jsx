@@ -95,11 +95,9 @@ export default function App() {
   });
   const [search, setSearch] = useState("");
 
-  // Start the background prefetch pipeline as soon as the user is authenticated
+  // Start the speculative background prefetch pipeline immediately on mount and whenever role updates
   useEffect(() => {
-    if (auth?.isLoggedIn) {
-      initGlobalPrefetchPipeline(auth.role);
-    }
+    initGlobalPrefetchPipeline(auth?.role || "member");
   }, [auth?.isLoggedIn, auth?.role]);
 
   const visiblePage =

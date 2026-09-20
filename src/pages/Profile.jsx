@@ -8,8 +8,8 @@ import { auth as firebaseAuth } from "../firebase";
 
 export default function Profile() {
   const { auth, currentUser } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(() => currentUser || null);
+  const [loading, setLoading] = useState(() => !currentUser);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -45,7 +45,9 @@ export default function Profile() {
     }
 
     try {
-      setLoading(true);
+      if (!currentUser && !profile) {
+        setLoading(true);
+      }
       setError("");
       const res = await fetchMyProfile();
       const googlePhoto = firebaseAuth.currentUser?.photoURL || currentUser?.avatar || "";
