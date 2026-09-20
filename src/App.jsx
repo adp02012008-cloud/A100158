@@ -25,6 +25,22 @@ const UserRosterAdmin = lazy(() => import("./pages/UserRosterAdmin"));
 import UnifiedLoader from "./components/UnifiedLoader";
 import { initGlobalPrefetchPipeline, prefetchPage } from "./utils/prefetcher";
 
+const PAGE_BACKGROUNDS = {
+  dashboard: "/bg-dashboard.jpg",
+  courses: "/bg-courses.jpg",
+  leaderboard: "/bg-leaderboard.jpg",
+  opportunities: "/bg-opportunities.jpg",
+  hackathons: "/bg-hackathons.jpg",
+  projects: "/bg-dashboard.jpg",
+  gallery: "/bg-courses.jpg",
+  certificates: "/bg-opportunities.jpg",
+  profile: "/bg-profile.jpg",
+  "manage-users": "/bg-profile.jpg",
+  "assign-tasks": "/bg-dashboard.jpg",
+  "review-deliverables": "/bg-dashboard.jpg",
+  "my-tasks": "/bg-dashboard.jpg",
+};
+
 export default function App() {
   const { auth, isTeamMember } = useAuth();
   const [page, setPage] = useState("dashboard");
@@ -59,9 +75,21 @@ export default function App() {
     if (pageContent) pageContent.scrollTop = 0;
   }, [visiblePage]);
 
+  const currentBg = PAGE_BACKGROUNDS[visiblePage] || "/bg-dashboard.jpg";
+
   return (
     <LoginGate>
-      <div className="app">
+      <div className={`app page-${visiblePage}`}>
+        {/* Dynamic Thematic Page Background with Slow Ambient Ken-Burns Motion & Contrast Overlay */}
+        <div className="dynamic-page-bg-wrapper">
+          <div
+            key={currentBg}
+            className="dynamic-page-bg-image"
+            style={{ backgroundImage: `url('${currentBg}')` }}
+          />
+          <div className="dynamic-page-bg-overlay" />
+        </div>
+
         <Navbar
           page={visiblePage}
           setPage={changePage}
