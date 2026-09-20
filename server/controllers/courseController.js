@@ -236,7 +236,7 @@ export async function createCourse(req, res) {
 export async function updateCourse(req, res) {
   try {
     const { id } = req.params;
-    const { name, description, category, clusterAccess, levelPoints, levels } = req.body;
+    const { name, description, category, clusterAccess, levelPoints, levels, prerequisites, status } = req.body;
 
     let course = null;
     if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
@@ -249,6 +249,16 @@ export async function updateCourse(req, res) {
     if (description !== undefined) course.description = description.trim();
     if (category) course.category = category.trim();
     if (clusterAccess) course.clusterAccess = clusterAccess.trim();
+    if (status && ["ACTIVE", "INACTIVE"].includes(status.toUpperCase())) {
+      course.status = status.toUpperCase();
+    }
+    if (prerequisites !== undefined) {
+      if (Array.isArray(prerequisites)) {
+        course.prerequisites = prerequisites.map((p) => String(p).trim()).filter(Boolean);
+      } else if (typeof prerequisites === "string") {
+        course.prerequisites = prerequisites.split(",").map((p) => p.trim()).filter(Boolean);
+      }
+    }
 
     if (Array.isArray(levels) && levels.length > 0) {
       course.levels = sortCourseLevels(levels).map((lvl, idx) => ({
@@ -295,6 +305,9 @@ export async function updateCourse(req, res) {
 
     return res.json({ success: true, message: "Course updated successfully", course });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ success: false, message: "Course name already exists." });
+    }
     return res.status(500).json({ success: false, message: err.message });
   }
 }

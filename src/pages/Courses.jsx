@@ -701,6 +701,14 @@ export default function Courses({ search: initialSearch = "" }) {
   const [showAddCourse, setShowAddCourse] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const showToast = useCallback((msg, type = "success") => {
+    setToastMessage({ text: msg, type });
+    setTimeout(() => {
+      setToastMessage((prev) => (prev?.text === msg ? null : prev));
+    }, 4000);
+  }, []);
 
   // Form State for Add / Edit
   const [formData, setFormData] = useState({
@@ -709,6 +717,8 @@ export default function Courses({ search: initialSearch = "" }) {
     customCategory: "",
     description: "",
     clusterAccess: "Both",
+    status: "ACTIVE",
+    prerequisites: "None",
     levels: [
       {
         levelNumber: 0,
@@ -1017,32 +1027,64 @@ export default function Courses({ search: initialSearch = "" }) {
     });
   }, [myEnrolledCourses, selectedCategory, search, sortBy, getCourseProgress]);
 
-  // Open Edit Modal (Admin)
-  const handleOpenEdit = (course, e) => {
-    e.stopPropagation();
+  // Open Edit Modal for any course (supports focus on specific level)
+  const handleOpenEdit = (course, e, targetLevelIndex = null) => {
+    if (e && typeof e.stopPropagation === "function") {
+      e.stopPropagation();
+    }
     setEditCourse(course);
+    const standardCategories = ["Software", "Hardware", "GENERAL Skill", "Advanced", "Beginner"];
+    const isStandard = standardCategories.includes(course.category);
+
     setFormData({
-      name: course.name,
-      category: ["Software", "Hardware", "GENERAL Skill", "Advanced", "Beginner"].includes(course.category)
-        ? course.category
-        : "Other",
-      customCategory: ["Software", "Hardware", "GENERAL Skill", "Advanced", "Beginner"].includes(course.category)
-        ? ""
-        : course.category,
+      name: course.name || "",
+      category: isStandard ? course.category : "Other",
+      customCategory: isStandard ? "" : (course.category || ""),
       description: course.description || "",
       clusterAccess: course.clusterAccess || "Both",
-      levels: (course.levels || []).map((lvl, idx) => ({
+      status: course.status || "ACTIVE",
+      prerequisites: Array.isArray(course.prerequisites)
+        ? course.prerequisites.join(", ")
+        : (course.prerequisites || "None"),
+      levels: (course.levels && course.levels.length > 0
+        ? course.levels
+        : [
+            {
+              levelNumber: 0,
+              levelName: "Level 0",
+              rewardPoints: 100,
+              prerequisites: "None",
+              assessmentType: "MCQ",
+              topics: ["1. Fundamentals", "2. Core Principles"],
+            },
+          ]
+      ).map((lvl, idx) => ({
         levelNumber: lvl.levelNumber !== undefined ? lvl.levelNumber : idx,
         levelName: lvl.levelName || `Level ${idx}`,
-        rewardPoints: lvl.rewardPoints || 100,
+        rewardPoints: lvl.rewardPoints !== undefined ? lvl.rewardPoints : 100,
         prerequisites: lvl.prerequisites || "None",
-        assessmentType: lvl.assessmentType || "MCQ",
-        topicsText: Array.isArray(lvl.topics) ? lvl.topics.join("\n") : "",
+        assessmentType: lvl.assessmentType || (idx % 2 === 0 ? "MCQ" : "Manual Grading"),
+        topicsText: Array.isArray(lvl.topics)
+          ? lvl.topics.join("\n")
+          : typeof lvl.topics === "string"
+          ? lvl.topics
+          : "",
       })),
     });
+
+    if (targetLevelIndex !== null && targetLevelIndex !== undefined) {
+      setTimeout(() => {
+        const el = document.getElementById(`level-form-card-${targetLevelIndex}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.classList.add("highlight-focused-level");
+          setTimeout(() => el.classList.remove("highlight-focused-level"), 2200);
+        }
+      }, 300);
+    }
   };
 
-  // Open Add Modal (Admin)
+  // Open Add Modal
   const handleOpenAdd = () => {
     setEditCourse(null);
     setFormData({
@@ -1051,6 +1093,8 @@ export default function Courses({ search: initialSearch = "" }) {
       customCategory: "",
       description: "",
       clusterAccess: "Both",
+      status: "ACTIVE",
+      prerequisites: "None",
       levels: [
         {
           levelNumber: 0,
@@ -1073,7 +1117,81 @@ export default function Courses({ search: initialSearch = "" }) {
     setShowAddCourse(true);
   };
 
-  // Save Course
+  // Reorder Levels (Move Up / Down)
+  const handleMoveLevel = (index, direction) => {
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= formData.levels.length) return;
+    const updated = [...formData.levels];
+    const item = updated[index];
+    updated[index] = updated[targetIdx];
+    updated[targetIdx] = item;
+    setFormData({
+      ...formData,
+      levels: updated.map((lvl, idx) => ({ ...lvl, levelNumber: idx })),
+    });
+  };
+
+  // Add New Level
+  const handleAddLevel = () => {
+    const nextIdx = formData.levels.length;
+    const prevLvl = nextIdx > 0 ? formData.levels[nextIdx - 1] : null;
+    const defaultPrereq = prevLvl ? (prevLvl.levelName || `Level ${nextIdx - 1}`) : "None";
+    setFormData({
+      ...formData,
+      levels: [
+        ...formData.levels,
+        {
+          levelNumber: nextIdx,
+          levelName: `Level ${nextIdx}`,
+          rewardPoints: 150 * (nextIdx + 1),
+          prerequisites: defaultPrereq,
+          assessmentType: nextIdx % 2 === 0 ? "MCQ" : "Manual Grading",
+          topicsText: `1. Milestone Topics\n2. Hands-on Project\n3. Skill Assessment`,
+        },
+      ],
+    });
+  };
+
+  // Remove Level
+  const handleRemoveLevel = (index) => {
+    if (formData.levels.length <= 1) {
+      alert("A course must have at least one level.");
+      return;
+    }
+    const updated = formData.levels
+      .filter((_, i) => i !== index)
+      .map((lvl, idx) => ({ ...lvl, levelNumber: idx }));
+    setFormData({ ...formData, levels: updated });
+  };
+
+  // Delete Course (with confirmation)
+  const handleDeleteCourse = async (course) => {
+    if (!course?._id) return;
+    if (
+      !window.confirm(
+        `⚠️ Are you sure you want to permanently delete the course "${course.name}"?\n\nThis action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    try {
+      setActionLoading(true);
+      await apiFetch(`/courses/${course._id}`, { method: "DELETE" });
+      setShowAddCourse(false);
+      setEditCourse(null);
+      if (detailCourse && String(detailCourse._id) === String(course._id)) {
+        setDetailCourse(null);
+      }
+      showToast(`Course "${course.name}" has been deleted.`, "info");
+      await loadData();
+    } catch (err) {
+      alert("Failed to delete course: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Save Course (Create or Update all details)
   const handleSaveCourse = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
@@ -1088,7 +1206,7 @@ export default function Courses({ search: initialSearch = "" }) {
 
     const formattedLevels = formData.levels.map((lvl, idx) => ({
       levelNumber: idx,
-      levelName: lvl.levelName.trim() || `Level ${idx}`,
+      levelName: (lvl.levelName || `Level ${idx}`).trim(),
       rewardPoints: Number(lvl.rewardPoints) || 100,
       prerequisites: lvl.prerequisites ? lvl.prerequisites.trim() : "None",
       assessmentType: lvl.assessmentType || "MCQ",
@@ -1098,19 +1216,62 @@ export default function Courses({ search: initialSearch = "" }) {
         .filter(Boolean),
     }));
 
+    const parsedPrereqs = formData.prerequisites
+      ? String(formData.prerequisites)
+          .split(",")
+          .map((p) => p.trim())
+          .filter(Boolean)
+      : [];
+
     try {
       setActionLoading(true);
       if (editCourse) {
-        await apiFetch(`/courses/${editCourse._id}`, {
+        const res = await apiFetch(`/courses/${editCourse._id}`, {
           method: "PUT",
           body: {
             name: formData.name.trim(),
             category: finalCategory,
             description: formData.description.trim(),
             clusterAccess: formData.clusterAccess,
+            status: formData.status || "ACTIVE",
+            prerequisites: parsedPrereqs,
             levels: formattedLevels,
           },
         });
+
+        const updatedObj = res?.course || {
+          ...editCourse,
+          name: formData.name.trim(),
+          category: finalCategory,
+          description: formData.description.trim(),
+          clusterAccess: formData.clusterAccess,
+          status: formData.status || "ACTIVE",
+          prerequisites: parsedPrereqs,
+          levels: formattedLevels,
+        };
+
+        const sortedUpdated = {
+          ...updatedObj,
+          levels: sortCourseLevels(updatedObj.levels || []).map((l, i) => ({ ...l, levelNumber: i })),
+        };
+
+        // Immediately update local catalog state for ultra-fast UX
+        setCourses((prevCourses) =>
+          prevCourses.map((c) =>
+            String(c._id) === String(editCourse._id) ? sortedUpdated : c
+          )
+        );
+
+        // Immediately update detailCourse if user is currently viewing this course
+        setDetailCourse((prevDetail) => {
+          if (!prevDetail) return null;
+          if (String(prevDetail._id) === String(editCourse._id) || prevDetail.name === editCourse.name) {
+            return sortedUpdated;
+          }
+          return prevDetail;
+        });
+
+        showToast(`✓ Course "${formData.name.trim()}" updated successfully!`, "success");
       } else {
         await apiFetch("/courses", {
           method: "POST",
@@ -1119,9 +1280,12 @@ export default function Courses({ search: initialSearch = "" }) {
             category: finalCategory,
             description: formData.description.trim(),
             clusterAccess: formData.clusterAccess,
+            status: formData.status || "ACTIVE",
+            prerequisites: parsedPrereqs,
             levels: formattedLevels,
           },
         });
+        showToast(`✓ Course "${formData.name.trim()}" created successfully!`, "success");
       }
 
       setShowAddCourse(false);
@@ -1267,6 +1431,18 @@ export default function Courses({ search: initialSearch = "" }) {
               <span className="breadcrumb-sep">/</span>
               <span className="breadcrumb-current">{detailCourse.name}</span>
             </div>
+
+            {/* Quick Edit Course Button in Top Bar */}
+            <div className="course-details-nav-actions">
+              <button
+                type="button"
+                className="btn-edit-course-details-nav"
+                onClick={(e) => handleOpenEdit(detailCourse, e)}
+                title="Edit and correct course title, category, description, and levels"
+              >
+                <span>✏️</span> Correct Course Details
+              </button>
+            </div>
           </div>
 
           {/* Hero Banner Card with Status Switch */}
@@ -1276,7 +1452,17 @@ export default function Courses({ search: initialSearch = "" }) {
             return (
               <div className="course-details-hero-card">
                 <div className="hero-card-left">
-                  <h1 className="hero-course-title">{detailCourse.name}</h1>
+                  <h1 className="hero-course-title">
+                    <span>{detailCourse.name}</span>
+                    <button
+                      type="button"
+                      className="hero-title-inline-edit-btn"
+                      onClick={(e) => handleOpenEdit(detailCourse, e)}
+                      title="Edit Course Name & Details"
+                    >
+                      ✏️
+                    </button>
+                  </h1>
                   <p className="hero-course-desc">
                     {detailCourse.description ||
                       "Comprehensive modular curriculum designed for mastery and practical application."}
@@ -1319,6 +1505,15 @@ export default function Courses({ search: initialSearch = "" }) {
                         : isAllCompleted
                         ? "↺ Mark Entire Course Not Completed"
                         : "✓ Mark Entire Course Completed"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="hero-course-edit-btn"
+                      onClick={(e) => handleOpenEdit(detailCourse, e)}
+                      title="Edit all course details, description, milestones, topics & points"
+                    >
+                      <span>✏️</span> Correct Course Details
                     </button>
                   </div>
                 </div>
@@ -1372,6 +1567,16 @@ export default function Courses({ search: initialSearch = "" }) {
                         </div>
 
                         <div className="college-level-header-right">
+                          {/* Quick Edit This Specific Level */}
+                          <button
+                            type="button"
+                            className="btn-level-quick-edit"
+                            onClick={(e) => handleOpenEdit(detailCourse, e, index)}
+                            title={`Edit details, points, and topics for ${rawLevelName}`}
+                          >
+                            <span>✏️</span> Edit Level
+                          </button>
+
                           {/* Interactive Status Switcher */}
                           <button
                             type="button"
@@ -1618,9 +1823,19 @@ export default function Courses({ search: initialSearch = "" }) {
 
                         {/* Card Content */}
                         <div className="portal-course-content">
-                          <h3 className="portal-course-title" title={sortedCourse.name}>
-                            {sortedCourse.name}
-                          </h3>
+                          <div className="portal-course-title-row">
+                            <h3 className="portal-course-title" title={sortedCourse.name}>
+                              {sortedCourse.name}
+                            </h3>
+                            <button
+                              type="button"
+                              className="portal-course-card-edit-btn"
+                              onClick={(e) => handleOpenEdit(sortedCourse, e)}
+                              title="Correct & Edit Course Details"
+                            >
+                              <span>✏️</span> Edit
+                            </button>
+                          </div>
 
                           {/* Meta Information Row */}
                           <div className="portal-course-meta-row">
@@ -1706,9 +1921,19 @@ export default function Courses({ search: initialSearch = "" }) {
 
                         {/* Card Content */}
                         <div className="portal-course-content">
-                          <h3 className="portal-course-title" title={sortedCourse.name}>
-                            {sortedCourse.name}
-                          </h3>
+                          <div className="portal-course-title-row">
+                            <h3 className="portal-course-title" title={sortedCourse.name}>
+                              {sortedCourse.name}
+                            </h3>
+                            <button
+                              type="button"
+                              className="portal-course-card-edit-btn"
+                              onClick={(e) => handleOpenEdit(sortedCourse, e)}
+                              title="Correct & Edit Course Details"
+                            >
+                              <span>✏️</span> Edit
+                            </button>
+                          </div>
 
                           {/* Meta Information Row */}
                           <div className="portal-course-meta-row">
@@ -1749,23 +1974,54 @@ export default function Courses({ search: initialSearch = "" }) {
       )}
 
       {/* ===================================================
-          ADD / EDIT COURSE MODAL (Admin)
+          ADD / EDIT / CORRECT COURSE MODAL
          =================================================== */}
       {(showAddCourse || editCourse) && (
-        <div className="course-form-modal-overlay" onClick={() => { setShowAddCourse(false); setEditCourse(null); }}>
+        <div
+          className="course-form-modal-overlay"
+          onClick={() => {
+            setShowAddCourse(false);
+            setEditCourse(null);
+          }}
+        >
           <div className="course-form-modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="course-form-header">
-              <h2>{editCourse ? `Edit Course: ${editCourse.name}` : "Create New Course"}</h2>
-              <button
-                type="button"
-                className="course-details-close-btn"
-                onClick={() => { setShowAddCourse(false); setEditCourse(null); }}
-              >
-                ✕
-              </button>
+              <div>
+                <h2>{editCourse ? `Edit & Correct Course` : "Create New Course"}</h2>
+                <p className="course-form-subtitle">
+                  {editCourse
+                    ? `Correct title, category, description, prerequisites, and milestone levels for "${editCourse.name}".`
+                    : "Configure a comprehensive curriculum with multi-level rewards, topics, and assessment paths."}
+                </p>
+              </div>
+              <div className="course-form-header-actions">
+                {editCourse && (
+                  <button
+                    type="button"
+                    className="btn-modal-delete-course"
+                    onClick={() => handleDeleteCourse(editCourse)}
+                    disabled={actionLoading}
+                    title="Delete this course permanently"
+                  >
+                    🗑️ Delete Course
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="course-details-close-btn"
+                  onClick={() => {
+                    setShowAddCourse(false);
+                    setEditCourse(null);
+                  }}
+                  title="Close modal"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <form onSubmit={handleSaveCourse} className="course-form">
+              {/* Course Core Details */}
               <div className="form-group">
                 <label>Course Name *</label>
                 <input
@@ -1789,7 +2045,7 @@ export default function Courses({ search: initialSearch = "" }) {
                     <option value="GENERAL Skill">GENERAL Skill</option>
                     <option value="Beginner">Beginner</option>
                     <option value="Advanced">Advanced</option>
-                    <option value="Other">Other</option>
+                    <option value="Other">Other (Custom)</option>
                   </select>
                 </div>
 
@@ -1800,7 +2056,7 @@ export default function Courses({ search: initialSearch = "" }) {
                       type="text"
                       value={formData.customCategory}
                       onChange={(e) => setFormData({ ...formData, customCategory: e.target.value })}
-                      placeholder="e.g., Biotech"
+                      placeholder="e.g., Biotech, Automation, Cloud"
                     />
                   </div>
                 )}
@@ -1816,66 +2072,109 @@ export default function Courses({ search: initialSearch = "" }) {
                     <option value="Special">Special Track</option>
                   </select>
                 </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select
+                    value={formData.status || "ACTIVE"}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  >
+                    <option value="ACTIVE">Active (Published)</option>
+                    <option value="INACTIVE">Inactive (Archived)</option>
+                  </select>
+                </div>
               </div>
 
               <div className="form-group">
-                <label>Course Description</label>
+                <label>Course-Level Prerequisites (Comma separated)</label>
+                <input
+                  type="text"
+                  value={formData.prerequisites}
+                  onChange={(e) => setFormData({ ...formData, prerequisites: e.target.value })}
+                  placeholder="e.g. Basic Programming, Computer Fundamentals (or None)"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Course Description / Overview</label>
                 <textarea
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Summary of course learning objectives and syllabus path…"
+                  placeholder="Summary of course learning objectives, practical projects, and curriculum path…"
                 />
               </div>
 
               {/* Levels Builder */}
               <div className="levels-builder-section">
                 <div className="levels-builder-head">
-                  <h3>Levels & Milestones ({formData.levels.length})</h3>
+                  <div>
+                    <h3>Levels & Milestones ({formData.levels.length})</h3>
+                    <p className="levels-builder-hint">
+                      Add, reorder (▲/▼), and correct topics and reward points for each milestone.
+                    </p>
+                  </div>
                   <button
                     type="button"
                     className="btn-add-level"
-                    onClick={() =>
-                      setFormData({
-                        ...formData,
-                        levels: [
-                          ...formData.levels,
-                          {
-                            levelNumber: formData.levels.length,
-                            levelName: `Level ${formData.levels.length}`,
-                            rewardPoints: 200,
-                            prerequisites: "None",
-                            assessmentType: "MCQ",
-                            topicsText: "1. Key Topic\n2. Practical Exercise",
-                          },
-                        ],
-                      })
-                    }
+                    onClick={handleAddLevel}
                   >
                     ➕ Add Level
                   </button>
                 </div>
 
                 {formData.levels.map((lvl, index) => (
-                  <div key={index} className="level-form-card">
+                  <div
+                    key={index}
+                    id={`level-form-card-${index}`}
+                    className="level-form-card"
+                  >
                     <div className="level-form-header">
-                      <h4>Level {index}</h4>
-                      {formData.levels.length > 1 && (
-                        <button
-                          type="button"
-                          className="btn-remove-level"
-                          onClick={() => {
-                            const updated = formData.levels.filter((_, i) => i !== index);
-                            setFormData({ ...formData, levels: updated });
-                          }}
-                        >
-                          ✕ Remove
-                        </button>
-                      )}
+                      <div className="level-form-title-wrap">
+                        <span className="level-form-badge">Level {index}</span>
+                        <span className="level-form-current-name">
+                          {lvl.levelName || `Level ${index}`}
+                        </span>
+                      </div>
+
+                      <div className="level-form-controls">
+                        {/* Reorder Buttons */}
+                        <div className="level-reorder-btns">
+                          <button
+                            type="button"
+                            className="btn-reorder-level"
+                            disabled={index === 0}
+                            onClick={() => handleMoveLevel(index, -1)}
+                            title="Move Level Up"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-reorder-level"
+                            disabled={index === formData.levels.length - 1}
+                            onClick={() => handleMoveLevel(index, 1)}
+                            title="Move Level Down"
+                          >
+                            ▼
+                          </button>
+                        </div>
+
+                        {formData.levels.length > 1 && (
+                          <button
+                            type="button"
+                            className="btn-remove-level"
+                            onClick={() => handleRemoveLevel(index)}
+                            title="Remove this level"
+                          >
+                            ✕ Remove
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="form-row">
-                      <div className="form-group">
+                      <div className="form-group" style={{ flex: 2 }}>
                         <label>Level Name</label>
                         <input
                           type="text"
@@ -1888,7 +2187,7 @@ export default function Courses({ search: initialSearch = "" }) {
                           placeholder={`Level ${index}`}
                         />
                       </div>
-                      <div className="form-group">
+                      <div className="form-group" style={{ flex: 1 }}>
                         <label>Reward Points (RP)</label>
                         <input
                           type="number"
@@ -1900,7 +2199,7 @@ export default function Courses({ search: initialSearch = "" }) {
                           }}
                         />
                       </div>
-                      <div className="form-group">
+                      <div className="form-group" style={{ flex: 1.5 }}>
                         <label>Assessment Type</label>
                         <select
                           value={lvl.assessmentType}
@@ -1915,6 +2214,9 @@ export default function Courses({ search: initialSearch = "" }) {
                           <option value="Programming">Programming</option>
                           <option value="GD">GD</option>
                           <option value="FA">FA</option>
+                          <option value="Viva">Viva / Oral Review</option>
+                          <option value="Project Evaluation">Project Evaluation</option>
+                          <option value="Lab Exam">Lab Exam</option>
                         </select>
                       </div>
                     </div>
@@ -1929,12 +2231,12 @@ export default function Courses({ search: initialSearch = "" }) {
                           updated[index].prerequisites = e.target.value;
                           setFormData({ ...formData, levels: updated });
                         }}
-                        placeholder="e.g. None"
+                        placeholder="e.g. None or previous level title"
                       />
                     </div>
 
                     <div className="form-group">
-                      <label>Syllabus Topics (One per line)</label>
+                      <label>Syllabus Topics (One topic per line)</label>
                       <textarea
                         rows={3}
                         value={lvl.topicsText}
@@ -1943,8 +2245,25 @@ export default function Courses({ search: initialSearch = "" }) {
                           updated[index].topicsText = e.target.value;
                           setFormData({ ...formData, levels: updated });
                         }}
-                        placeholder="1. Topic One&#10;2. Topic Two"
+                        placeholder="1. Introduction & Environment Setup&#10;2. Core Syntax & Methods&#10;3. Hands-on Project Implementation"
                       />
+                      {lvl.topicsText && lvl.topicsText.trim() && (
+                        <div className="modal-topics-preview">
+                          <span className="preview-label">
+                            Topics Preview ({lvl.topicsText.split("\n").filter((t) => t.trim()).length}):
+                          </span>
+                          <div className="preview-pills-list">
+                            {lvl.topicsText
+                              .split("\n")
+                              .filter((t) => t.trim())
+                              .map((top, tIdx) => (
+                                <span key={tIdx} className="preview-topic-pill">
+                                  {top.trim()}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -1954,12 +2273,19 @@ export default function Courses({ search: initialSearch = "" }) {
                 <button
                   type="button"
                   className="btn-cancel"
-                  onClick={() => { setShowAddCourse(false); setEditCourse(null); }}
+                  onClick={() => {
+                    setShowAddCourse(false);
+                    setEditCourse(null);
+                  }}
                 >
                   Cancel
                 </button>
                 <button type="submit" className="btn-save" disabled={actionLoading}>
-                  {actionLoading ? "Saving…" : editCourse ? "Update Course" : "Create Course"}
+                  {actionLoading
+                    ? "Saving Changes…"
+                    : editCourse
+                    ? "✓ Save & Update Course Details"
+                    : "Create Course"}
                 </button>
               </div>
             </form>
@@ -1976,6 +2302,24 @@ export default function Courses({ search: initialSearch = "" }) {
             loadData();
           }}
         />
+      )}
+
+      {/* Floating Success / Info Toast Notification */}
+      {toastMessage && (
+        <div className={`courses-floating-toast toast-${toastMessage.type}`}>
+          <span className="toast-icon">
+            {toastMessage.type === "success" ? "✓" : "ℹ"}
+          </span>
+          <span className="toast-text">{toastMessage.text}</span>
+          <button
+            type="button"
+            className="toast-close-btn"
+            onClick={() => setToastMessage(null)}
+            title="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
       )}
     </div>
   );
