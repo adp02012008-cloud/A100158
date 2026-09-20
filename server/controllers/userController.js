@@ -19,7 +19,7 @@ import { withTransaction } from "../utils/dbTransaction.js";
 export async function getAllUsers(req, res) {
   try {
     if (!isAdmin(req.user)) {
-      return res.status(403).json({ success: false, message: "Access denied. Admin access required." });
+      return getDashboardUsers(req, res);
     }
     const rawUsers = await User.find({}).populate("clusterId").sort({ name: 1 }).exec();
     const users = rawUsers.filter((u) => !isSuperAdminEmail(u.email));

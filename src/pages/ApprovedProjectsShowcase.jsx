@@ -46,7 +46,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
 
   // Instant SWR cache hydration: zero delay if preloaded
   const cachedSubs = getCachedApi("/submissions?status=APPROVED&publicView=true");
-  const cachedUsers = getCachedApi("/users");
+  const cachedUsers = getCachedApi("/users/dashboard") || getCachedApi("/users");
 
   const [approvedSubmissions, setApprovedSubmissions] = useState(() => cachedSubs?.submissions || []);
   const [users, setUsers] = useState(() => cachedUsers?.users || []);
@@ -124,7 +124,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
     try {
       const [subRes, userRes] = await Promise.all([
         apiFetch("/submissions?status=APPROVED&publicView=true"),
-        apiFetch("/users"),
+        apiFetch("/users/dashboard").catch(() => apiFetch("/users").catch(() => ({ users: [] }))),
       ]);
       setApprovedSubmissions(subRes?.submissions || []);
       const uList = userRes?.users || [];
@@ -146,8 +146,9 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
   const userMap = useMemo(() => {
     const map = {};
     users.forEach((u) => {
-      if (u.email) map[u.email.toLowerCase().trim()] = u.name || u.email;
-      if (u._id) map[String(u._id)] = u.name || u.email;
+      const displayName = u.Name || u.name || u.email;
+      if (u.email) map[u.email.toLowerCase().trim()] = displayName;
+      if (u._id) map[String(u._id)] = displayName;
     });
     return map;
   }, [users]);

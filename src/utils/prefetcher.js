@@ -23,8 +23,8 @@ const PAGE_CHUNK_LOADERS = {
 const PAGE_ENDPOINTS = {
   dashboard: ["/users/dashboard", "/clusters"],
   courses: ["/courses", "/courses/progress"],
-  projects: ["/submissions?status=APPROVED&publicView=true", "/users", "/projects"],
-  showcase: ["/submissions?status=APPROVED&publicView=true", "/users", "/projects"],
+  projects: ["/submissions?status=APPROVED&publicView=true", "/users/dashboard", "/projects"],
+  showcase: ["/submissions?status=APPROVED&publicView=true", "/users/dashboard", "/projects"],
   leaderboard: ["/users/dashboard"],
   "my-tasks": ["/tasks", "/submissions"],
   opportunities: ["/opportunities"],
