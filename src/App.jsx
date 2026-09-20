@@ -80,12 +80,14 @@ export default function App() {
   return (
     <LoginGate>
       <div className={`app page-${visiblePage}`}>
-        {/* Dynamic Thematic Page Background with Slow Ambient Ken-Burns Motion & Contrast Overlay */}
-        <div className="dynamic-page-bg-wrapper">
-          <div
+        <div className="dynamic-page-bg-wrapper" aria-hidden="true">
+          <img
             key={currentBg}
-            className="dynamic-page-bg-image"
-            style={{ backgroundImage: `url('${currentBg}')` }}
+            src={currentBg}
+            alt=""
+            className="dynamic-page-bg-img"
+            loading="eager"
+            decoding="async"
           />
           <div className="dynamic-page-bg-overlay" />
         </div>
