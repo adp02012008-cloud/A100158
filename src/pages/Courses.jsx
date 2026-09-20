@@ -564,6 +564,109 @@ function CourseBannerGraphic({ course }) {
   return <div className="course-card-top-art">{renderBannerContent()}</div>;
 }
 
+export function parseLevelInfo(name = "") {
+  const str = String(name || "").trim();
+  const isTraining = /training/i.test(str);
+
+  let num = 999;
+  let sub = "";
+
+  // 1. Match "level" followed by number and optional letter (e.g. Level 0, Level 1A, Level 2 Training)
+  const levelMatch = str.match(/level\s*[-–:]?\s*([0-9]+(?:\.[0-9]+)?)\s*([a-z]?)/i);
+  if (levelMatch) {
+    num = parseFloat(levelMatch[1]);
+    sub = (levelMatch[2] || "").toLowerCase();
+  } else {
+    // 2. Match "training" followed by number (e.g. Training 1)
+    const trainingMatch = str.match(/training\s*[-–:]?\s*([0-9]+(?:\.[0-9]+)?)\s*([a-z]?)/i);
+    if (trainingMatch) {
+      num = parseFloat(trainingMatch[1]);
+      sub = (trainingMatch[2] || "").toLowerCase();
+    } else {
+      // 3. Fallback to any standalone number
+      const fallbackMatch = str.match(/\b([0-9]+(?:\.[0-9]+)?)\s*([a-z]?)\b/i);
+      if (fallbackMatch) {
+        num = parseFloat(fallbackMatch[1]);
+        sub = (fallbackMatch[2] || "").toLowerCase();
+      }
+    }
+  }
+
+  return {
+    num,
+    sub,
+    isTraining: isTraining ? 0 : 1, // Training (0) comes before Regular/Exam (1)
+  };
+}
+
+export function sortCourseLevels(levels = []) {
+  if (!Array.isArray(levels) || levels.length === 0) return [];
+
+  return [...levels].sort((a, b) => {
+    const nameA = a?.levelName || "";
+    const nameB = b?.levelName || "";
+
+    const pA = parseLevelInfo(nameA);
+    const pB = parseLevelInfo(nameB);
+
+    // Primary: Base level number (e.g. 0 before 1, 1 before 2)
+    if (pA.num !== pB.num) {
+      return pA.num - pB.num;
+    }
+    // Secondary: Training comes before regular level (e.g. Level 1 Training before Level 1)
+    if (pA.isTraining !== pB.isTraining) {
+      return pA.isTraining - pB.isTraining;
+    }
+    // Tertiary: Sub-level / letter tier (e.g. Level 1A before Level 1B)
+    if (pA.sub !== pB.sub) {
+      return pA.sub.localeCompare(pB.sub);
+    }
+    return (nameA || "").localeCompare(nameB || "");
+  });
+}
+
+function isLevelMatch(rawCompletedName, rawLevelName, lNum = "", cName = "") {
+  const normCompleted = String(rawCompletedName || "").toLowerCase().trim();
+  const normLevelName = String(rawLevelName || "").toLowerCase().trim();
+
+  if (!normCompleted || !normLevelName) return false;
+  if (normCompleted === normLevelName) return true;
+
+  // Training mismatch check: Training can never match Non-Training
+  const completedIsTraining = /training/i.test(normCompleted);
+  const levelIsTraining = /training/i.test(normLevelName);
+  if (completedIsTraining !== levelIsTraining) return false;
+
+  // Strip course name prefix if present
+  let cleanCompleted = normCompleted;
+  let cleanLevel = normLevelName;
+  if (cName) {
+    cleanCompleted = cleanCompleted.replace(cName.toLowerCase(), "").replace(/^[\s\-–:]+/, "").trim();
+    cleanLevel = cleanLevel.replace(cName.toLowerCase(), "").replace(/^[\s\-–:]+/, "").trim();
+  }
+
+  if (cleanCompleted && cleanLevel && cleanCompleted === cleanLevel) return true;
+
+  const pCompleted = parseLevelInfo(cleanCompleted || normCompleted);
+  const pLevel = parseLevelInfo(cleanLevel || normLevelName);
+
+  if (pCompleted.num !== 999 && pLevel.num !== 999) {
+    if (
+      pCompleted.num === pLevel.num &&
+      pCompleted.sub === pLevel.sub &&
+      pCompleted.isTraining === pLevel.isTraining
+    ) {
+      return true;
+    }
+  }
+
+  if (lNum && (normCompleted === `level ${lNum}` || normCompleted === `level - ${lNum}`)) {
+    return true;
+  }
+
+  return false;
+}
+
 export default function Courses({ search: initialSearch = "" }) {
   const { auth, currentUser } = useAuth();
 
@@ -573,7 +676,12 @@ export default function Courses({ search: initialSearch = "" }) {
   const cachedCourses = getCachedApi("/courses");
   const cachedProgress = getCachedApi("/courses/progress");
 
-  const [courses, setCourses] = useState(() => cachedCourses?.courses || []);
+  const [courses, setCourses] = useState(() =>
+    (cachedCourses?.courses || []).map((c) => ({
+      ...c,
+      levels: sortCourseLevels(c.levels || []).map((l, i) => ({ ...l, levelNumber: i })),
+    }))
+  );
   const [userProgress, setUserProgress] = useState(() => cachedProgress?.progress || []);
   const [loading, setLoading] = useState(() => !cachedCourses?.courses);
   const [search, setSearch] = useState(initialSearch);
@@ -625,7 +733,16 @@ export default function Courses({ search: initialSearch = "" }) {
       ]);
 
       if (coursesRes?.courses) {
-        setCourses(coursesRes.courses);
+        const sorted = coursesRes.courses.map((c) => ({
+          ...c,
+          levels: sortCourseLevels(c.levels || []).map((l, i) => ({ ...l, levelNumber: i })),
+        }));
+        setCourses(sorted);
+        setDetailCourse((prev) => {
+          if (!prev) return null;
+          const match = sorted.find((c) => c._id === prev._id);
+          return match || prev;
+        });
       }
       if (progressRes?.progress) {
         setUserProgress(progressRes.progress);
@@ -644,7 +761,7 @@ export default function Courses({ search: initialSearch = "" }) {
   // Robust Level & Course Progress Calculator
   const getCourseProgress = useCallback(
     (course) => {
-      const levels = course.levels || [];
+      const levels = sortCourseLevels(course?.levels || []);
       const totalLevels = Math.max(levels.length, 1);
 
       if (!userProgress || userProgress.length === 0) {
@@ -659,8 +776,8 @@ export default function Courses({ search: initialSearch = "" }) {
         };
       }
 
-      const cId = String(course._id);
-      const cName = (course.name || "").toLowerCase().trim();
+      const cId = String(course?._id || "");
+      const cName = (course?.name || "").toLowerCase().trim();
 
       // Find matching user progress records
       const matchingRecords = userProgress.filter((p) => {
@@ -708,12 +825,7 @@ export default function Courses({ search: initialSearch = "" }) {
           levels.forEach((lvl, idx) => {
             const lName = (lvl.levelName || "").toLowerCase().trim();
             const lNum = String(lvl.levelNumber !== undefined ? lvl.levelNumber : "");
-            if (
-              normLvl === lName ||
-              lName.includes(normLvl) ||
-              normLvl.includes(lName) ||
-              (lNum && (normLvl === `level ${lNum}` || normLvl === `level - ${lNum}`))
-            ) {
+            if (isLevelMatch(normLvl, lName, lNum, cName)) {
               completedIndices.add(idx);
             }
           });
@@ -1040,7 +1152,11 @@ export default function Courses({ search: initialSearch = "" }) {
   };
 
   const handleOpenDetail = (course) => {
-    setDetailCourse(course);
+    const sorted = {
+      ...course,
+      levels: sortCourseLevels(course?.levels || []).map((l, i) => ({ ...l, levelNumber: i })),
+    };
+    setDetailCourse(sorted);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
@@ -1161,9 +1277,10 @@ export default function Courses({ search: initialSearch = "" }) {
           {/* College Level Cards with Completion Status Toggle */}
           {(() => {
             const detailProg = getCourseProgress(detailCourse);
+            const sortedDetailLevels = sortCourseLevels(detailCourse.levels || []);
             return (
               <div className="course-details-levels-container">
-                {(detailCourse.levels || []).map((lvl, index) => {
+                {sortedDetailLevels.map((lvl, index) => {
                   const isLevelDone = detailProg.completedIndices.has(index);
                   const topicsList =
                     Array.isArray(lvl.topics) && lvl.topics.length > 0
@@ -1173,6 +1290,12 @@ export default function Courses({ search: initialSearch = "" }) {
                           `2. Core Technical Concepts & Implementation`,
                           `3. Practical Evaluation & Problem Solving`,
                         ];
+
+                  const rawLevelName = lvl.levelName || `Level ${index}`;
+                  const coursePrefix = `${detailCourse.name} - `;
+                  const displayLevelTitle = rawLevelName.toLowerCase().startsWith(coursePrefix.toLowerCase())
+                    ? rawLevelName
+                    : `${detailCourse.name} - ${rawLevelName}`;
 
                   return (
                     <div
@@ -1189,7 +1312,7 @@ export default function Courses({ search: initialSearch = "" }) {
                             {isLevelDone ? "✓" : index + 1}
                           </div>
                           <h3 className="college-level-title">
-                            {detailCourse.name} - {lvl.levelName || `Level ${index}`}
+                            {displayLevelTitle}
                           </h3>
                         </div>
 
@@ -1424,22 +1547,24 @@ export default function Courses({ search: initialSearch = "" }) {
               ) : (
                 <div className="courses-grid">
                   {filteredAvailableCourses.map((course) => {
-                    const prog = getCourseProgress(course);
-                    const totalLevels = (course.levels || []).length || 2;
+                    const sortedLevels = sortCourseLevels(course.levels || []);
+                    const sortedCourse = { ...course, levels: sortedLevels };
+                    const prog = getCourseProgress(sortedCourse);
+                    const totalLevels = sortedLevels.length || 2;
 
                     return (
                       <div
                         key={course._id}
                         className="portal-course-card"
-                        onClick={() => handleOpenDetail(course)}
+                        onClick={() => handleOpenDetail(sortedCourse)}
                       >
                         {/* Top Visual Thematic Banner */}
-                        <CourseBannerGraphic course={course} />
+                        <CourseBannerGraphic course={sortedCourse} />
 
                         {/* Card Content */}
                         <div className="portal-course-content">
-                          <h3 className="portal-course-title" title={course.name}>
-                            {course.name}
+                          <h3 className="portal-course-title" title={sortedCourse.name}>
+                            {sortedCourse.name}
                           </h3>
 
                           {/* Meta Information Row */}
@@ -1448,7 +1573,7 @@ export default function Courses({ search: initialSearch = "" }) {
                               📄 Levels: {totalLevels}
                             </span>
                             <span className="portal-meta-cat">
-                              {course.category || "General"}
+                              {sortedCourse.category || "General"}
                             </span>
                           </div>
 
@@ -1510,22 +1635,24 @@ export default function Courses({ search: initialSearch = "" }) {
               ) : (
                 <div className="courses-grid">
                   {filteredMyCourses.map((course) => {
-                    const prog = getCourseProgress(course);
-                    const totalLevels = (course.levels || []).length || 2;
+                    const sortedLevels = sortCourseLevels(course.levels || []);
+                    const sortedCourse = { ...course, levels: sortedLevels };
+                    const prog = getCourseProgress(sortedCourse);
+                    const totalLevels = sortedLevels.length || 2;
 
                     return (
                       <div
                         key={course._id}
                         className="portal-course-card"
-                        onClick={() => handleOpenDetail(course)}
+                        onClick={() => handleOpenDetail(sortedCourse)}
                       >
                         {/* Top Visual Thematic Banner */}
-                        <CourseBannerGraphic course={course} />
+                        <CourseBannerGraphic course={sortedCourse} />
 
                         {/* Card Content */}
                         <div className="portal-course-content">
-                          <h3 className="portal-course-title" title={course.name}>
-                            {course.name}
+                          <h3 className="portal-course-title" title={sortedCourse.name}>
+                            {sortedCourse.name}
                           </h3>
 
                           {/* Meta Information Row */}
@@ -1534,7 +1661,7 @@ export default function Courses({ search: initialSearch = "" }) {
                               📄 Levels: {totalLevels}
                             </span>
                             <span className="portal-meta-cat">
-                              {course.category || "General"}
+                              {sortedCourse.category || "General"}
                             </span>
                           </div>
 
