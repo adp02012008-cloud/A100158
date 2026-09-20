@@ -249,6 +249,7 @@ export async function getDashboardUsers(req, res) {
     const enriched = users.map((u) => {
       const uProgress = progressByUser.get(String(u._id)) || [];
       const courseDetails = uProgress.map((p) => ({
+        courseId: p.courseId?._id || p.courseId || null,
         courseName: p.courseId?.name || "Unknown Course",
         currentLevel: p.currentLevel,
         completedLevels: Array.isArray(p.completedLevels) && p.completedLevels.length > 0 ? p.completedLevels : (p.currentLevel ? [p.currentLevel] : []),

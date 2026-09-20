@@ -276,9 +276,9 @@ export default function Modal({ student, onClose, onEdit }) {
   const userCourses = useMemo(() => {
     const courseMap = new Map();
 
-    const addCourseEntry = (courseName, levels) => {
+    const addCourseEntry = (courseName, levels, courseId) => {
       if (!courseName) return;
-      const key = getCourseKey(courseName);
+      const key = courseId ? String(courseId) : getCourseKey(courseName);
       if (courseMap.has(key)) {
         const existing = courseMap.get(key);
         // Retain cleaner course title if existing contains hyphenated duplicate
@@ -294,7 +294,7 @@ export default function Modal({ student, onClose, onEdit }) {
         });
         existing.levels = merged;
       } else {
-        courseMap.set(key, { courseName, levels });
+        courseMap.set(key, { courseId, courseName, levels });
       }
     };
 
@@ -303,7 +303,7 @@ export default function Modal({ student, onClose, onEdit }) {
       student.COURSE_DETAILS.forEach((c) => {
         const item = parseCourseItem(null, c);
         if (item.courseName) {
-          addCourseEntry(item.courseName, item.levels);
+          addCourseEntry(item.courseName, item.levels, c.courseId);
         }
       });
     } else if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
@@ -311,7 +311,7 @@ export default function Modal({ student, onClose, onEdit }) {
       student.COURSES.forEach((cStr) => {
         const item = parseCourseItem(cStr, null);
         if (item.courseName) {
-          addCourseEntry(item.courseName, item.levels);
+          addCourseEntry(item.courseName, item.levels, null);
         }
       });
     }
@@ -510,9 +510,31 @@ export default function Modal({ student, onClose, onEdit }) {
                         <h4 className="modal-course-name" title={c.courseName}>
                           {c.courseName}
                         </h4>
-                        <span className="modal-course-levels-count">
-                          {c.levels.length} {c.levels.length === 1 ? "Level" : "Levels"} Completed
-                        </span>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", gap: "8px", flexWrap: "wrap", marginTop: "2px" }}>
+                          <span className="modal-course-levels-count">
+                            {c.levels.length} {c.levels.length === 1 ? "Level" : "Levels"} Completed
+                          </span>
+                          <a
+                            href={`/courses?search=${encodeURIComponent(c.courseName)}`}
+                            className="modal-course-link-badge"
+                            style={{
+                              fontSize: "11px",
+                              color: "#818cf8",
+                              textDecoration: "none",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                              background: "rgba(99, 102, 241, 0.15)",
+                              border: "1px solid rgba(129, 140, 248, 0.3)",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              fontWeight: "500",
+                              transition: "all 0.2s ease",
+                            }}
+                          >
+                            Open in Courses ↗
+                          </a>
+                        </div>
                       </div>
                     </div>
 

@@ -1,6 +1,6 @@
 // src/pages/Courses.jsx
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { apiFetch, getCachedApi } from "../utils/api";
+import { apiFetch, getCachedApi, invalidateApiCache } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import UnifiedLoader from "../components/UnifiedLoader";
 import BulkImportCoursesModal from "../components/BulkImportCoursesModal";
@@ -800,17 +800,18 @@ export default function Courses({ search: initialSearch = "" }) {
       const matchingRecords = userProgress.filter((p) => {
         const pCourseId = String(p.courseId?._id || p.courseId || "");
         const pCourseName = String(p.courseId?.name || p.courseName || "").toLowerCase().trim();
-        if (pCourseId && pCourseId === cId) return true;
-        if (pCourseName && pCourseName === cName) return true;
-        if (pCourseName && (pCourseName.startsWith(cName + " - ") || pCourseName.startsWith(cName + " level"))) {
-          return true;
+
+        // Exact ID match is definitive
+        if (pCourseId && cId) {
+          return pCourseId === cId;
         }
-        if (cName && (cName.startsWith(pCourseName + " - ") || cName.startsWith(pCourseName + " level"))) {
-          return true;
+
+        // If no ID match or IDs missing, match by exact name or normalized key
+        if (pCourseName && cName) {
+          if (pCourseName === cName) return true;
+          if (getCourseKey(pCourseName) === getCourseKey(cName)) return true;
         }
-        if (pCourseName && cName && getCourseKey(pCourseName) === getCourseKey(cName)) {
-          return true;
-        }
+
         return false;
       });
 
@@ -931,62 +932,46 @@ export default function Courses({ search: initialSearch = "" }) {
     });
   }, [availableParentCourses, selectedCategory, search, sortBy, getCourseProgress]);
 
-  // "My Courses": Enrolled / Active Parent Courses (guaranteed to include every enrolled course from userProgress)
+  // "My Courses": Enrolled / Active Courses directly resolved from userProgress (exact 1-to-1 parity with Member Card)
   const myEnrolledCourses = useMemo(() => {
     const enrolledMap = new Map();
 
-    // 1. Check all availableParentCourses and find any with progress or matching db record
-    availableParentCourses.forEach((course) => {
-      const prog = getCourseProgress(course);
-      const hasDbRecord = (userProgress || []).some((p) => {
-        const pId = String(p.courseId?._id || p.courseId || "");
-        const cId = String(course._id || "");
-        if (pId && cId && pId === cId) return true;
-        const pName = String(p.courseId?.name || p.courseName || "").toLowerCase().trim();
-        const cName = String(course.name || "").toLowerCase().trim();
-        if (pName && cName && (pName === cName || pName.startsWith(cName + " - ") || cName.startsWith(pName + " - "))) return true;
-        if (pName && cName && getCourseKey(pName) === getCourseKey(cName)) return true;
-        return false;
-      });
-
-      if (prog.completedCount > 0 || prog.hasOngoing || hasDbRecord) {
-        const key = getCourseKey(course.name || course._id);
-        enrolledMap.set(key, course);
-      }
-    });
-
-    // 2. Also ensure ANY course from userProgress is included (so nothing enrolled is ever lost!)
     (userProgress || []).forEach((p) => {
       const pCourseObj = typeof p.courseId === "object" && p.courseId !== null ? p.courseId : null;
+      const cId = String(pCourseObj?._id || p.courseId || "");
       const rawName = pCourseObj?.name || p.courseName || "";
-      if (!rawName) return;
-      const key = getCourseKey(rawName);
+      if (!cId && !rawName) return;
 
-      if (!enrolledMap.has(key)) {
-        // Find if any course in the full catalog matches this key or id
-        const catalogMatch = courses.find((c) => {
-          if (pCourseObj?._id && String(c._id) === String(pCourseObj._id)) return true;
-          return getCourseKey(c.name) === key;
-        });
+      const normKey = getCourseKey(rawName);
 
-        if (catalogMatch) {
-          enrolledMap.set(key, catalogMatch);
-        } else {
-          enrolledMap.set(key, {
-            _id: pCourseObj?._id || p._id || `prog-${key}`,
-            name: pCourseObj?.name || p.courseName || rawName,
-            category: pCourseObj?.category || "General",
-            description: pCourseObj?.description || "",
+      // Find matching course from catalog by ID, or fallback to exact name / key
+      const catalogMatch =
+        courses.find((c) => cId && String(c._id) === cId) ||
+        courses.find((c) => rawName && c.name?.trim().toLowerCase() === rawName.trim().toLowerCase()) ||
+        courses.find((c) => normKey && getCourseKey(c.name) === normKey);
+
+      const finalCourse = catalogMatch
+        ? catalogMatch
+        : pCourseObj
+        ? pCourseObj
+        : {
+            _id: cId || `prog-${normKey}`,
+            name: rawName,
+            category: "General",
+            description: "",
             levels: Array.isArray(pCourseObj?.levels) && pCourseObj.levels.length > 0
               ? pCourseObj.levels
               : [{ levelNumber: 0, levelName: p.currentLevel || "Level 0", rewardPoints: 100 }],
-          });
-        }
+          };
+
+      const key = String(finalCourse._id || normKey);
+      if (!enrolledMap.has(key)) {
+        enrolledMap.set(key, finalCourse);
       }
     });
 
     return Array.from(enrolledMap.values());
-  }, [availableParentCourses, courses, getCourseProgress, userProgress]);
+  }, [courses, userProgress]);
 
   // Filtered & Sorted My Courses
   const filteredMyCourses = useMemo(() => {
@@ -1323,6 +1308,9 @@ export default function Courses({ search: initialSearch = "" }) {
       });
 
       if (res?.success) {
+        invalidateApiCache("/courses/progress");
+        invalidateApiCache("/users/dashboard");
+        invalidateApiCache("/users");
         await loadData();
       }
     } catch (err) {
@@ -1361,6 +1349,9 @@ export default function Courses({ search: initialSearch = "" }) {
         }
       }
 
+      invalidateApiCache("/courses/progress");
+      invalidateApiCache("/users/dashboard");
+      invalidateApiCache("/users");
       await loadData();
     } catch (err) {
       console.error("Failed to toggle entire course progress:", err);
