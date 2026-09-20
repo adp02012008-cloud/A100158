@@ -41,9 +41,58 @@ const PAGE_BACKGROUNDS = {
   "my-tasks": "/bg-dashboard.jpg",
 };
 
+const VALID_PAGES = [
+  "dashboard",
+  "leaderboard",
+  "courses",
+  "profile",
+  "manage-users",
+  "assign-tasks",
+  "review-deliverables",
+  "my-tasks",
+  "hackathons",
+  "gallery",
+  "projects",
+  "certificates",
+  "opportunities",
+];
+
+function getPageFromPath(pathname = "/") {
+  const clean = pathname.replace(/^\/+|\/+$/g, "").toLowerCase();
+  if (!clean || clean === "dashboard") return "dashboard";
+  if (VALID_PAGES.includes(clean)) return clean;
+  return "dashboard";
+}
+
+function getPathFromPage(targetPage) {
+  if (!targetPage || targetPage === "dashboard") return "/";
+  return `/${targetPage}`;
+}
+
+const PAGE_TITLES = {
+  dashboard: "Bug Slayers | Team Dashboard",
+  courses: "Courses | Bug Slayers",
+  leaderboard: "Leaderboard | Bug Slayers",
+  profile: "My Profile | Bug Slayers",
+  opportunities: "Opportunities | Bug Slayers",
+  hackathons: "Hackathons | Bug Slayers",
+  projects: "Projects | Bug Slayers",
+  gallery: "Gallery | Bug Slayers",
+  certificates: "Certificates | Bug Slayers",
+  "manage-users": "Manage Users | Bug Slayers Admin",
+  "assign-tasks": "Assign Tasks | Bug Slayers Admin",
+  "review-deliverables": "Review Deliverables | Bug Slayers Admin",
+  "my-tasks": "My Tasks | Bug Slayers",
+};
+
 export default function App() {
   const { auth, isTeamMember } = useAuth();
-  const [page, setPage] = useState("dashboard");
+  const [page, setPage] = useState(() => {
+    if (typeof window !== "undefined") {
+      return getPageFromPath(window.location.pathname);
+    }
+    return "dashboard";
+  });
   const [search, setSearch] = useState("");
 
   // Start the background prefetch pipeline as soon as the user is authenticated
@@ -56,18 +105,51 @@ export default function App() {
   const visiblePage =
     !isTeamMember && TEAM_PAGE_KEYS.includes(page) ? "dashboard" : page;
 
-  const changePage = (nextPage) => {
+  const changePage = (nextPage, replace = false) => {
     const allowedPage =
       !isTeamMember && TEAM_PAGE_KEYS.includes(nextPage) ? "dashboard" : nextPage;
     prefetchPage(allowedPage);
     setSearch("");
     setPage(allowedPage);
+
+    const targetPath = getPathFromPage(allowedPage);
+    if (typeof window !== "undefined" && window.location.pathname !== targetPath) {
+      if (replace) {
+        window.history.replaceState({ page: allowedPage }, "", targetPath);
+      } else {
+        window.history.pushState({ page: allowedPage }, "", targetPath);
+      }
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   };
 
+  // Synchronize browser history on Back / Forward buttons
   useEffect(() => {
+    const handlePopState = () => {
+      const pageFromUrl = getPageFromPath(window.location.pathname);
+      const allowedPage =
+        !isTeamMember && TEAM_PAGE_KEYS.includes(pageFromUrl) ? "dashboard" : pageFromUrl;
+      setSearch("");
+      setPage(allowedPage);
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isTeamMember]);
+
+  // Synchronize initial URL or normalized path & update document title
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    const expectedPath = getPathFromPage(visiblePage);
+    if (currentPath !== expectedPath) {
+      window.history.replaceState({ page: visiblePage }, "", expectedPath);
+    }
+    document.title = PAGE_TITLES[visiblePage] || "Bug Slayers | Team Dashboard";
+
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
