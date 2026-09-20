@@ -1,5 +1,5 @@
-// src/utils/prefetcher.js - High-Performance Speculative Background Preloading Engine
 import { prefetchApi, getCachedApi } from "./api";
+import { isChunkLoadError, recoverFromStaleChunk } from "./chunkRecovery";
 
 // Page component module chunk loaders
 const PAGE_CHUNK_LOADERS = {
@@ -48,8 +48,11 @@ export function preloadPageChunk(pageKey) {
   const loader = PAGE_CHUNK_LOADERS[pageKey];
   if (loader) {
     preloadedChunks.add(pageKey);
-    loader().catch(() => {
+    loader().catch((err) => {
       preloadedChunks.delete(pageKey);
+      if (isChunkLoadError(err)) {
+        recoverFromStaleChunk(`prefetch_${pageKey}`);
+      }
     });
   }
 }

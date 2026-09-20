@@ -3,21 +3,26 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { initChunkRecovery } from "./utils/chunkRecovery.js";
 import "./index.css";
 
-// Clean up any legacy or stale service workers that intercept Firebase auth handler URLs
-if ("serviceWorker" in navigator) {
+// Activate automatic stale chunk recovery immediately
+initChunkRecovery();
+
+// Clean up any lingering service workers or stale workbox caches safely
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
-    for (let registration of registrations) {
-      registration.unregister();
+    for (const registration of registrations) {
+      registration.unregister().catch(() => {});
     }
   }).catch(() => {});
 }
+
 if (typeof window !== "undefined" && "caches" in window) {
   caches.keys().then((names) => {
     names.forEach((name) => {
       if (name.includes("workbox") || name.includes("precache") || name.includes("bug-slayers")) {
-        caches.delete(name);
+        caches.delete(name).catch(() => {});
       }
     });
   }).catch(() => {});

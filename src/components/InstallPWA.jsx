@@ -1,12 +1,29 @@
 import { useState, useEffect } from "react";
 
+const DISMISS_KEY = "bugslayers_pwa_dismissed";
+
 export default function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(DISMISS_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
+    // If running in standalone mode (already installed as PWA), do nothing
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
+    if (isStandalone || isDismissed) {
+      return;
+    }
+
     const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
+      // Store event without preventing default so native banner is allowed and no console warning is triggered
       setDeferredPrompt(e);
     };
 
@@ -15,15 +32,31 @@ export default function InstallPWA() {
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [isDismissed]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
+    try {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice && choice.outcome === "accepted") {
+        setDeferredPrompt(null);
+        try {
+          localStorage.setItem(DISMISS_KEY, "true");
+        } catch {}
+      }
+    } catch {
+      // User cancelled or prompt error
+    } finally {
       setDeferredPrompt(null);
     }
+  };
+
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    try {
+      localStorage.setItem(DISMISS_KEY, "true");
+    } catch {}
   };
 
   if (!deferredPrompt || isDismissed) {
@@ -36,14 +69,14 @@ export default function InstallPWA() {
         <span style={styles.icon}>📱</span>
         <div>
           <strong style={styles.title}>Install Bug Slayers App</strong>
-          <div style={styles.subtitle}>Get faster access & offline support on your mobile device</div>
+          <div style={styles.subtitle}>Get faster access & quick launcher on your device</div>
         </div>
       </div>
       <div style={styles.btnGroup}>
         <button onClick={handleInstallClick} style={styles.installBtn}>
           Install App
         </button>
-        <button onClick={() => setIsDismissed(true)} style={styles.closeBtn}>
+        <button onClick={handleDismiss} style={styles.closeBtn} title="Dismiss">
           ✕
         </button>
       </div>

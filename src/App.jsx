@@ -1,26 +1,27 @@
 // src/App.jsx
-import { lazy, Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import LoginGate from "./components/LoginGate";
 import InstallPWA from "./components/InstallPWA";
 import { useAuth } from "./context/AuthContext";
 import { TEAM_PAGE_KEYS } from "./config/teamSections";
+import { safeLazy } from "./utils/chunkRecovery";
 import "./App.css";
 
-// Lazy-loaded page components for fast initial load & progressive chunking
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Leaderboard = lazy(() => import("./pages/Leaderboard"));
-const TaskAssignmentAdmin = lazy(() => import("./pages/TaskAssignmentAdmin"));
-const MyTasksMember = lazy(() => import("./pages/MyTasksMember"));
-const Hackathons = lazy(() => import("./pages/Hackathons"));
-const Gallery = lazy(() => import("./pages/Gallery"));
-const Projects = lazy(() => import("./pages/Projects"));
-const Certificates = lazy(() => import("./pages/Certificates"));
-const Opportunities = lazy(() => import("./pages/Opportunities"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Courses = lazy(() => import("./pages/Courses"));
-const AdminSubmissionsReview = lazy(() => import("./pages/AdminSubmissionsReview"));
-const UserRosterAdmin = lazy(() => import("./pages/UserRosterAdmin"));
+// Resilient lazy-loaded page components with automatic stale-chunk recovery
+const Dashboard = safeLazy(() => import("./pages/Dashboard"));
+const Leaderboard = safeLazy(() => import("./pages/Leaderboard"));
+const TaskAssignmentAdmin = safeLazy(() => import("./pages/TaskAssignmentAdmin"));
+const MyTasksMember = safeLazy(() => import("./pages/MyTasksMember"));
+const Hackathons = safeLazy(() => import("./pages/Hackathons"));
+const Gallery = safeLazy(() => import("./pages/Gallery"));
+const Projects = safeLazy(() => import("./pages/Projects"));
+const Certificates = safeLazy(() => import("./pages/Certificates"));
+const Opportunities = safeLazy(() => import("./pages/Opportunities"));
+const Profile = safeLazy(() => import("./pages/Profile"));
+const Courses = safeLazy(() => import("./pages/Courses"));
+const AdminSubmissionsReview = safeLazy(() => import("./pages/AdminSubmissionsReview"));
+const UserRosterAdmin = safeLazy(() => import("./pages/UserRosterAdmin"));
 
 import UnifiedLoader from "./components/UnifiedLoader";
 import { initGlobalPrefetchPipeline, prefetchPage } from "./utils/prefetcher";

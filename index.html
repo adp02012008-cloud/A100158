@@ -7,19 +7,49 @@
     <!-- Make sure logo.png is inside /public folder -->
     <link rel="icon" type="image/png" href="/logo.png" />
 
-    <!-- BYPASS & SELF-HEAL FOR FIREBASE AUTH POPUP/HANDLER -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!-- EARLY SELF-HEALING FOR STALE CHUNK & AUTH HANDLER -->
     <script>
-      if (window.location.pathname.startsWith('/__/')) {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            if (regs && regs.length) {
-              Promise.all(regs.map(function(r) { return r.unregister(); })).then(function() {
-                window.location.reload();
-              });
+      (function() {
+        // Intercept Vite preload and MIME type mismatch errors as early as possible
+        window.addEventListener('vite:preloadError', function(e) {
+          e.preventDefault();
+          var last = sessionStorage.getItem('bugslayers_chunk_recovery_ts');
+          var now = Date.now();
+          if (!last || (now - parseInt(last, 10)) > 15000) {
+            sessionStorage.setItem('bugslayers_chunk_recovery_ts', String(now));
+            window.location.reload();
+          }
+        });
+
+        window.addEventListener('error', function(e) {
+          var msg = (e && (e.message || (e.error && e.error.message))) || '';
+          if (typeof msg === 'string' && (msg.indexOf('Expected a JavaScript') !== -1 || msg.indexOf('dynamically imported module') !== -1)) {
+            var last = sessionStorage.getItem('bugslayers_chunk_recovery_ts');
+            var now = Date.now();
+            if (!last || (now - parseInt(last, 10)) > 15000) {
+              sessionStorage.setItem('bugslayers_chunk_recovery_ts', String(now));
+              window.location.reload();
             }
-          });
+          }
+        });
+
+        // Firebase Auth handler bypass
+        if (window.location.pathname.startsWith('/__/')) {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              if (regs && regs.length) {
+                Promise.all(regs.map(function(r) { return r.unregister(); })).then(function() {
+                  window.location.reload();
+                });
+              }
+            });
+          }
         }
-      }
+      })();
     </script>
 
     <!-- MOBILE RESPONSIVE & PWA -->

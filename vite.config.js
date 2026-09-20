@@ -6,18 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      selfDestroying: true,
       registerType: 'autoUpdate',
       includeAssets: ['logo.png', 'favicon.svg', 'icons.svg'],
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
-        navigateFallbackDenylist: [/^\/__/]
-      },
-      devOptions: {
-        enabled: false
-      },
       manifest: {
         name: 'Bug Slayers Dashboard',
         short_name: 'Bug Slayers',
