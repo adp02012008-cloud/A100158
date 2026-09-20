@@ -961,13 +961,13 @@ export default function Courses({ search: initialSearch = "" }) {
 
         if (catalogMatch) {
           enrolledMap.set(key, catalogMatch);
-        } else if (pCourseObj) {
+        } else {
           enrolledMap.set(key, {
-            _id: pCourseObj._id || `prog-${key}`,
-            name: pCourseObj.name,
-            category: pCourseObj.category || "General",
-            description: pCourseObj.description || "",
-            levels: Array.isArray(pCourseObj.levels) && pCourseObj.levels.length > 0
+            _id: pCourseObj?._id || p._id || `prog-${key}`,
+            name: pCourseObj?.name || p.courseName || rawName,
+            category: pCourseObj?.category || "General",
+            description: pCourseObj?.description || "",
+            levels: Array.isArray(pCourseObj?.levels) && pCourseObj.levels.length > 0
               ? pCourseObj.levels
               : [{ levelNumber: 0, levelName: p.currentLevel || "Level 0", rewardPoints: 100 }],
           });

@@ -128,6 +128,30 @@ function parseCourseItem(rawCourse, rawDetails) {
     }
   }
 
+  // Deduplicate repeated course name portions
+  if (courseName && courseName.includes(" - ")) {
+    const subParts = courseName.split(" - ").map((p) => p.trim());
+    if (subParts.length >= 2) {
+      const half = Math.floor(subParts.length / 2);
+      if (
+        subParts.length % 2 === 0 &&
+        subParts.slice(0, half).join(" - ").toLowerCase() === subParts.slice(half).join(" - ").toLowerCase()
+      ) {
+        courseName = subParts.slice(0, half).join(" - ");
+      } else {
+        const uniqueSub = [];
+        subParts.forEach((p) => {
+          if (!uniqueSub.some((u) => getCourseKey(u) === getCourseKey(p))) {
+            uniqueSub.push(p);
+          }
+        });
+        if (uniqueSub.length > 0) {
+          courseName = uniqueSub.join(" - ");
+        }
+      }
+    }
+  }
+
   const expanded = [];
   for (const item of rawLevelsList) {
     if (typeof item === "string" && item.includes(",")) {
@@ -217,7 +241,7 @@ export default function Modal({ student, onClose }) {
       }
     };
 
-    // 1. Process COURSE_DETAILS first (detailed objects)
+    // 1. Process COURSE_DETAILS first (detailed objects directly from MongoDB)
     if (Array.isArray(student.COURSE_DETAILS) && student.COURSE_DETAILS.length > 0) {
       student.COURSE_DETAILS.forEach((c) => {
         const item = parseCourseItem(null, c);
@@ -225,10 +249,8 @@ export default function Modal({ student, onClose }) {
           addCourseEntry(item.courseName, item.levels);
         }
       });
-    }
-
-    // 2. Process COURSES array (strings or objects)
-    if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
+    } else if (Array.isArray(student.COURSES) && student.COURSES.length > 0) {
+      // 2. Fallback to COURSES array ONLY if COURSE_DETAILS is not provided
       student.COURSES.forEach((cStr) => {
         const item = parseCourseItem(cStr, null);
         if (item.courseName) {
@@ -238,7 +260,7 @@ export default function Modal({ student, onClose }) {
     }
 
     return Array.from(courseMap.values());
-  }, [student.COURSE_DETAILS, student.COURSES]);
+  }, [student?.COURSE_DETAILS, student?.COURSES]);
 
   const skills = [
     student.Primary1, student.Primary2,
