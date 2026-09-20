@@ -41,7 +41,7 @@ body {
   margin: 0;
   font-family: var(--font-body);
   color: var(--color-text-body);
-  background-color: #080414;
+  background-color: #070312;
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
@@ -49,7 +49,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Option 3: Living Ambient Aurora Mesh (Smooth GPU Float) ── */
+/* ── Option 4 Layer 1: Living Ambient Aurora Mesh (Smooth GPU Float) ── */
 body::before {
   content: "";
   position: fixed;
@@ -58,15 +58,26 @@ body::before {
   width: 160%;
   height: 160%;
   background-image: 
-    radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.28) 0%, transparent 45%),
-    radial-gradient(circle at 75% 30%, rgba(56, 189, 248, 0.22) 0%, transparent 42%),
-    radial-gradient(circle at 45% 70%, rgba(168, 85, 247, 0.20) 0%, transparent 48%),
-    radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.24) 0%, transparent 40%);
-  filter: blur(50px);
+    radial-gradient(circle at 20% 25%, rgba(139, 92, 246, 0.32) 0%, transparent 45%),
+    radial-gradient(circle at 80% 25%, rgba(56, 189, 248, 0.24) 0%, transparent 42%),
+    radial-gradient(circle at 45% 75%, rgba(168, 85, 247, 0.22) 0%, transparent 48%),
+    radial-gradient(circle at 85% 80%, rgba(99, 102, 241, 0.25) 0%, transparent 40%);
+  filter: blur(55px);
+  z-index: -2;
+  pointer-events: none;
+  animation: ambientAuroraFloat 24s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* ── Option 4 Layer 2: Precision Cyber Dot Matrix Overlay ── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(167, 139, 250, 0.14) 1.5px, transparent 1.5px);
+  background-size: 26px 26px;
   z-index: -1;
   pointer-events: none;
-  animation: ambientAuroraFloat 22s ease-in-out infinite alternate;
-  will-change: transform;
 }
 
 @keyframes ambientAuroraFloat {
@@ -74,10 +85,10 @@ body::before {
     transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
   }
   50% {
-    transform: translate3d(-3%, 4%, 0) scale(1.08) rotate(3deg);
+    transform: translate3d(-3%, 3%, 0) scale(1.08) rotate(3deg);
   }
   100% {
-    transform: translate3d(4%, -3%, 0) scale(0.96) rotate(-3deg);
+    transform: translate3d(3%, -3%, 0) scale(0.96) rotate(-3deg);
   }
 }
 
