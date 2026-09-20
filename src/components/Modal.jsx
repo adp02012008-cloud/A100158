@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import UserAvatar from "./UserAvatar";
 import "./Modal.css";
 
@@ -270,7 +271,7 @@ export default function Modal({ student, onClose }) {
   const cleanCluster = rawCluster.replace(/\s*cluster\s*$/i, "").trim();
   const enrolmentId = student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"] || student.enrolmentNumber || student.registerNumber || "";
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
         {/* Floating Top-Right Close Button */}
@@ -505,6 +506,7 @@ export default function Modal({ student, onClose }) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

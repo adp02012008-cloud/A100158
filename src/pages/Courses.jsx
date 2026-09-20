@@ -667,6 +667,13 @@ function isLevelMatch(rawCompletedName, rawLevelName, lNum = "", cName = "") {
   return false;
 }
 
+function getCourseKey(name = "") {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/gurugulam|assessment|modelling/gi, "")
+    .replace(/[^a-z0-9]/gi, "");
+}
+
 export default function Courses({ search: initialSearch = "" }) {
   const { auth, currentUser } = useAuth();
 
@@ -782,10 +789,16 @@ export default function Courses({ search: initialSearch = "" }) {
       // Find matching user progress records
       const matchingRecords = userProgress.filter((p) => {
         const pCourseId = String(p.courseId?._id || p.courseId || "");
-        const pCourseName = (p.courseId?.name || "").toLowerCase().trim();
+        const pCourseName = String(p.courseId?.name || p.courseName || "").toLowerCase().trim();
         if (pCourseId && pCourseId === cId) return true;
         if (pCourseName && pCourseName === cName) return true;
         if (pCourseName && (pCourseName.startsWith(cName + " - ") || pCourseName.startsWith(cName + " level"))) {
+          return true;
+        }
+        if (cName && (cName.startsWith(pCourseName + " - ") || cName.startsWith(pCourseName + " level"))) {
+          return true;
+        }
+        if (pCourseName && cName && getCourseKey(pCourseName) === getCourseKey(cName)) {
           return true;
         }
         return false;
@@ -908,20 +921,62 @@ export default function Courses({ search: initialSearch = "" }) {
     });
   }, [availableParentCourses, selectedCategory, search, sortBy, getCourseProgress]);
 
-  // "My Courses": Enrolled / Active Parent Courses
+  // "My Courses": Enrolled / Active Parent Courses (guaranteed to include every enrolled course from userProgress)
   const myEnrolledCourses = useMemo(() => {
-    return availableParentCourses.filter((course) => {
+    const enrolledMap = new Map();
+
+    // 1. Check all availableParentCourses and find any with progress or matching db record
+    availableParentCourses.forEach((course) => {
       const prog = getCourseProgress(course);
-      const hasDbRecord = (userProgress || []).some(
-        (p) =>
-          p.courseId?._id === course._id ||
-          p.courseId === course._id ||
-          (p.courseId?.name &&
-            p.courseId.name.toLowerCase().trim() === course.name.toLowerCase().trim())
-      );
-      return prog.completedCount > 0 || prog.hasOngoing || hasDbRecord;
+      const hasDbRecord = (userProgress || []).some((p) => {
+        const pId = String(p.courseId?._id || p.courseId || "");
+        const cId = String(course._id || "");
+        if (pId && cId && pId === cId) return true;
+        const pName = String(p.courseId?.name || p.courseName || "").toLowerCase().trim();
+        const cName = String(course.name || "").toLowerCase().trim();
+        if (pName && cName && (pName === cName || pName.startsWith(cName + " - ") || cName.startsWith(pName + " - "))) return true;
+        if (pName && cName && getCourseKey(pName) === getCourseKey(cName)) return true;
+        return false;
+      });
+
+      if (prog.completedCount > 0 || prog.hasOngoing || hasDbRecord) {
+        const key = getCourseKey(course.name || course._id);
+        enrolledMap.set(key, course);
+      }
     });
-  }, [availableParentCourses, getCourseProgress, userProgress]);
+
+    // 2. Also ensure ANY course from userProgress is included (so nothing enrolled is ever lost!)
+    (userProgress || []).forEach((p) => {
+      const pCourseObj = typeof p.courseId === "object" && p.courseId !== null ? p.courseId : null;
+      const rawName = pCourseObj?.name || p.courseName || "";
+      if (!rawName) return;
+      const key = getCourseKey(rawName);
+
+      if (!enrolledMap.has(key)) {
+        // Find if any course in the full catalog matches this key or id
+        const catalogMatch = courses.find((c) => {
+          if (pCourseObj?._id && String(c._id) === String(pCourseObj._id)) return true;
+          return getCourseKey(c.name) === key;
+        });
+
+        if (catalogMatch) {
+          enrolledMap.set(key, catalogMatch);
+        } else if (pCourseObj) {
+          enrolledMap.set(key, {
+            _id: pCourseObj._id || `prog-${key}`,
+            name: pCourseObj.name,
+            category: pCourseObj.category || "General",
+            description: pCourseObj.description || "",
+            levels: Array.isArray(pCourseObj.levels) && pCourseObj.levels.length > 0
+              ? pCourseObj.levels
+              : [{ levelNumber: 0, levelName: p.currentLevel || "Level 0", rewardPoints: 100 }],
+          });
+        }
+      }
+    });
+
+    return Array.from(enrolledMap.values());
+  }, [availableParentCourses, courses, getCourseProgress, userProgress]);
 
   // Filtered & Sorted My Courses
   const filteredMyCourses = useMemo(() => {
