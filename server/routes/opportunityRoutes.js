@@ -15,9 +15,9 @@ const router = express.Router();
 router.use(verifyAuthToken);
 
 router.get("/", getOpportunities);
-router.post("/", requireAdmin, createOpportunity);
-router.put("/:id", requireAdmin, updateOpportunity);
-router.delete("/:id", requireAdmin, deleteOpportunity);
+router.post("/", createOpportunity);
+router.put("/:id", updateOpportunity);
+router.delete("/:id", deleteOpportunity);
 
 // Social Collaboration: Interest RSVP & Thoughts Discussion
 router.post("/:id/interest", toggleInterest);

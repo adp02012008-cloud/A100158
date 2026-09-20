@@ -854,9 +854,10 @@ function createRecordId(prefix) {
 }
 
 function buildInitialForm(config, auth) {
+  const enrol = auth?.ownedEnrolment || auth?.enrolmentNumber || auth?.user?.enrolmentNumber || "";
   return config.fields.reduce((result, field) => {
     if (field.prefill === "ownedEnrolment") {
-      result[field.name] = auth.ownedEnrolment || "";
+      result[field.name] = enrol;
     } else {
       result[field.name] = field.defaultValue || "";
     }
@@ -992,16 +993,40 @@ export default function TeamCollectionPage({ config, search = "" }) {
 
       const userEmail = normalizeEmail(auth.email || auth.user?.email || "");
       const userName = (auth.name || auth.user?.name || "").toLowerCase().trim();
-      const createdByEmail = normalizeEmail(getRecordValue(record, "CREATED_BY"));
+      const userUserId = String(auth._id || auth.userId || auth.user?._id || auth.user?.userId || "").toLowerCase().trim();
+      const userEnrol = String(auth.enrolmentNumber || auth.ownedEnrolment || auth.user?.enrolmentNumber || "").toLowerCase().trim();
 
-      // 1. Check if user is creator
-      if (createdByEmail && createdByEmail === userEmail) return true;
+      const createdByVal = getRecordValue(record, "CREATED_BY") || record.createdBy;
+      const createdByEmail = normalizeEmail(typeof createdByVal === "object" ? (createdByVal?.email || "") : createdByVal);
+      const createdById = String(typeof createdByVal === "object" ? (createdByVal?._id || createdByVal?.userId || "") : createdByVal).toLowerCase().trim();
 
-      // 2. Check if user is in MEMBERS list (by name or email)
-      const membersStr = String(getRecordValue(record, "MEMBERS") || "").toLowerCase();
+      const uploadedByVal = getRecordValue(record, "UPLOADED_BY") || record.uploadedBy;
+      const uploadedByEmail = normalizeEmail(typeof uploadedByVal === "object" ? (uploadedByVal?.email || "") : uploadedByVal);
+      const uploadedById = String(typeof uploadedByVal === "object" ? (uploadedByVal?._id || uploadedByVal?.userId || "") : uploadedByVal).toLowerCase().trim();
+
+      const recordUserId = String(record.userId?._id || record.userId || record.user?._id || record.user || "").toLowerCase().trim();
+      const recordEmail = normalizeEmail(record.email || record.userId?.email || record.user?.email || "");
+      const recordEnrol = String(record.enrolmentNumber || record.ENROLMENT_NUMBER || getRecordValue(record, "ENROLMENT_NUMBER") || "").toLowerCase().trim();
+
+      // 1. Check if user is creator / uploader by email
+      if (userEmail && (createdByEmail === userEmail || uploadedByEmail === userEmail || recordEmail === userEmail)) return true;
+
+      // 2. Check if user is creator / uploader by ID
+      if (userUserId && (createdById === userUserId || uploadedById === userUserId || recordUserId === userUserId)) return true;
+
+      // 3. Check if certificate enrolment number matches
+      if (userEnrol && recordEnrol && userEnrol === recordEnrol) return true;
+
+      // 4. Check if user is in MEMBERS list (by name or email or enrolment)
+      const membersVal = getRecordValue(record, "MEMBERS") || record.memberNames || record.members;
+      const membersStr = Array.isArray(membersVal)
+        ? membersVal.map((m) => (typeof m === "object" ? (m.name || m.email || JSON.stringify(m)) : String(m))).join(" ").toLowerCase()
+        : String(membersVal || "").toLowerCase();
+
       if (membersStr) {
         if (userName && membersStr.includes(userName)) return true;
         if (userEmail && membersStr.includes(userEmail)) return true;
+        if (userEnrol && membersStr.includes(userEnrol)) return true;
       }
 
       return false;
@@ -1111,15 +1136,16 @@ export default function TeamCollectionPage({ config, search = "" }) {
 
         setNotice("Record updated successfully.");
       } else {
+        const currentEmail = auth?.email || auth?.user?.email || "";
         const newRecord = {
           [config.idField]: createRecordId(config.idPrefix),
           ...submittedFields,
-          CREATED_BY: auth.email,
+          CREATED_BY: currentEmail,
           CREATED_AT: new Date().toLocaleString(),
         };
 
         if (config.sheetName === "Gallery") {
-          newRecord.UPLOADED_BY = auth.email;
+          newRecord.UPLOADED_BY = currentEmail;
         }
 
         await addTeamRecord(config.sheetName, newRecord);

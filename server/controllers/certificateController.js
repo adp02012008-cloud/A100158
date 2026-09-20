@@ -5,8 +5,7 @@ import { isAdmin } from "../services/authorizationService.js";
 
 export async function getCertificates(req, res) {
   try {
-    const filter = isAdmin(req.user) ? {} : { userId: req.user._id };
-    const certificates = await Certificate.find(filter).sort({ date: -1 }).populate("userId createdBy").exec();
+    const certificates = await Certificate.find({}).sort({ date: -1 }).populate("userId createdBy").exec();
     return res.json({ success: true, certificates });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -75,7 +74,11 @@ export async function updateCertificate(req, res) {
     }
     if (!certificate) return res.status(404).json({ success: false, message: "Certificate not found" });
 
-    if (!isAdmin(req.user) && String(certificate.userId) !== String(req.user._id)) {
+    const isOwner = (certificate.userId && String(certificate.userId._id || certificate.userId) === String(req.user._id)) ||
+                    (certificate.createdBy && String(certificate.createdBy._id || certificate.createdBy) === String(req.user._id)) ||
+                    (certificate.enrolmentNumber && req.user.enrolmentNumber && certificate.enrolmentNumber.trim().toUpperCase() === req.user.enrolmentNumber.trim().toUpperCase()) ||
+                    (certificate.email && req.user.email && certificate.email.trim().toLowerCase() === req.user.email.trim().toLowerCase());
+    if (!isAdmin(req.user) && !isOwner) {
       return res.status(403).json({ success: false, message: "Access denied. Cannot update another user's certificate." });
     }
 
@@ -89,16 +92,21 @@ export async function updateCertificate(req, res) {
     if (b.fileUrl || b.FILE_URL) updateData.fileUrl = b.fileUrl || b.FILE_URL;
     if (b.status || b.STATUS) updateData.status = b.status || b.STATUS;
 
-    Object.assign(certificate, updateData);
-    await certificate.save();
+    let updatedCert = null;
+    if (id && String(id).match(/^[0-9a-fA-F]{24}$/)) {
+      updatedCert = await Certificate.findByIdAndUpdate(id, updateData, { new: true });
+    }
+    if (!updatedCert) {
+      updatedCert = await Certificate.findOneAndUpdate({ certificateId: id }, updateData, { new: true });
+    }
 
     // If updated by admin for a student, send notification
     if (isAdmin(req.user) && String(certificate.userId) !== String(req.user._id)) {
       try {
         const recipientUser = await User.findById(certificate.userId).select("email name").lean();
-        const certTitle = certificate.title || "Certificate";
-        const certIssuer = certificate.issuer || "Organization";
-        const certCode = certificate.certificateId;
+        const certTitle = updatedCert.title || "Certificate";
+        const certIssuer = updatedCert.issuer || "Organization";
+        const certCode = updatedCert.certificateId;
 
         await Notification.findOneAndUpdate(
           { eventKey: `NTF-CERT-UPD-${certCode}-${certificate.userId}` },
@@ -122,7 +130,7 @@ export async function updateCertificate(req, res) {
       }
     }
 
-    return res.json({ success: true, certificate });
+    return res.json({ success: true, certificate: updatedCert });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -140,8 +148,12 @@ export async function deleteCertificate(req, res) {
     }
     if (!certificate) return res.status(404).json({ success: false, message: "Certificate not found" });
 
-    if (!isAdmin(req.user) && String(certificate.userId) !== String(req.user._id)) {
-      return res.status(403).json({ success: false, message: "Access denied." });
+    const isOwner = (certificate.userId && String(certificate.userId._id || certificate.userId) === String(req.user._id)) ||
+                    (certificate.createdBy && String(certificate.createdBy._id || certificate.createdBy) === String(req.user._id)) ||
+                    (certificate.enrolmentNumber && req.user.enrolmentNumber && certificate.enrolmentNumber.trim().toUpperCase() === req.user.enrolmentNumber.trim().toUpperCase()) ||
+                    (certificate.email && req.user.email && certificate.email.trim().toLowerCase() === req.user.email.trim().toLowerCase());
+    if (!isAdmin(req.user) && !isOwner) {
+      return res.status(403).json({ success: false, message: "Access denied. Cannot delete another user's certificate." });
     }
 
     await Certificate.deleteOne({ _id: certificate._id });

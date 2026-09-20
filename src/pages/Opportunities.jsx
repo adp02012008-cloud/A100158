@@ -81,6 +81,19 @@ export default function Opportunities({ search: navbarSearch = "" }) {
   const userEmail = currentUser?.email || auth?.email || "";
   const userName = currentUser?.name || currentUser?.displayName || auth?.displayName || userEmail.split("@")[0] || "Member";
 
+  const canManageOpp = (opp) => {
+    if (isAdmin) return true;
+    if (!opp) return false;
+    const oppCreatorId = opp.createdBy?._id || (typeof opp.createdBy === "object" ? opp.createdBy?._id : opp.createdBy);
+    const oppCreatorEmail = (opp.createdBy?.email || (typeof opp.createdBy === "string" ? opp.createdBy : "")).toLowerCase().trim();
+    const myId = currentUser?._id || auth?._id || auth?.userId;
+    const myEmail = (userEmail || "").toLowerCase().trim();
+    return (
+      (myId && oppCreatorId && String(oppCreatorId) === String(myId)) ||
+      (myEmail && oppCreatorEmail && oppCreatorEmail === myEmail)
+    );
+  };
+
   // Load Opportunities from API
   const loadOpportunities = async () => {
     if (!getCachedApi("/opportunities")) {
@@ -702,21 +715,23 @@ export default function Opportunities({ search: navbarSearch = "" }) {
                   </div>
 
                   <div className="opp-card-actions-menu" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      className="opp-icon-btn"
-                      title="Edit Opportunity"
-                      onClick={() => handleOpenEdit(opp)}
-                    >
-                      ✏️
-                    </button>
-                    {(isAdmin || opp.createdBy === userEmail) && (
-                      <button
-                        className="opp-icon-btn danger"
-                        title="Delete Opportunity"
-                        onClick={(e) => handleDeleteOpportunity(opp, e)}
-                      >
-                        🗑️
-                      </button>
+                    {canManageOpp(opp) && (
+                      <>
+                        <button
+                          className="opp-icon-btn"
+                          title="Edit Opportunity"
+                          onClick={() => handleOpenEdit(opp)}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="opp-icon-btn danger"
+                          title="Delete Opportunity"
+                          onClick={(e) => handleDeleteOpportunity(opp, e)}
+                        >
+                          🗑️
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

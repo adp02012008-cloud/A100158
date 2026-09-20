@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyAuthToken, requireAdmin } from "../middleware/authMiddleware.js";
+import { verifyAuthToken } from "../middleware/authMiddleware.js";
 import { getHackathons, createHackathon, updateHackathon, deleteHackathon } from "../controllers/hackathonController.js";
 
 const router = express.Router();
@@ -7,8 +7,8 @@ const router = express.Router();
 router.use(verifyAuthToken);
 
 router.get("/", getHackathons);
-router.post("/", requireAdmin, createHackathon);
-router.put("/:id", requireAdmin, updateHackathon);
-router.delete("/:id", requireAdmin, deleteHackathon);
+router.post("/", createHackathon);
+router.put("/:id", updateHackathon);
+router.delete("/:id", deleteHackathon);
 
 export default router;

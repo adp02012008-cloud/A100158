@@ -98,6 +98,18 @@ export async function updateOpportunity(req, res) {
     const opportunity = await Opportunity.findOne(query);
     if (!opportunity) return res.status(404).json({ success: false, message: "Opportunity not found" });
 
+    // Permissions: Admin can edit any; member can edit their own
+    if (req.user?.role !== "ADMIN") {
+      const isCreator = opportunity.createdBy && (
+        String(opportunity.createdBy?._id || opportunity.createdBy) === String(req.user._id) ||
+        (opportunity.createdBy?.email && String(opportunity.createdBy.email).toLowerCase() === String(req.user.email).toLowerCase()) ||
+        (typeof opportunity.createdBy === "string" && opportunity.createdBy.toLowerCase() === String(req.user.email).toLowerCase())
+      );
+      if (!isCreator) {
+        return res.status(403).json({ success: false, message: "Access denied. You can only update opportunities you created." });
+      }
+    }
+
     const b = req.body || {};
     if (b.title !== undefined || b.TITLE !== undefined) opportunity.title = b.title || b.TITLE || "";
     if (b.type !== undefined || b.TYPE !== undefined) opportunity.type = b.type || b.TYPE || "Hackathon";
@@ -138,6 +150,18 @@ export async function deleteOpportunity(req, res) {
     const query = resolveQuery(id);
     const opportunity = await Opportunity.findOne(query);
     if (!opportunity) return res.status(404).json({ success: false, message: "Opportunity not found" });
+
+    // Permissions: Admin can delete any; member can delete their own
+    if (req.user?.role !== "ADMIN") {
+      const isCreator = opportunity.createdBy && (
+        String(opportunity.createdBy?._id || opportunity.createdBy) === String(req.user._id) ||
+        (opportunity.createdBy?.email && String(opportunity.createdBy.email).toLowerCase() === String(req.user.email).toLowerCase()) ||
+        (typeof opportunity.createdBy === "string" && opportunity.createdBy.toLowerCase() === String(req.user.email).toLowerCase())
+      );
+      if (!isCreator) {
+        return res.status(403).json({ success: false, message: "Access denied. You can only delete opportunities you created." });
+      }
+    }
 
     await Opportunity.deleteOne({ _id: opportunity._id });
     return res.json({ success: true, message: "Opportunity deleted" });

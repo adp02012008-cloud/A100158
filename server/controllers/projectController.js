@@ -46,23 +46,42 @@ export async function createProject(req, res) {
 export async function updateProject(req, res) {
   try {
     const { id } = req.params;
-    const b = req.body || {};
-    const updateData = { ...b };
-    if (b.title || b.TITLE || b.PROJECT) updateData.title = b.title || b.TITLE || b.PROJECT;
-    if (b.category || b.CATEGORY) updateData.category = b.category || b.CATEGORY;
-    if (b.techStack || b.TECH_STACK) updateData.techStack = b.techStack || b.TECH_STACK;
-    if (b.description || b.DESCRIPTION) updateData.description = b.description || b.DESCRIPTION;
-    if (b.status || b.STATUS) updateData.status = b.status || b.STATUS;
-    if (b.memberNames || b.MEMBERS) updateData.memberNames = b.memberNames || b.MEMBERS;
-
     let project;
     if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
-      project = await Project.findByIdAndUpdate(id, updateData, { new: true });
+      project = await Project.findById(id);
     }
     if (!project) {
-      project = await Project.findOneAndUpdate({ projectId: id }, updateData, { new: true });
+      project = await Project.findOne({ projectId: id });
     }
     if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+
+    // Permissions: Admin can edit any; member can edit their own project
+    if (req.user?.role !== "ADMIN") {
+      const isCreator = project.createdBy && (
+        String(project.createdBy?._id || project.createdBy) === String(req.user._id) ||
+        (project.createdBy?.email && String(project.createdBy.email).toLowerCase() === String(req.user.email).toLowerCase()) ||
+        (typeof project.createdBy === "string" && project.createdBy.toLowerCase() === String(req.user.email).toLowerCase())
+      );
+      const mStr = (project.memberNames || "").toLowerCase();
+      const isMember = (req.user.name && mStr.includes(req.user.name.toLowerCase())) ||
+                       (req.user.email && mStr.includes(req.user.email.toLowerCase()));
+      if (!isCreator && !isMember) {
+        return res.status(403).json({ success: false, message: "Access denied. You can only update your own projects." });
+      }
+    }
+
+    const b = req.body || {};
+    if (b.title || b.TITLE || b.PROJECT) project.title = b.title || b.TITLE || b.PROJECT;
+    if (b.category || b.CATEGORY) project.category = b.category || b.CATEGORY;
+    if (b.techStack || b.TECH_STACK) project.techStack = b.techStack || b.TECH_STACK;
+    if (b.description || b.DESCRIPTION) project.description = b.description || b.DESCRIPTION;
+    if (b.status || b.STATUS) project.status = b.status || b.STATUS;
+    if (b.memberNames || b.MEMBERS) project.memberNames = b.memberNames || b.MEMBERS;
+    if (b.github || b.GITHUB !== undefined) project.github = b.github || b.GITHUB;
+    if (b.demo || b.DEMO !== undefined) project.demo = b.demo || b.DEMO;
+    if (b.image || b.IMAGE || b.COVER_IMAGE !== undefined) project.image = b.image || b.IMAGE || b.COVER_IMAGE;
+
+    await project.save();
     return res.json({ success: true, project });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
@@ -74,12 +93,29 @@ export async function deleteProject(req, res) {
     const { id } = req.params;
     let project;
     if (id && id.match(/^[0-9a-fA-F]{24}$/)) {
-      project = await Project.findByIdAndDelete(id);
+      project = await Project.findById(id);
     }
     if (!project) {
-      project = await Project.findOneAndDelete({ projectId: id });
+      project = await Project.findOne({ projectId: id });
     }
     if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+
+    // Permissions: Admin can delete any; member can delete their own project
+    if (req.user?.role !== "ADMIN") {
+      const isCreator = project.createdBy && (
+        String(project.createdBy?._id || project.createdBy) === String(req.user._id) ||
+        (project.createdBy?.email && String(project.createdBy.email).toLowerCase() === String(req.user.email).toLowerCase()) ||
+        (typeof project.createdBy === "string" && project.createdBy.toLowerCase() === String(req.user.email).toLowerCase())
+      );
+      const mStr = (project.memberNames || "").toLowerCase();
+      const isMember = (req.user.name && mStr.includes(req.user.name.toLowerCase())) ||
+                       (req.user.email && mStr.includes(req.user.email.toLowerCase()));
+      if (!isCreator && !isMember) {
+        return res.status(403).json({ success: false, message: "Access denied. You can only delete your own projects." });
+      }
+    }
+
+    await Project.deleteOne({ _id: project._id });
     return res.json({ success: true, message: "Project deleted" });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
