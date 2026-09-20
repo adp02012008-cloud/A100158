@@ -50,8 +50,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Dynamic Thematic Page Background System ─────────────── */
-.dynamic-page-bg-wrapper {
+/* ── Dynamic Thematic Page Background System (Pure Theme Color — Zero Images) ── */
+.dynamic-theme-bg {
   position: fixed;
   inset: 0;
   width: 100vw;
@@ -59,57 +59,131 @@ body {
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  background-color: #080412;
+  transition: background-color 0.4s ease;
 }
 
-.dynamic-page-bg-img,
-.dynamic-page-bg-image {
+.dynamic-theme-glow-top {
   position: absolute;
-  top: -3%;
-  left: -3%;
-  width: 106%;
-  height: 106%;
-  object-fit: cover;
-  object-position: center center;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  will-change: transform, opacity;
-  animation: bgImageFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1), bgCinematicMotion 45s 0.8s ease-in-out infinite alternate;
-}
-
-/* Smooth fade-in for page transitions */
-@keyframes bgImageFadeIn {
-  from {
-    opacity: 0.2;
-    transform: scale(1.04);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Subtle, cinematic ambient pan (Ken Burns) */
-@keyframes bgCinematicMotion {
-  0% {
-    transform: scale(1) translate3d(0, 0, 0);
-  }
-  50% {
-    transform: scale(1.05) translate3d(-1%, 0.8%, 0);
-  }
-  100% {
-    transform: scale(1.02) translate3d(1%, -0.8%, 0);
-  }
-}
-
-/* High-Contrast Luxury Dark Vignette Overlay */
-.dynamic-page-bg-overlay {
-  position: absolute;
-  inset: 0;
-  background: 
-    linear-gradient(180deg, rgba(8, 4, 18, 0.25) 0%, rgba(10, 6, 22, 0.38) 45%, rgba(8, 4, 18, 0.65) 100%),
-    radial-gradient(ellipse at 85% 20%, rgba(139, 92, 246, 0.16) 0%, transparent 60%);
+  top: -15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120vw;
+  height: 70vh;
+  border-radius: 50%;
   pointer-events: none;
+  transition: background 0.4s ease;
+}
+
+.dynamic-theme-glow-bottom {
+  position: absolute;
+  bottom: -20vh;
+  right: -10vw;
+  width: 80vw;
+  height: 60vh;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: background 0.4s ease;
+}
+
+/* Page-specific Theme Color Palettes (Applied smoothly as per active section) */
+
+/* 1. Dashboard Theme: Deep Luxury Obsidian & Indigo Night */
+.dynamic-theme-bg.theme-dashboard {
+  background-color: #080412;
+}
+.dynamic-theme-bg.theme-dashboard .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.24) 0%, rgba(139, 92, 246, 0.12) 40%, transparent 70%);
+}
+.dynamic-theme-bg.theme-dashboard .dynamic-theme-glow-bottom {
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
+}
+
+/* 2. Courses Theme: Midnight Sapphire & Academic Blue */
+.dynamic-theme-bg.theme-courses {
+  background-color: #060818;
+}
+.dynamic-theme-bg.theme-courses .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.25) 0%, rgba(99, 102, 241, 0.14) 42%, transparent 70%);
+}
+.dynamic-theme-bg.theme-courses .dynamic-theme-glow-bottom {
+  background: radial-gradient(circle at center, rgba(14, 165, 233, 0.12) 0%, transparent 60%);
+}
+
+/* 3. Leaderboard Theme: Prestige Royal Gold & Amethyst */
+.dynamic-theme-bg.theme-leaderboard {
+  background-color: #0a0614;
+}
+.dynamic-theme-bg.theme-leaderboard .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.18) 0%, rgba(168, 85, 247, 0.14) 40%, transparent 70%);
+}
+.dynamic-theme-bg.theme-leaderboard .dynamic-theme-glow-bottom {
+  background: radial-gradient(circle at center, rgba(234, 179, 8, 0.09) 0%, transparent 60%);
+}
+
+/* 4. Opportunities Theme: Emerald & Cyber Cyan */
+.dynamic-theme-bg.theme-opportunities,
+.dynamic-theme-bg.theme-certificates {
+  background-color: #050b16;
+}
+.dynamic-theme-bg.theme-opportunities .dynamic-theme-glow-top,
+.dynamic-theme-bg.theme-certificates .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.20) 0%, rgba(6, 182, 212, 0.14) 42%, transparent 70%);
+}
+.dynamic-theme-bg.theme-opportunities .dynamic-theme-glow-bottom,
+.dynamic-theme-bg.theme-certificates .dynamic-theme-glow-bottom {
+  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.08) 0%, transparent 60%);
+}
+
+/* 5. Hackathons Theme: Cosmic Crimson & Fuchsia */
+.dynamic-theme-bg.theme-hackathons {
+  background-color: #0d0618;
+}
+.dynamic-theme-bg.theme-hackathons .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(236, 72, 153, 0.20) 0%, rgba(168, 85, 247, 0.15) 42%, transparent 70%);
+}
+.dynamic-theme-bg.theme-hackathons .dynamic-theme-glow-bottom {
+  background: radial-gradient(circle at center, rgba(244, 63, 94, 0.10) 0%, transparent 60%);
+}
+
+/* 6. Projects & Gallery Theme: Creative Cyan & Neon Indigo */
+.dynamic-theme-bg.theme-projects,
+.dynamic-theme-bg.theme-gallery {
+  background-color: #07091a;
+}
+.dynamic-theme-bg.theme-projects .dynamic-theme-glow-top,
+.dynamic-theme-bg.theme-gallery .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.20) 0%, rgba(124, 58, 237, 0.14) 40%, transparent 70%);
+}
+.dynamic-theme-bg.theme-projects .dynamic-theme-glow-bottom,
+.dynamic-theme-bg.theme-gallery .dynamic-theme-glow-bottom {
+  background: radial-gradient(circle at center, rgba(99, 102, 241, 0.10) 0%, transparent 60%);
+}
+
+/* 7. Profile & User Admin Theme: Deep Royal Violet */
+.dynamic-theme-bg.theme-profile,
+.dynamic-theme-bg.theme-manage-users {
+  background-color: #080414;
+}
+.dynamic-theme-bg.theme-profile .dynamic-theme-glow-top,
+.dynamic-theme-bg.theme-manage-users .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.22) 0%, rgba(79, 70, 229, 0.12) 40%, transparent 70%);
+}
+.dynamic-theme-bg.theme-profile .dynamic-theme-glow-bottom,
+.dynamic-theme-bg.theme-manage-users .dynamic-theme-glow-bottom {
+  background: radial-gradient(circle at center, rgba(168, 85, 247, 0.09) 0%, transparent 60%);
+}
+
+/* 8. Tasks Theme: Focused Deep Slate Violet */
+.dynamic-theme-bg.theme-my-tasks,
+.dynamic-theme-bg.theme-assign-tasks,
+.dynamic-theme-bg.theme-review-deliverables {
+  background-color: #080516;
+}
+.dynamic-theme-bg.theme-my-tasks .dynamic-theme-glow-top,
+.dynamic-theme-bg.theme-assign-tasks .dynamic-theme-glow-top,
+.dynamic-theme-bg.theme-review-deliverables .dynamic-theme-glow-top {
+  background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.22) 0%, rgba(99, 102, 241, 0.12) 40%, transparent 70%);
 }
 
 * { box-sizing: border-box; }
@@ -1656,7 +1730,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .course-add-btn:hover { background: var(--color-primary-hover); }
 
-/* ── Modern Image Background Login ────────────────────────────── */
+/* ── Modern Pure Theme Color Login ────────────────────────────── */
 .login-bg {
   min-height: 100vh;
   width: 100%;
@@ -1665,14 +1739,12 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: space-between;
   padding: 16px 0 0 0;
-  background-color: #12072B;
+  background-color: #0b0716;
   background-image: 
-    radial-gradient(circle at 50% 50%, rgba(18, 7, 43, 0.45), rgba(12, 5, 28, 0.82)),
-    url('./assets/login-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+    radial-gradient(circle at 20% 15%, rgba(124, 58, 237, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 80% 25%, rgba(99, 102, 241, 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.16) 0%, transparent 50%),
+    linear-gradient(180deg, #090514 0%, #0d0722 50%, #070311 100%);
   font-family: var(--font-body);
   position: relative;
   overflow-x: hidden;

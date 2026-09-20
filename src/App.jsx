@@ -26,21 +26,7 @@ const UserRosterAdmin = safeLazy(() => import("./pages/UserRosterAdmin"));
 import UnifiedLoader from "./components/UnifiedLoader";
 import { initGlobalPrefetchPipeline, prefetchPage } from "./utils/prefetcher";
 
-const PAGE_BACKGROUNDS = {
-  dashboard: "/bg-dashboard.jpg",
-  courses: "/bg-courses.jpg",
-  leaderboard: "/bg-leaderboard.jpg",
-  opportunities: "/bg-opportunities.jpg",
-  hackathons: "/bg-hackathons.jpg",
-  projects: "/bg-dashboard.jpg",
-  gallery: "/bg-courses.jpg",
-  certificates: "/bg-opportunities.jpg",
-  profile: "/bg-profile.jpg",
-  "manage-users": "/bg-profile.jpg",
-  "assign-tasks": "/bg-dashboard.jpg",
-  "review-deliverables": "/bg-dashboard.jpg",
-  "my-tasks": "/bg-dashboard.jpg",
-};
+
 
 const VALID_PAGES = [
   "dashboard",
@@ -156,20 +142,11 @@ export default function App() {
     if (pageContent) pageContent.scrollTop = 0;
   }, [visiblePage]);
 
-  const currentBg = PAGE_BACKGROUNDS[visiblePage] || "/bg-dashboard.jpg";
-
   return (
     <>
-      <div className="dynamic-page-bg-wrapper" aria-hidden="true">
-        <img
-          key={currentBg}
-          src={currentBg}
-          alt=""
-          className="dynamic-page-bg-img"
-          loading="eager"
-          decoding="async"
-        />
-        <div className="dynamic-page-bg-overlay" />
+      <div className={`dynamic-theme-bg theme-${visiblePage}`} aria-hidden="true">
+        <div className="dynamic-theme-glow-top" />
+        <div className="dynamic-theme-glow-bottom" />
       </div>
 
       <LoginGate>
