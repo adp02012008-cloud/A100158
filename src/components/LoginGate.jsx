@@ -153,20 +153,30 @@ export default function LoginGate({ children }) {
     let cancelled = false;
 
     const checkStartupSession = async () => {
-      // 1. Check if returning from a Google redirect sign-in flow
-      try {
-        const redirectResult = await getRedirectResult(firebaseAuth);
-        if (redirectResult?.user?.email) {
-          const redirectEmail = normalizeEmail(redirectResult.user.email);
-          if (redirectEmail && !cancelled) {
-            sessionStorage.setItem("bugslayers_tab_active", "true");
-            await completeRegisteredLogin(redirectEmail, { silentAccessDenied: true });
-            if (!cancelled) setCheckingSession(false);
-            return;
+      // 1. Only check redirect result if a redirect sign-in was actually initiated
+      const isRedirectFlow =
+        sessionStorage.getItem("bugslayers_auth_redirecting") === "true" ||
+        (typeof window !== "undefined" && (
+          window.location.search.includes("apiKey=") ||
+          window.location.hash.includes("access_token=")
+        ));
+
+      if (isRedirectFlow) {
+        try {
+          sessionStorage.removeItem("bugslayers_auth_redirecting");
+          const redirectResult = await getRedirectResult(firebaseAuth);
+          if (redirectResult?.user?.email) {
+            const redirectEmail = normalizeEmail(redirectResult.user.email);
+            if (redirectEmail && !cancelled) {
+              sessionStorage.setItem("bugslayers_tab_active", "true");
+              await completeRegisteredLogin(redirectEmail, { silentAccessDenied: true });
+              if (!cancelled) setCheckingSession(false);
+              return;
+            }
           }
+        } catch (err) {
+          console.warn("Redirect result check warning:", err?.message);
         }
-      } catch (err) {
-        console.warn("Redirect result check warning:", err?.message);
       }
 
       // 2. Only allow active in-tab session restore (e.g. user refreshed the page while working)
@@ -294,6 +304,9 @@ export default function LoginGate({ children }) {
         await completeRegisteredLogin(googleEmail);
       } catch (popupErr) {
         if (popupErr?.code === "auth/popup-blocked") {
+          try {
+            sessionStorage.setItem("bugslayers_auth_redirecting", "true");
+          } catch {}
           await signInWithRedirect(firebaseAuth, googleProvider);
         } else if (popupErr?.code === "auth/popup-closed-by-user") {
           // User closed popup
