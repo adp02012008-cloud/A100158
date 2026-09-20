@@ -78,19 +78,21 @@ export default function App() {
   const currentBg = PAGE_BACKGROUNDS[visiblePage] || "/bg-dashboard.jpg";
 
   return (
-    <LoginGate>
-      <div className={`app page-${visiblePage}`}>
-        <div className="dynamic-page-bg-wrapper" aria-hidden="true">
-          <img
-            key={currentBg}
-            src={currentBg}
-            alt=""
-            className="dynamic-page-bg-img"
-            loading="eager"
-            decoding="async"
-          />
-          <div className="dynamic-page-bg-overlay" />
-        </div>
+    <>
+      <div className="dynamic-page-bg-wrapper" aria-hidden="true">
+        <img
+          key={currentBg}
+          src={currentBg}
+          alt=""
+          className="dynamic-page-bg-img"
+          loading="eager"
+          decoding="async"
+        />
+        <div className="dynamic-page-bg-overlay" />
+      </div>
+
+      <LoginGate>
+        <div className={`app page-${visiblePage}`}>
 
         <Navbar
           page={visiblePage}
@@ -127,6 +129,7 @@ export default function App() {
         <InstallPWA />
       </div>
     </LoginGate>
+    </>
   );
 }
 
