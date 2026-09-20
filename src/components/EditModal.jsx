@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { apiFetch } from "../utils/api";
+import { apiFetch, invalidateApiCache } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { formatDateForInput } from "../utils/dateUtils";
 import UnsavedChangesModal from "./UnsavedChangesModal";
@@ -174,6 +174,8 @@ export default function EditModal({ student, onClose, onSaved }) {
         }
       }
 
+      invalidateApiCache("/users");
+      invalidateApiCache("/users/dashboard");
       if (onSaved) onSaved({ ...student, ...payload });
       onClose();
     } catch (err) {

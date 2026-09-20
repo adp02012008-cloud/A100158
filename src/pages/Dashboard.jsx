@@ -216,11 +216,11 @@ export default function Dashboard({ search, setPage }) {
   const [clusterFilter, setClusterFilter] = useState("All");
   const [dataLoaded, setDataLoaded] = useState(() => Boolean(initialCache));
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (bypassCache = false) => {
     try {
       const [res, clustersRes] = await Promise.all([
-        apiFetch("/users/dashboard"),
-        apiFetch("/clusters").catch(() => ({ clusters: [] })),
+        apiFetch("/users/dashboard", { bypassCache }),
+        apiFetch("/clusters", { bypassCache }).catch(() => ({ clusters: [] })),
       ]);
 
       const processed = processDashboardData(res, clustersRes);
@@ -238,7 +238,7 @@ export default function Dashboard({ search, setPage }) {
   useEffect(() => { loadData(); }, [loadData]);
 
   const handleSaved = useCallback(() => {
-    loadData();
+    loadData(true);
   }, [loadData]);
 
   const allClusterNames = useMemo(() => {

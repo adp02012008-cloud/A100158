@@ -459,11 +459,15 @@ export async function updateUserProfile(req, res) {
     const prevActivity = user.activityPoints || 0;
     const prevReward = user.rewardPoints || 0;
 
-    // Security Fix: Points modification is strictly restricted to Administrators
-    if (isAdmin(req.user)) {
+    // Points modification allowed for Admins or Card Owners (isOwner)
+    if (isAdmin(req.user) || isOwner) {
       if (finalActPts !== undefined && finalActPts !== "") user.activityPoints = Number(finalActPts) || 0;
       if (finalRwdPts !== undefined && finalRwdPts !== "") user.rewardPoints = Number(finalRwdPts) || 0;
       pointsDiff = (user.activityPoints - prevActivity) + (user.rewardPoints - prevReward);
+    }
+
+    // Role and Status modification remains strictly restricted to Administrators
+    if (isAdmin(req.user)) {
 
       if (ROLE || role) {
         const newRole = String(ROLE || role).toUpperCase();
