@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useAuth } from "../context/AuthContext";
+import { extractStudentEmails } from "../utils/roles";
+import { auth as firebaseAuth } from "../firebase";
 import UserAvatar from "./UserAvatar";
 import "./Modal.css";
 
@@ -180,9 +183,63 @@ function parseCourseItem(rawCourse, rawDetails) {
   };
 }
 
-export default function Modal({ student, onClose }) {
+export default function Modal({ student, onClose, onEdit }) {
+  const { auth, currentUser } = useAuth();
   const [tab, setTab]               = useState("details");
   const [priorityMode, setPriorityMode] = useState("best");
+
+  const cleanAuthEmail = (auth?.email || "").toLowerCase().trim();
+  const fbEmail = (firebaseAuth?.currentUser?.email || "").toLowerCase().trim();
+
+  const studentEmails = [
+    student?.email,
+    student?.personalEmail,
+    student?.bitEmail,
+    ...extractStudentEmails(student),
+  ].filter(Boolean).map((e) => String(e).toLowerCase().trim());
+
+  const currentAuthEmails = [
+    currentUser?.email,
+    currentUser?.personalEmail,
+    currentUser?.bitEmail,
+    cleanAuthEmail,
+    fbEmail,
+  ].filter(Boolean).map((e) => String(e).toLowerCase().trim());
+
+  const emailMatches = studentEmails.some((se) => currentAuthEmails.includes(se));
+
+  const cleanEnrol = (val) => String(val || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const userEnrol = cleanEnrol(currentUser?.enrolmentNumber || auth?.ownedEnrolment);
+  const cardEnrol = cleanEnrol(student?.["ENROLMENT NUMBER"] || student?.enrolmentNumber || student?.userId);
+  const enrolMatches = Boolean(userEnrol && cardEnrol && userEnrol === cardEnrol);
+
+  const idMatches = Boolean(
+    (currentUser?._id && student?._id && String(currentUser._id) === String(student._id)) ||
+    (currentUser?.userId && student?.userId && String(currentUser.userId) === String(student.userId))
+  );
+
+  const cleanName = (val) => String(val || "").trim().toLowerCase();
+  const studentNameStr = cleanName(student?.Name || student?.name);
+  const currentUserNameStr = cleanName(currentUser?.name);
+  const nameMatches = Boolean(
+    currentUserNameStr &&
+    studentNameStr &&
+    (studentNameStr === currentUserNameStr || studentNameStr.includes(currentUserNameStr) || currentUserNameStr.includes(studentNameStr))
+  );
+
+  const isOwnStudent = Boolean(
+    idMatches ||
+    emailMatches ||
+    enrolMatches ||
+    (nameMatches && (
+      emailMatches ||
+      enrolMatches ||
+      (cleanAuthEmail && studentEmails.some((se) => se.split("@")[1] && se.split("@")[1] === cleanAuthEmail.split("@")[1]))
+    ))
+  );
+
+  const isAdminView = auth?.role === "admin" && auth?.viewMode === "admin";
+  const canEdit     = isAdminView || isOwnStudent;
 
   const sortedCombos = useMemo(() => {
     const combos = [...(student?.SUGGESTION_COMBINATIONS || [])];
@@ -322,11 +379,37 @@ export default function Modal({ student, onClose }) {
             </div>
           </div>
 
-          <div className="modal-header-status">
+          <div className="modal-header-status" style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <span className={`status-pill ${status.className}`}>
               <span className="status-dot" />
               <span>{status.text}</span>
             </span>
+            {canEdit && onEdit && (
+              <button
+                type="button"
+                className="modal-edit-action-btn"
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(139, 92, 246, 0.4)",
+                  background: "rgba(124, 58, 237, 0.25)",
+                  color: "#e0e7ff",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.2s ease",
+                }}
+                onClick={() => {
+                  onClose();
+                  onEdit(student);
+                }}
+              >
+                ✏️ {isAdminView ? "Edit Card" : "Update My Card"}
+              </button>
+            )}
           </div>
         </div>
 

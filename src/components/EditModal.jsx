@@ -157,11 +157,22 @@ export default function EditModal({ student, onClose, onSaved }) {
         } : {}),
       };
 
-      const targetId = student._id || student.userId;
-      await apiFetch(`/users/${targetId}`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      });
+      const targetId = student._id || student.userId || student.enrolmentNumber || student["ENROLMENT NUMBER"] || (isAdmin ? null : "me");
+      try {
+        await apiFetch(`/users/${targetId}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+      } catch (putErr) {
+        if (!isAdmin && (putErr.status === 403 || putErr.status === 404)) {
+          await apiFetch("/users/me", {
+            method: "PUT",
+            body: JSON.stringify(payload),
+          });
+        } else {
+          throw putErr;
+        }
+      }
 
       if (onSaved) onSaved({ ...student, ...payload });
       onClose();

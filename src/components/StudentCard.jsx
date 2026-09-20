@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
-import { isSuperAdminEmail } from "../utils/roles";
+import { isSuperAdminEmail, extractStudentEmails } from "../utils/roles";
+import { auth as firebaseAuth } from "../firebase";
 import UserAvatar from "./UserAvatar";
 
 function getStatus(activity, avgActivity) {
@@ -47,25 +48,59 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
   const progress   = Math.min(100, targetActivity > 0 ? (student.ACTIVITY / targetActivity) * 100 : 0);
   const remaining  = Math.max(0, targetActivity - student.ACTIVITY);
   const difference = Math.abs((student.ACTIVITY || 0) - (avgActivity || 0)).toFixed(1);
-  const cleanAuthEmail = (auth.email || "").toLowerCase().trim();
+  const cleanAuthEmail = (auth?.email || "").toLowerCase().trim();
+  const fbEmail = (firebaseAuth?.currentUser?.email || "").toLowerCase().trim();
+
+  // All student emails from all card fields
   const studentEmails = [
     student.email,
     student.personalEmail,
     student.bitEmail,
+    ...extractStudentEmails(student),
   ].filter(Boolean).map((e) => String(e).toLowerCase().trim());
 
-  const isOwnStudent = Boolean(
-    (currentUser && (
-      (currentUser._id && student._id && String(currentUser._id) === String(student._id)) ||
-      (currentUser.userId && student.userId && String(currentUser.userId) === String(student.userId)) ||
-      (currentUser.enrolmentNumber && (student["ENROLMENT NUMBER"] === currentUser.enrolmentNumber || student.enrolmentNumber === currentUser.enrolmentNumber)) ||
-      (currentUser.email && studentEmails.includes(String(currentUser.email).toLowerCase().trim()))
-    )) ||
-    (cleanAuthEmail && studentEmails.includes(cleanAuthEmail)) ||
-    (auth.ownedEnrolment && (student["ENROLMENT NUMBER"] === auth.ownedEnrolment || student.enrolmentNumber === auth.ownedEnrolment))
+  // All current user emails
+  const currentAuthEmails = [
+    currentUser?.email,
+    currentUser?.personalEmail,
+    currentUser?.bitEmail,
+    cleanAuthEmail,
+    fbEmail,
+  ].filter(Boolean).map((e) => String(e).toLowerCase().trim());
+
+  const emailMatches = studentEmails.some((se) => currentAuthEmails.includes(se));
+
+  const cleanEnrol = (val) => String(val || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const userEnrol = cleanEnrol(currentUser?.enrolmentNumber || auth?.ownedEnrolment);
+  const cardEnrol = cleanEnrol(student["ENROLMENT NUMBER"] || student.enrolmentNumber || student.userId);
+  const enrolMatches = Boolean(userEnrol && cardEnrol && userEnrol === cardEnrol);
+
+  const idMatches = Boolean(
+    (currentUser?._id && student._id && String(currentUser._id) === String(student._id)) ||
+    (currentUser?.userId && student.userId && String(currentUser.userId) === String(student.userId))
   );
 
-  const isAdminView = auth.role === "admin" && auth.viewMode === "admin";
+  const cleanName = (val) => String(val || "").trim().toLowerCase();
+  const studentNameStr = cleanName(student.Name || student.name);
+  const currentUserNameStr = cleanName(currentUser?.name);
+  const nameMatches = Boolean(
+    currentUserNameStr &&
+    studentNameStr &&
+    (studentNameStr === currentUserNameStr || studentNameStr.includes(currentUserNameStr) || currentUserNameStr.includes(studentNameStr))
+  );
+
+  const isOwnStudent = Boolean(
+    idMatches ||
+    emailMatches ||
+    enrolMatches ||
+    (nameMatches && (
+      emailMatches ||
+      enrolMatches ||
+      (cleanAuthEmail && studentEmails.some((se) => se.split("@")[1] && se.split("@")[1] === cleanAuthEmail.split("@")[1]))
+    ))
+  );
+
+  const isAdminView = auth?.role === "admin" && auth?.viewMode === "admin";
   const canEdit     = isAdminView || isOwnStudent;
   const isUserAdmin = student.ROLE === "ADMIN" || student.role === "ADMIN";
 

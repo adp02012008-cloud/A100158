@@ -389,7 +389,7 @@ export default function Dashboard({ search, setPage }) {
         </div>
       )}
 
-      {selected && <Modal student={selected} onClose={() => setSelected(null)} />}
+      {selected && <Modal student={selected} onClose={() => setSelected(null)} onEdit={setEditing} />}
       {editing && (
         <EditModal
           student={editing}

@@ -259,19 +259,30 @@ export async function getDashboardUsers(req, res) {
         _id: u._id,
         userId: u.userId,
         Name: u.name,
+        name: u.name,
         email: u.email,
+        personalEmail: u.personalEmail || "",
+        bitEmail: u.bitEmail || "",
         avatar: u.avatar || "",
         photoURL: u.avatar || "",
         role: u.role,
         ROLE: u.role,
+        enrolmentNumber: u.enrolmentNumber || "",
         "ENROLMENT NUMBER": u.enrolmentNumber || u.userId || "",
         POSITION: u.position || "Member",
+        position: u.position || "Member",
         CLUSTER: u.clusterName || "Core",
+        clusterName: u.clusterName || "Core",
         JOINED: u.joinedDate || "",
+        joinedDate: u.joinedDate || "",
         "ACTIVITY POINT": u.activityPoints || 0,
+        activityPoints: u.activityPoints || 0,
         "REWARD POINT": u.rewardPoints || 0,
+        rewardPoints: u.rewardPoints || 0,
         LINKEDIN: u.linkedin || "",
+        linkedin: u.linkedin || "",
         GITHUB: u.github || "",
+        github: u.github || "",
         COURSES: courseDetails.map((c) => c.display),
         COURSE_DETAILS: courseDetails,
         COURSE_COUNT: courseDetails.length,
@@ -364,16 +375,35 @@ export async function updateUserProfile(req, res) {
     } = req.body;
 
     let user = (id && String(id).match(/^[0-9a-fA-F]{24}$/)) ? await User.findById(id) : null;
-    if (!user) user = await User.findOne({ userId: id });
+    if (!user && id) user = await User.findOne({ userId: id });
+    if (!user && id) user = await User.findOne({ email: String(id).toLowerCase().trim() });
+    if (!user && id) user = await User.findOne({ enrolmentNumber: String(id).trim() });
+    if (!user && (!id || id === "me")) user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const userEmails = [user.email, user.personalEmail, user.bitEmail]
+      .filter(Boolean)
+      .map((e) => String(e).toLowerCase().trim());
+    const reqUserEmails = [req.user.email, req.user.personalEmail, req.user.bitEmail]
+      .filter(Boolean)
+      .map((e) => String(e).toLowerCase().trim());
+
+    const cleanEnrol = (str) => String(str || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 
     const isOwner =
       String(user._id) === String(req.user._id) ||
-      (user.email && req.user.email && user.email.toLowerCase().trim() === req.user.email.toLowerCase().trim()) ||
-      (user.userId && req.user.userId && user.userId === req.user.userId);
+      userEmails.some((e) => reqUserEmails.includes(e)) ||
+      (user.firebaseUid && req.user.firebaseUid && user.firebaseUid === req.user.firebaseUid) ||
+      (cleanEnrol(user.enrolmentNumber) && cleanEnrol(user.enrolmentNumber) === cleanEnrol(req.user.enrolmentNumber)) ||
+      (cleanEnrol(user.userId) && cleanEnrol(user.userId) === cleanEnrol(req.user.userId)) ||
+      (user.name && req.user.name && user.name.trim().toLowerCase() === req.user.name.trim().toLowerCase());
 
     if (!isAdmin(req.user) && !isOwner) {
       return res.status(403).json({ success: false, message: "Access denied. Cannot update another user's profile." });
+    }
+
+    if (isOwner && !user.firebaseUid && req.user.firebaseUid) {
+      user.firebaseUid = req.user.firebaseUid;
     }
 
     const finalName = Name !== undefined ? Name : name;
