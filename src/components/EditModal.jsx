@@ -8,16 +8,25 @@ export default function EditModal({ student, onClose, onSaved }) {
   const { auth } = useAuth();
   const isAdmin = auth.role === "admin" && auth.viewMode === "admin";
 
+  const rawSkills = Array.isArray(student.skills) && student.skills.length > 0
+    ? student.skills.join(", ")
+    : (Array.isArray(student.primaryInterests) && student.primaryInterests.length > 0
+      ? student.primaryInterests.join(", ")
+      : [student.Primary1, student.Primary2, student.Secondary1, student.Secondary2, student.Spec1, student.Spec2].filter(Boolean).join(", "));
+
   const [personalForm, setPersonalForm] = useState({
     Name: student.Name || student.name || "",
+    enrolmentNumber: student.enrolmentNumber || student["ENROLMENT NUMBER"] || student.userId || "",
     POSITION: student.POSITION || student.position || "",
     CLUSTER: student.CLUSTER || student.clusterName || "Core",
     JOINED: formatDateForInput(student.JOINED || student.joinedDate || ""),
+    avatar: student.avatar || student.photoURL || "",
   });
 
   const [form, setForm] = useState({
     LINKEDIN: student.LINKEDIN || student.linkedin || "",
     GITHUB: student.GITHUB || student.github || "",
+    skills: rawSkills,
     "ACTIVITY POINT": student.ACTIVITY ?? student["ACTIVITY POINT"] ?? student.activityPoints ?? "",
     "REWARD POINT": student.REWARD ?? student["REWARD POINT"] ?? student.rewardPoints ?? "",
   });
@@ -42,12 +51,15 @@ export default function EditModal({ student, onClose, onSaved }) {
     if (!init) return false;
 
     if (personalForm.Name !== init.personal.Name) return true;
+    if (personalForm.enrolmentNumber !== init.personal.enrolmentNumber) return true;
     if (personalForm.POSITION !== init.personal.POSITION) return true;
     if (personalForm.CLUSTER !== init.personal.CLUSTER) return true;
     if (personalForm.JOINED !== init.personal.JOINED) return true;
+    if (personalForm.avatar !== init.personal.avatar) return true;
 
     if (form.LINKEDIN !== init.form.LINKEDIN) return true;
     if (form.GITHUB !== init.form.GITHUB) return true;
+    if (form.skills !== init.form.skills) return true;
     if (String(form["ACTIVITY POINT"]) !== String(init.form["ACTIVITY POINT"])) return true;
     if (String(form["REWARD POINT"]) !== String(init.form["REWARD POINT"])) return true;
 
@@ -131,8 +143,13 @@ export default function EditModal({ student, onClose, onSaved }) {
     }
     setSaving(true);
     try {
+      const parsedSkills = form.skills
+        ? form.skills.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+
       const payload = {
-        "ENROLMENT NUMBER": student["ENROLMENT NUMBER"] || student.enrolmentNumber,
+        "ENROLMENT NUMBER": personalForm.enrolmentNumber.trim() || student["ENROLMENT NUMBER"] || student.enrolmentNumber,
+        enrolmentNumber: personalForm.enrolmentNumber.trim() || student.enrolmentNumber || student["ENROLMENT NUMBER"],
         Name: personalForm.Name.trim(),
         name: personalForm.Name.trim(),
         POSITION: personalForm.POSITION.trim(),
@@ -141,10 +158,14 @@ export default function EditModal({ student, onClose, onSaved }) {
         clusterName: personalForm.CLUSTER.trim(),
         JOINED: personalForm.JOINED,
         joinedDate: personalForm.JOINED,
+        avatar: personalForm.avatar.trim(),
+        photoURL: personalForm.avatar.trim(),
         LINKEDIN: form.LINKEDIN.trim(),
         linkedin: form.LINKEDIN.trim(),
         GITHUB: form.GITHUB.trim(),
         github: form.GITHUB.trim(),
+        skills: parsedSkills,
+        primaryInterests: parsedSkills,
         "ACTIVITY POINT": form["ACTIVITY POINT"] === "" ? 0 : Number(form["ACTIVITY POINT"]),
         "REWARD POINT": form["REWARD POINT"] === "" ? 0 : Number(form["REWARD POINT"]),
         activityPoints: form["ACTIVITY POINT"] === "" ? 0 : Number(form["ACTIVITY POINT"]),
@@ -200,6 +221,7 @@ export default function EditModal({ student, onClose, onSaved }) {
           </h4>
           <div className="edit-grid">
             <EditField label="Name" value={personalForm.Name} onChange={(v) => setPersonal("Name", v)} />
+            <EditField label="Enrolment / Roll Number" value={personalForm.enrolmentNumber} onChange={(v) => setPersonal("enrolmentNumber", v)} placeholder="e.g. 7376222AL101" />
             <EditField label="Position (e.g. Member 1, Team Lead, Admin)" value={personalForm.POSITION} onChange={(v) => setPersonal("POSITION", v)} />
             <div className="edit-field">
               <label className="edit-label">Cluster</label>
@@ -217,6 +239,7 @@ export default function EditModal({ student, onClose, onSaved }) {
               </select>
             </div>
             <EditField label="Joined Date" type="date" value={personalForm.JOINED} onChange={(v) => setPersonal("JOINED", v)} />
+            <EditField label="Profile Picture / Avatar URL" value={personalForm.avatar} onChange={(v) => setPersonal("avatar", v)} placeholder="https://..." />
             
             {isAdmin && (
               <>
@@ -253,9 +276,19 @@ export default function EditModal({ student, onClose, onSaved }) {
         <div className="edit-section">
           <h4 className="edit-section-title">Social Links</h4>
           <div className="edit-grid">
-            <EditField label="LinkedIn URL" value={form.LINKEDIN} onChange={(v) => set("LINKEDIN", v)} />
-            <EditField label="GitHub URL" value={form.GITHUB} onChange={(v) => set("GITHUB", v)} />
+            <EditField label="LinkedIn URL" value={form.LINKEDIN} onChange={(v) => set("LINKEDIN", v)} placeholder="https://linkedin.com/in/username" />
+            <EditField label="GitHub URL" value={form.GITHUB} onChange={(v) => set("GITHUB", v)} placeholder="https://github.com/username" />
           </div>
+        </div>
+
+        <div className="edit-section">
+          <h4 className="edit-section-title">Verified Domain Skills</h4>
+          <EditField
+            label="Skills (comma-separated)"
+            value={form.skills}
+            onChange={(v) => set("skills", v)}
+            placeholder="e.g. React, Node.js, Python, Figma, Cloud Computing"
+          />
         </div>
 
         <div className="edit-section">
@@ -326,7 +359,7 @@ export default function EditModal({ student, onClose, onSaved }) {
   );
 }
 
-function EditField({ label, value, onChange, type = "text" }) {
+function EditField({ label, value, onChange, type = "text", placeholder }) {
   const inputValue = type === "date" ? formatDateForInput(value) : (value ?? "");
 
   return (
@@ -335,6 +368,7 @@ function EditField({ label, value, onChange, type = "text" }) {
       <input
         className="edit-input"
         type={type}
+        placeholder={placeholder}
         style={{
           width: "100%",
           padding: "10px 14px",

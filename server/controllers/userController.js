@@ -283,6 +283,12 @@ export async function getDashboardUsers(req, res) {
         linkedin: u.linkedin || "",
         GITHUB: u.github || "",
         github: u.github || "",
+        skills: u.primaryInterests || [],
+        primaryInterests: u.primaryInterests || [],
+        Primary1: u.primaryInterests?.[0] || "",
+        Primary2: u.primaryInterests?.[1] || "",
+        Secondary1: u.primaryInterests?.[2] || "",
+        Secondary2: u.primaryInterests?.[3] || "",
         COURSES: courseDetails.map((c) => c.display),
         COURSE_DETAILS: courseDetails,
         COURSE_COUNT: courseDetails.length,
@@ -449,6 +455,27 @@ export async function updateUserProfile(req, res) {
       });
       if (matchedCluster) {
         user.clusterId = matchedCluster._id;
+      }
+    }
+
+    const finalEnrolment = req.body["ENROLMENT NUMBER"] !== undefined ? req.body["ENROLMENT NUMBER"] : req.body.enrolmentNumber;
+    if (finalEnrolment !== undefined && finalEnrolment !== null) {
+      user.enrolmentNumber = String(finalEnrolment).trim();
+    }
+
+    if (req.body.personalEmail !== undefined) {
+      user.personalEmail = String(req.body.personalEmail).trim().toLowerCase();
+    }
+    if (req.body.bitEmail !== undefined) {
+      user.bitEmail = String(req.body.bitEmail).trim().toLowerCase();
+    }
+
+    if (req.body.skills !== undefined || req.body.primaryInterests !== undefined) {
+      const rawSkills = req.body.skills !== undefined ? req.body.skills : req.body.primaryInterests;
+      if (Array.isArray(rawSkills)) {
+        user.primaryInterests = rawSkills.map((s) => String(s).trim()).filter(Boolean);
+      } else if (typeof rawSkills === "string") {
+        user.primaryInterests = rawSkills.split(",").map((s) => s.trim()).filter(Boolean);
       }
     }
 

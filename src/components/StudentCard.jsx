@@ -42,7 +42,9 @@ export default function StudentCard({ student, onClick, onEdit, onRoleChanged, a
     student.Primary1, student.Primary2,
     student.Secondary1, student.Secondary2,
     student.Spec1, student.Spec2,
-  ].filter(Boolean);
+    ...(Array.isArray(student.skills) ? student.skills : []),
+    ...(Array.isArray(student.primaryInterests) ? student.primaryInterests : []),
+  ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
 
   const status     = getStatus(student.ACTIVITY, avgActivity);
   const progress   = Math.min(100, targetActivity > 0 ? (student.ACTIVITY / targetActivity) * 100 : 0);
