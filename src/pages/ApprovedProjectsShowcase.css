@@ -661,29 +661,36 @@
 
 /* ── Presentation Slides Viewer Modal ── */
 .ppt-modal-wrapper {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1400;
-  padding: 24px;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(6, 4, 18, 0.85) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+  padding: 24px 16px !important;
+  box-sizing: border-box !important;
 }
 
 .ppt-modal-container {
   width: 100%;
   max-width: 960px;
   height: 85vh;
-  max-height: 720px;
+  max-height: min(88vh, 760px);
   background: #130e26;
   border: 1px solid rgba(245, 158, 11, 0.35);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  box-sizing: border-box;
 }
 
 .ppt-modal-header {
@@ -710,10 +717,26 @@
   align-items: center;
 }
 
+.ppt-modal-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.ppt-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
 .ppt-modal-body {
   flex: 1;
-  background: #090615;
   position: relative;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -727,14 +750,20 @@
 
 /* ── Lightbox Image Gallery Modal ── */
 .lightbox-modal-wrapper {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(12px);
-  display: flex;
-  flex-direction: column;
-  z-index: 1500;
-  padding: 16px;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.92) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 99999 !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
 }
 
 .lightbox-header {

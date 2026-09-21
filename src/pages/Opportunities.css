@@ -808,16 +808,21 @@
 
 /* ── Modals Base ── */
 .opp-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(6, 4, 15, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  position: fixed !important;
+  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(6, 4, 15, 0.85) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px 16px !important;
+  box-sizing: border-box !important;
   animation: opp-fade-in 0.2s ease forwards;
 }
 
@@ -827,16 +832,17 @@
 }
 
 .opp-modal-box {
-  background: linear-gradient(135deg, rgba(26, 17, 49, 0.96) 0%, rgba(15, 10, 31, 0.98) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(135deg, rgba(26, 17, 49, 0.98) 0%, rgba(15, 10, 31, 0.99) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 24px;
   width: 100%;
   max-width: 820px;
-  max-height: 90vh;
+  max-height: min(90vh, 850px);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .opp-modal-header {
