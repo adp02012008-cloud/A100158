@@ -12,10 +12,8 @@
 /* ── Hero Showcase Banner ── */
 .opp-hero {
   position: relative;
-  background: radial-gradient(circle at 12% 20%, rgba(245, 158, 11, 0.16) 0%, transparent 45%),
-              radial-gradient(circle at 88% 80%, rgba(99, 102, 241, 0.2) 0%, transparent 45%),
-              linear-gradient(135deg, rgba(26, 20, 48, 0.9) 0%, rgba(15, 10, 31, 0.96) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.6) 0%, rgba(255, 237, 213, 0.7) 50%, #ffffff 100%);
+  border: 1.5px solid #ede7dd;
   border-radius: 24px;
   padding: 34px 38px;
   margin-bottom: 28px;
@@ -24,9 +22,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 24px;
-  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 32px rgba(180, 130, 80, 0.08);
 }
 
 .opp-hero-content {
@@ -39,9 +35,9 @@
   gap: 8px;
   padding: 6px 14px;
   border-radius: 20px;
-  background: rgba(245, 158, 11, 0.16);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  color: #fbbf24;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  color: #c2410c;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -53,15 +49,15 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b;
+  background: #ea580c;
+  box-shadow: 0 0 10px #ea580c;
   animation: opp-pulse 2s infinite;
 }
 
 @keyframes opp-pulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(234, 88, 12, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
 }
 
 .opp-hero-title {
@@ -69,14 +65,14 @@
   font-weight: 800;
   line-height: 1.25;
   margin: 0 0 10px 0;
-  background: linear-gradient(135deg, #ffffff 0%, #fef3c7 50%, #fde68a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #111827;
+  background: none;
+  -webkit-text-fill-color: initial;
 }
 
 .opp-hero-desc {
   font-size: 15px;
-  color: #cbd5e1;
+  color: #4b5563;
   line-height: 1.6;
   margin: 0;
 }
@@ -93,7 +89,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 22px;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
   color: #ffffff;
   font-weight: 700;
   font-size: 14px;
@@ -101,13 +97,13 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.45);
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
 }
 
 .opp-primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -4px rgba(245, 158, 11, 0.6);
-  filter: brightness(1.08);
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.45);
+  filter: brightness(1.04);
 }
 
 .opp-secondary-btn {
@@ -115,20 +111,20 @@
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  color: #f1f5f9;
+  background: #ffffff;
+  border: 1.5px solid #ede7dd;
+  color: #374151;
   font-weight: 600;
   font-size: 14px;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
 }
 
 .opp-secondary-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.28);
+  background: #fbf9f5;
+  border-color: #ea580c;
+  color: #ea580c;
   transform: translateY(-2px);
 }
 
@@ -141,19 +137,19 @@
 }
 
 .opp-metric-card {
-  background: rgba(30, 20, 52, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1.5px solid #ede7dd;
   border-radius: 16px;
   padding: 16px 20px;
   display: flex;
   align-items: center;
   gap: 14px;
-  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .opp-metric-card:hover {
-  border-color: rgba(245, 158, 11, 0.35);
+  border-color: #ea580c;
   transform: translateY(-2px);
 }
 
@@ -176,13 +172,13 @@
 .opp-metric-value {
   font-size: 20px;
   font-weight: 800;
-  color: #ffffff;
+  color: #111827;
   line-height: 1.2;
 }
 
 .opp-metric-label {
   font-size: 12px;
-  color: #94a3b8;
+  color: #6b7280;
   font-weight: 500;
 }
 
@@ -195,10 +191,10 @@
   gap: 16px;
   margin-bottom: 24px;
   padding: 16px 20px;
-  background: rgba(22, 14, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1.5px solid #ede7dd;
   border-radius: 18px;
-  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .opp-category-pills {
@@ -213,9 +209,9 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  background: #f7f3ea;
+  border: 1px solid #ede7dd;
+  color: #4b5563;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -224,15 +220,15 @@
 }
 
 .opp-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #f1f5f9;
+  background: #ede7dd;
+  color: #111827;
 }
 
 .opp-pill.active {
-  background: rgba(245, 158, 11, 0.2);
-  border-color: rgba(245, 158, 11, 0.45);
-  color: #fbbf24;
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+  background: #fff7ed;
+  border-color: #ea580c;
+  color: #ea580c;
+  box-shadow: 0 0 12px rgba(234, 88, 12, 0.15);
 }
 
 .opp-search-controls {
@@ -250,19 +246,19 @@
 .opp-search-input {
   width: 100%;
   padding: 8px 14px 8px 34px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #fbf9f5;
+  border: 1.5px solid #ede7dd;
   border-radius: 10px;
-  color: #ffffff;
+  color: #111827;
   font-size: 13px;
   outline: none;
   transition: all 0.2s ease;
 }
 
 .opp-search-input:focus {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
-  background: rgba(255, 255, 255, 0.09);
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+  background: #ffffff;
 }
 
 .opp-search-icon {
@@ -270,34 +266,34 @@
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: #9ca3af;
   pointer-events: none;
   font-size: 14px;
 }
 
 .opp-sort-select {
   padding: 8px 14px;
-  background: #17112c !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: #ffffff !important;
+  border: 1.5px solid #ede7dd !important;
   border-radius: 10px;
-  color: #f1f5f9 !important;
+  color: #111827 !important;
   font-size: 13px;
   font-weight: 500;
   outline: none;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
 }
 
 .opp-sort-select:hover,
 .opp-sort-select:focus {
-  border-color: rgba(245, 158, 11, 0.5) !important;
-  background: #1e1539 !important;
+  border-color: #ea580c !important;
+  background: #ffffff !important;
 }
 
 .opp-sort-select option {
-  background-color: #17112c !important;
-  color: #f1f5f9 !important;
+  background-color: #ffffff !important;
+  color: #111827 !important;
   padding: 10px 14px;
   font-size: 13px;
 }
@@ -310,22 +306,21 @@
 }
 
 .opp-card {
-  background: linear-gradient(145deg, rgba(28, 19, 52, 0.7) 0%, rgba(17, 12, 33, 0.85) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1.5px solid #ede7dd;
   border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   position: relative;
 }
 
 .opp-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 20px 40px -12px rgba(245, 158, 11, 0.15), 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+  border-color: #ea580c;
+  box-shadow: 0 14px 30px rgba(234, 88, 12, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .opp-card-interactive {
@@ -335,8 +330,8 @@
 
 .opp-card-interactive:hover {
   transform: translateY(-5px);
-  border-color: rgba(245, 158, 11, 0.55);
-  box-shadow: 0 22px 46px -10px rgba(245, 158, 11, 0.2), 0 14px 34px -8px rgba(0, 0, 0, 0.7);
+  border-color: #ea580c;
+  box-shadow: 0 16px 36px rgba(234, 88, 12, 0.15), 0 6px 16px rgba(0, 0, 0, 0.05);
 }
 
 .opp-card-interactive:active {
@@ -457,15 +452,15 @@
 
 .opp-card-title {
   font-size: 19px;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 800;
+  color: #111827;
   margin: 0 0 6px 0;
   line-height: 1.35;
   transition: color 0.15s ease;
 }
 
 .opp-card-interactive:hover .opp-card-title {
-  color: #fbbf24;
+  color: #ea580c;
 }
 
 .opp-card-organizer {
@@ -473,21 +468,22 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #94a3b8;
+  color: #6b7280;
   font-weight: 500;
   margin-bottom: 14px;
 }
 
 .opp-organizer-badge {
-  color: #38bdf8;
+  color: #ea580c;
   font-size: 12px;
+  font-weight: 700;
 }
 
 /* Prize Callout Banner */
 .opp-prize-banner {
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(217, 119, 6, 0.08) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-left: 4px solid #f59e0b;
+  background: linear-gradient(90deg, rgba(234, 88, 12, 0.08) 0%, rgba(249, 115, 22, 0.04) 100%);
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #ea580c;
   border-radius: 12px;
   padding: 10px 14px;
   margin-bottom: 14px;
@@ -501,7 +497,7 @@
 .opp-prize-text {
   font-size: 13px;
   font-weight: 700;
-  color: #fde68a;
+  color: #9a3412;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -513,17 +509,17 @@
   font-size: 11px;
   font-weight: 700;
   padding: 4px 9px;
-  background: rgba(245, 158, 11, 0.25);
-  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
   border-radius: 8px;
-  color: #fef3c7;
+  color: #c2410c;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .opp-card-desc {
   font-size: 13.5px;
-  color: #94a3b8;
+  color: #4b5563;
   line-height: 1.5;
   margin: 0 0 16px 0;
   display: -webkit-box;
@@ -534,11 +530,11 @@
 
 /* Specs Box with clean multi-item row and eligibility section */
 .opp-specs-box {
-  background: rgba(0, 0, 0, 0.3);
+  background: #fbf9f5;
   border-radius: 14px;
   padding: 12px 14px;
   margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1.5px solid #ede7dd;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -556,19 +552,19 @@
   align-items: center;
   gap: 6px;
   font-size: 12.5px;
-  color: #cbd5e1;
+  color: #4b5563;
   min-width: 0;
 }
 
 .opp-spec-icon {
   font-size: 14px;
-  color: #94a3b8;
+  color: #6b7280;
   flex-shrink: 0;
 }
 
 .opp-spec-value {
   font-weight: 600;
-  color: #f1f5f9;
+  color: #111827;
   white-space: nowrap;
 }
 
@@ -577,14 +573,14 @@
   align-items: flex-start;
   gap: 8px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid #ede7dd;
   font-size: 12px;
-  color: #94a3b8;
+  color: #6b7280;
   line-height: 1.45;
 }
 
 .opp-spec-eligibility-text {
-  color: #cbd5e1;
+  color: #4b5563;
   word-break: break-word;
 }
 
@@ -593,11 +589,11 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  background: rgba(0, 0, 0, 0.25);
+  background: #fbf9f5;
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid #ede7dd;
 }
 
 .opp-spec-item {
@@ -605,7 +601,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #cbd5e1;
+  color: #4b5563;
   min-width: 0;
 }
 
@@ -622,9 +618,9 @@
   font-size: 11px;
   font-weight: 600;
   padding: 3px 9px;
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  color: #c7d2fe;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  color: #c2410c;
   border-radius: 6px;
 }
 
@@ -655,44 +651,45 @@
 }
 
 .opp-link-btn.primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
 }
 
 .opp-link-btn.primary:hover {
   transform: translateY(-1px);
-  filter: brightness(1.1);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);
 }
 
 .opp-link-btn.secondary {
-  background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #6ee7b7;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
 }
 
 .opp-link-btn.secondary:hover {
-  background: rgba(16, 185, 129, 0.25);
-  color: #a7f3d0;
+  background: #dcfce7;
+  color: #166534;
 }
 
 .opp-link-btn.guidelines {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  color: #cbd5e1;
+  background: #ffffff;
+  border-color: #ede7dd;
+  color: #374151;
 }
 
 .opp-link-btn.guidelines:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: #fbf9f5;
+  color: #ea580c;
+  border-color: #ea580c;
 }
 
 /* Social & Teammate Bar */
 .opp-card-social-footer {
   padding: 14px 22px;
-  background: rgba(10, 6, 22, 0.5);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: #fdfbf7;
+  border-top: 1px solid #ede7dd;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -707,23 +704,24 @@
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
+  background: #ffffff;
+  border: 1.5px solid #ede7dd;
+  color: #4b5563;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .opp-interest-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: #fff7ed;
+  border-color: #ea580c;
+  color: #ea580c;
 }
 
 .opp-interest-toggle-btn.interested {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #34d399;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
 }
 
 .opp-facepile {
