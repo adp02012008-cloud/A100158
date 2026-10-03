@@ -63,7 +63,14 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
   const userEmail = auth.email || "";
 
   const loadNotifs = async () => {
-    if (!auth?.isLoggedIn || !userEmail) return;
+    if (
+      !auth?.isLoggedIn ||
+      auth?.role === "public" ||
+      !userEmail ||
+      (typeof navigator !== "undefined" && !navigator.onLine)
+    ) {
+      return;
+    }
     try {
       const list = await getNotificationsForUser(userEmail);
       setNotifications(list || []);
@@ -73,14 +80,19 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
   };
 
   useEffect(() => {
-    if (!auth?.isLoggedIn || !userEmail) {
+    if (!auth?.isLoggedIn || auth?.role === "public" || !userEmail) {
       setNotifications([]);
       return;
     }
     loadNotifs();
-    const interval = setInterval(loadNotifs, 5000);
+    const interval = setInterval(() => {
+      if (document.hidden || (typeof navigator !== "undefined" && !navigator.onLine)) {
+        return;
+      }
+      loadNotifs();
+    }, 15000);
     return () => clearInterval(interval);
-  }, [userEmail, auth?.isLoggedIn]);
+  }, [userEmail, auth?.isLoggedIn, auth?.role]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -187,7 +199,7 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
             )}
           </div>
 
-          <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #334155", padding: "8px 12px", background: "#0f172a" }}>
+          <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #ede7dd", padding: "8px 12px", background: "#fbf9f5" }}>
             <button
               type="button"
               className={`tab-pill ${viewTab === "unread" ? "active" : ""}`}
@@ -229,7 +241,8 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "rgba(255, 255, 255, 0.08)",
+                        background: "#f3f4f6",
+                        border: "1px solid #ede7dd",
                         flexShrink: 0,
                       }}
                     >

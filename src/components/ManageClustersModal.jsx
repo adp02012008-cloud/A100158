@@ -60,7 +60,7 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingRight: "40px", flexWrap: "wrap", gap: "12px" }}>
           <div>
             <h3 className="edit-modal-title" style={{ margin: 0 }}>🏛️ Manage System Clusters</h3>
-            <p style={{ fontSize: "13px", color: "#94a3b8", margin: "4px 0 0 0" }}>
+            <p style={{ fontSize: "13px", color: "#6b7280", margin: "4px 0 0 0" }}>
               Add new clusters, edit names/descriptions, or delete clusters.
             </p>
           </div>
@@ -71,12 +71,12 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
             style={{
               fontSize: "13px",
               padding: "8px 16px",
-              background: "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
+              background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
               color: "#fff",
               border: "none",
               borderRadius: "8px",
               fontWeight: "600",
-              boxShadow: "0 4px 12px rgba(245, 158, 11, 0.25)",
+              boxShadow: "0 4px 12px rgba(234, 88, 12, 0.25)",
               cursor: "pointer",
             }}
           >
@@ -95,8 +95,8 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
         ) : clusters.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
             <div style={{ fontSize: "36px", marginBottom: "10px" }}>🏛️</div>
-            <h4>No clusters found</h4>
-            <p style={{ color: "#94a3b8" }}>Click "Add New Cluster" above to create your first cluster track.</p>
+            <h4 style={{ color: "#111827" }}>No clusters found</h4>
+            <p style={{ color: "#6b7280" }}>Click "Add New Cluster" above to create your first cluster track.</p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "450px", overflowY: "auto", paddingRight: "4px" }}>
@@ -108,9 +108,9 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
                   key={cluster._id}
                   style={{
                     padding: "16px",
-                    background: "rgba(255,255,255,0.03)",
+                    background: "#fbf9f5",
                     borderRadius: "10px",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    border: "1px solid #ede7dd",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -120,14 +120,15 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
                 >
                   <div style={{ flex: "1 1 280px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      <strong style={{ fontSize: "16px", color: "#f8fafc" }}>{cluster.name}</strong>
+                      <strong style={{ fontSize: "16px", color: "#111827" }}>{cluster.name}</strong>
                       <span
                         style={{
                           fontSize: "11px",
                           padding: "2px 8px",
                           borderRadius: "12px",
-                          background: cluster.status === "ACTIVE" ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)",
-                          color: cluster.status === "ACTIVE" ? "#4ade80" : "#f87171",
+                          background: cluster.status === "ACTIVE" ? "#dcfce7" : "#fee2e2",
+                          color: cluster.status === "ACTIVE" ? "#15803d" : "#b91c1c",
+                          border: `1px solid ${cluster.status === "ACTIVE" ? "#bbf7d0" : "#fecaca"}`,
                           fontWeight: "600",
                         }}
                       >
@@ -136,7 +137,7 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
                     </div>
 
                     {cluster.description && (
-                      <div style={{ fontSize: "13px", color: "#94a3b8", marginTop: "4px" }}>
+                      <div style={{ fontSize: "13px", color: "#6b7280", marginTop: "4px" }}>
                         {cluster.description}
                       </div>
                     )}
@@ -146,7 +147,7 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
                     <button
                       type="button"
                       className="btn primary"
-                      style={{ fontSize: "12px", padding: "6px 12px" }}
+                      style={{ fontSize: "12px", padding: "6px 12px", background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)", border: "none", color: "#fff", borderRadius: "8px" }}
                       onClick={() => setEditingCluster(cluster)}
                     >
                       ✏️ Edit Cluster
@@ -158,9 +159,11 @@ export default function ManageClustersModal({ onClose, onClustersUpdated }) {
                       style={{
                         fontSize: "12px",
                         padding: "6px 12px",
-                        backgroundColor: "rgba(239, 68, 68, 0.15)",
-                        color: "#f87171",
-                        borderColor: "rgba(239, 68, 68, 0.3)",
+                        background: "#fee2e2",
+                        color: "#b91c1c",
+                        border: "1px solid #fecaca",
+                        borderRadius: "8px",
+                        cursor: isDeleting ? "not-allowed" : "pointer",
                       }}
                       onClick={() => handleDeleteCluster(cluster)}
                     >

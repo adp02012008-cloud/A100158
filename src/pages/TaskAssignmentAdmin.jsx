@@ -835,10 +835,10 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                   const subReviews = taskReviews.filter((r) => r.submissionId === sub.id || r.submissionId === sub._id);
 
                   return (
-                    <div key={sub.id || sub._id} className="submission-card" style={{ marginBottom: "20px", border: "1px solid #334155", padding: "16px", borderRadius: "10px" }}>
+                    <div key={sub.id || sub._id} className="submission-card" style={{ marginBottom: "20px", border: "1px solid #ede7dd", padding: "16px", borderRadius: "10px", background: "#fbf9f5" }}>
                       <div className="submission-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div>
-                          <strong style={{ fontSize: "1.1rem", color: "#f8fafc" }}>
+                          <strong style={{ fontSize: "1.1rem", color: "#111827" }}>
                             {submitterName}
                           </strong>
                           {sub.version && (
@@ -847,11 +847,11 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                             </span>
                           )}
                           {sub.submissionType === "COLLABORATIVE" && (
-                            <span style={{ marginLeft: "6px", padding: "2px 8px", borderRadius: "12px", background: "#7c3aed", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
+                            <span style={{ marginLeft: "6px", padding: "2px 8px", borderRadius: "12px", background: "#ea580c", color: "#fff", fontSize: "0.75rem", fontWeight: 700 }}>
                               👥 Collaborative Team
                             </span>
                           )}
-                          <div style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "4px" }}>
+                          <div style={{ fontSize: "0.8rem", color: "#6b7280", marginTop: "4px" }}>
                             Submitted: {new Date(sub.submittedAt).toLocaleString()}
                           </div>
                         </div>
@@ -861,13 +861,13 @@ export default function TaskAssignmentAdmin({ search = "" }) {
                       </div>
 
                       {Array.isArray(sub.submittedFor) && sub.submittedFor.length > 0 && (
-                        <div style={{ marginTop: "10px", background: "#1e293b", padding: "8px 12px", borderRadius: "6px" }}>
-                          <small style={{ color: "#94a3b8", display: "block" }}>Represented Members Covered:</small>
+                        <div style={{ marginTop: "10px", background: "#ffffff", border: "1px solid #ede7dd", padding: "8px 12px", borderRadius: "6px" }}>
+                          <small style={{ color: "#6b7280", display: "block" }}>Represented Members Covered:</small>
                           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "4px" }}>
                             {sub.submittedFor.map((mItem, idx) => {
                               const mName = typeof mItem === "object" ? mItem.name || mItem.email : (userMap[normalizeEmail(mItem)] || mItem);
                               return (
-                                <span key={typeof mItem === "object" ? mItem._id || idx : mItem} style={{ background: "#334155", color: "#e2e8f0", padding: "2px 8px", borderRadius: "4px", fontSize: "0.8rem" }}>
+                                <span key={typeof mItem === "object" ? mItem._id || idx : mItem} style={{ background: "#f3f4f6", color: "#374151", padding: "2px 8px", borderRadius: "4px", fontSize: "0.8rem", border: "1px solid #e5e7eb" }}>
                                   ✓ {mName}
                                 </span>
                               );
@@ -893,24 +893,24 @@ export default function TaskAssignmentAdmin({ search = "" }) {
 
                       {/* Existing Reviews Log */}
                       {subReviews.length > 0 && (
-                        <div style={{ marginTop: "14px", borderTop: "1px dashed #334155", paddingTop: "10px" }}>
-                          <h5 style={{ margin: "0 0 8px 0", color: "#38bdf8" }}>📜 Admin Review Log:</h5>
+                        <div style={{ marginTop: "14px", borderTop: "1px dashed #ede7dd", paddingTop: "10px" }}>
+                          <h5 style={{ margin: "0 0 8px 0", color: "#ea580c" }}>📜 Admin Review Log:</h5>
                           {subReviews.map((rev) => (
-                            <div key={rev.id} style={{ background: "#0f172a", padding: "8px 12px", borderRadius: "6px", marginBottom: "6px", fontSize: "0.85rem" }}>
+                            <div key={rev.id} style={{ background: "#ffffff", border: "1px solid #ede7dd", padding: "8px 12px", borderRadius: "6px", marginBottom: "6px", fontSize: "0.85rem" }}>
                               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <strong>{rev.reviewerEmail}</strong>
-                                <span style={{ fontWeight: 700, color: rev.decision === "APPROVED" ? "#4ade80" : rev.decision === "CHANGES_REQUESTED" ? "#f87171" : "#38bdf8" }}>
+                                <strong style={{ color: "#111827" }}>{rev.reviewerEmail}</strong>
+                                <span style={{ fontWeight: 700, color: rev.decision === "APPROVED" ? "#15803d" : rev.decision === "CHANGES_REQUESTED" ? "#b91c1c" : "#0369a1" }}>
                                   {rev.decision}
                                 </span>
                               </div>
-                              {rev.feedback && <div style={{ color: "#cbd5e1", marginTop: "4px" }}>"{rev.feedback}"</div>}
+                              {rev.feedback && <div style={{ color: "#4b5563", marginTop: "4px" }}>"{rev.feedback}"</div>}
                             </div>
                           ))}
                         </div>
                       )}
 
                       {/* Admin Review Action Box */}
-                      <div style={{ marginTop: "14px", background: "#0f172a", padding: "12px", borderRadius: "8px", border: "1px solid #1e293b" }}>
+                      <div style={{ marginTop: "14px", background: "#ffffff", padding: "12px", borderRadius: "8px", border: "1px solid #ede7dd" }}>
                         {isSelfSubmission && (
                           <div style={{ fontSize: "0.8rem", color: "#fbbf24", marginBottom: "8px", fontWeight: 600 }}>
                             ⭐ Self-Review Authorized: As an Admin, you are reviewing your own submission.

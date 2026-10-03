@@ -22,26 +22,38 @@ export function getApiBaseUrl() {
 
 export const API_BASE_URL = getApiBaseUrl();
 
-async function waitForFirebaseUser(timeoutMs = 8000) {
+async function waitForFirebaseUser(timeoutMs = 4000) {
   if (firebaseAuth.currentUser) return firebaseAuth.currentUser;
 
-  return new Promise((resolve, reject) => {
+  if (typeof firebaseAuth.authStateReady === "function") {
+    try {
+      await Promise.race([
+        firebaseAuth.authStateReady(),
+        new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+      ]);
+      return firebaseAuth.currentUser || null;
+    } catch {
+      // Fallback below
+    }
+  }
+
+  return new Promise((resolve) => {
     let settled = false;
     let timer;
 
     const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      if (settled || !user) return;
+      if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
       unsubscribe();
-      resolve(user);
+      resolve(user || null);
     });
 
     timer = window.setTimeout(() => {
       if (settled) return;
       settled = true;
       unsubscribe();
-      reject(new Error("Your Google sign-in session is not ready. Log out and sign in again."));
+      resolve(null);
     }, timeoutMs);
   });
 }
@@ -56,7 +68,7 @@ export async function getIdToken(forceRefresh = false) {
   }
 
   try {
-    const user = await waitForFirebaseUser(2000);
+    const user = await waitForFirebaseUser(3000);
     return user ? await user.getIdToken(forceRefresh) : "";
   } catch {
     return "";
@@ -118,6 +130,14 @@ export function prefetchApi(endpoint, options = {}) {
   if (cached && Date.now() - cached.timestamp < 60 * 1000) {
     return Promise.resolve(cached.data);
   }
+
+  // Guard: If endpoint requires auth and no user is signed in, skip prefetch to prevent 401 spam
+  const cleanEp = endpoint.split("?")[0].replace(/\/[0-9a-fA-F]{24}$/, "");
+  const isPublic = cleanEp === "/users/dashboard" || cleanEp === "/clusters";
+  if (!isPublic && !firebaseAuth.currentUser) {
+    return Promise.resolve(null);
+  }
+
   return apiFetch(endpoint, { ...options, background: true }).catch(() => null);
 }
 
@@ -147,7 +167,15 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
   }
 
   const fetchPromise = (async () => {
+    const cleanEndpoint = endpoint.split("?")[0].replace(/\/[0-9a-fA-F]{24}$/, "");
+    const isPublicEndpoint = cleanEndpoint === "/users/dashboard" || cleanEndpoint === "/clusters";
+
     let token = await getIdToken();
+
+    // If this is a background prefetch on a protected route and there is no token, skip gracefully
+    if (options.background && !token && !isPublicEndpoint) {
+      return null;
+    }
 
     const headers = {
       "Content-Type": "application/json",
@@ -166,21 +194,42 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
       body = JSON.stringify(body);
     }
 
-    let response = await fetch(url, {
-      ...options,
-      headers,
-      body,
-    });
+    let response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers,
+        body,
+      });
+    } catch (networkErr) {
+      // Offline fallback: serve cached data if available for GET
+      if (isGet) {
+        const cached = apiCache.get(endpoint);
+        if (cached?.data) {
+          return cached.data;
+        }
+      }
+      const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
+      const err = new Error(
+        isOffline
+          ? "No internet connection. Please check your network."
+          : `Network error: ${networkErr.message || "Failed to fetch"}`
+      );
+      err.status = 0;
+      err.isOffline = isOffline;
+      throw err;
+    }
 
-    if (response.status === 401 && !isRetry) {
+    if (response.status === 401 && !isRetry && (token || firebaseAuth.currentUser)) {
       console.warn("Received 401 Unauthorized. Retrying request with refreshed Firebase ID Token...");
       try {
-        token = await getIdToken(true);
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
+        const refreshedToken = await getIdToken(true);
+        if (refreshedToken) {
+          headers["Authorization"] = `Bearer ${refreshedToken}`;
           response = await fetch(url, {
             ...options,
             headers,
+            body,
           });
         }
       } catch (refreshErr) {
@@ -212,7 +261,6 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
       });
     } else {
       // Invalidate relevant caches on mutation
-      const cleanEndpoint = endpoint.split("?")[0].replace(/\/[0-9a-fA-F]{24}$/, "");
       invalidateApiCache(cleanEndpoint);
       if (cleanEndpoint.includes("task") || cleanEndpoint.includes("submission") || cleanEndpoint.includes("review")) {
         invalidateApiCache("/tasks");
@@ -236,9 +284,11 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
 
   if (isGet) {
     inFlightRequests.set(endpoint, fetchPromise);
-    fetchPromise.finally(() => {
-      inFlightRequests.delete(endpoint);
-    });
+    fetchPromise
+      .finally(() => {
+        inFlightRequests.delete(endpoint);
+      })
+      .catch(() => {});
   }
 
   return fetchPromise;

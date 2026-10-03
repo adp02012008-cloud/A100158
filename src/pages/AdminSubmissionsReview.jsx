@@ -268,12 +268,13 @@ export default function AdminSubmissionsReview({ search = "" }) {
       ) : filteredSubmissions.length === 0 ? (
         <div
           style={{
-            background: "rgba(15, 23, 42, 0.6)",
-            border: "1px dashed rgba(255, 255, 255, 0.15)",
+            background: "#ffffff",
+            border: "1.5px dashed #ede7dd",
             borderRadius: "16px",
             padding: "48px",
             textAlign: "center",
-            color: "#94a3b8",
+            color: "#6b7280",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.03)",
           }}
         >
           ✨ No submissions match the selected filter!
@@ -395,8 +396,8 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
                 {/* Represented Members */}
                 {Array.isArray(sub.submittedFor) && sub.submittedFor.length > 0 && (
-                  <div className="review-members-box" style={{ marginTop: "12px", background: "rgba(15, 23, 42, 0.6)", padding: "10px 14px", borderRadius: "8px" }}>
-                    <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "6px", fontWeight: "600" }}>
+                  <div className="review-members-box" style={{ marginTop: "12px", background: "#fbf9f5", border: "1px solid #ede7dd", padding: "10px 14px", borderRadius: "10px" }}>
+                    <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "6px", fontWeight: "600" }}>
                       Covered / Represented Members:
                     </div>
                     <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
@@ -404,11 +405,13 @@ export default function AdminSubmissionsReview({ search = "" }) {
                         <span
                           key={typeof m === "object" ? m._id || idx : m}
                           style={{
-                            background: "rgba(255, 255, 255, 0.08)",
-                            color: "#e2e8f0",
+                            background: "#ffffff",
+                            border: "1px solid #ede7dd",
+                            color: "#374151",
                             padding: "3px 10px",
                             borderRadius: "6px",
                             fontSize: "12px",
+                            fontWeight: "600",
                           }}
                         >
                           ✓ {getDisplayName(m)}
@@ -420,7 +423,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
 
                 {/* Notes & Links */}
                 {sub.notes && (
-                  <div className="review-notes-box" style={{ marginTop: "12px", fontSize: "14px", color: "#cbd5e1", background: "rgba(15, 23, 42, 0.4)", padding: "10px 14px", borderRadius: "8px" }}>
+                  <div className="review-notes-box" style={{ marginTop: "12px", fontSize: "14px", color: "#374151", background: "#fbf9f5", border: "1px solid #ede7dd", padding: "10px 14px", borderRadius: "10px" }}>
                     💬 <strong>Submitter Notes:</strong> {sub.notes}
                   </div>
                 )}
@@ -499,8 +502,8 @@ export default function AdminSubmissionsReview({ search = "" }) {
                 </div>
 
                 {Array.isArray(sub.images) && sub.images.length > 0 && (
-                  <div style={{ marginTop: "12px", background: "rgba(15, 23, 42, 0.5)", padding: "10px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
-                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#38bdf8", marginBottom: "8px" }}>
+                  <div style={{ marginTop: "12px", background: "#fbf9f5", padding: "10px", borderRadius: "10px", border: "1px solid #ede7dd" }}>
+                    <div style={{ fontSize: "12px", fontWeight: "700", color: "#0284c7", marginBottom: "8px" }}>
                       📷 Attached Screenshots ({sub.images.length}):
                     </div>
                     <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
@@ -509,7 +512,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
                           <img
                             src={img}
                             alt={`Preview ${idx + 1}`}
-                            style={{ width: "80px", height: "50px", objectFit: "cover", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.2)" }}
+                            style={{ width: "80px", height: "50px", objectFit: "cover", borderRadius: "6px", border: "1px solid #ede7dd" }}
                           />
                         </a>
                       ))}
@@ -609,13 +612,13 @@ export default function AdminSubmissionsReview({ search = "" }) {
             className="review-modal-box"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#f8fafc" }}>
+            <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#111827", fontWeight: "700" }}>
               📝 Review Deliverable — {selectedSub.taskId?.title}
             </h3>
 
             <form onSubmit={handleSaveReview} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151", display: "block", marginBottom: "6px" }}>
                   Decision *
                 </label>
                 <select
@@ -623,9 +626,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                     width: "100%",
                     padding: "10px",
                     borderRadius: "8px",
-                    background: "rgba(15, 23, 42, 0.8)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    color: "#f8fafc",
+                    background: "#ffffff",
+                    border: "1px solid #ede7dd",
+                    color: "#111827",
                     fontSize: "14px",
                   }}
                   value={reviewDecision}
@@ -638,7 +641,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
               </div>
 
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151", display: "block", marginBottom: "6px" }}>
                   Feedback / Corrections Notes
                 </label>
                 <textarea
@@ -647,9 +650,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                     minHeight: "100px",
                     padding: "10px",
                     borderRadius: "8px",
-                    background: "rgba(15, 23, 42, 0.8)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    color: "#f8fafc",
+                    background: "#ffffff",
+                    border: "1px solid #ede7dd",
+                    color: "#111827",
                     fontSize: "14px",
                     boxSizing: "border-box",
                   }}
@@ -666,9 +669,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                   style={{
                     padding: "10px 18px",
                     borderRadius: "8px",
-                    background: "rgba(255, 255, 255, 0.08)",
-                    color: "#94a3b8",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    background: "#fbf9f5",
+                    color: "#4b5563",
+                    border: "1px solid #ede7dd",
                     fontWeight: "600",
                     cursor: "pointer",
                   }}
@@ -681,7 +684,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
                   style={{
                     padding: "10px 22px",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+                    background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
                     color: "#ffffff",
                     border: "none",
                     fontWeight: "600",
@@ -702,7 +705,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
           style={{
             position: "fixed",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.75)",
+            backgroundColor: "rgba(15, 23, 42, 0.45)",
             backdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
@@ -716,13 +719,13 @@ export default function AdminSubmissionsReview({ search = "" }) {
             className="review-modal-box"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#f8fafc" }}>
+            <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#111827", fontWeight: "700" }}>
               ✏️ Edit Deliverable & Member Edit Window
             </h3>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151", display: "block", marginBottom: "4px" }}>
                   Live Demo URL
                 </label>
                 <input
@@ -730,9 +733,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                     width: "100%",
                     padding: "10px",
                     borderRadius: "8px",
-                    background: "rgba(15, 23, 42, 0.8)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    color: "#f8fafc",
+                    background: "#ffffff",
+                    border: "1px solid #ede7dd",
+                    color: "#111827",
                     fontSize: "14px",
                     boxSizing: "border-box",
                   }}
@@ -743,7 +746,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
               </div>
 
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151", display: "block", marginBottom: "4px" }}>
                   GitHub Repository URL
                 </label>
                 <input
@@ -751,9 +754,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                     width: "100%",
                     padding: "10px",
                     borderRadius: "8px",
-                    background: "rgba(15, 23, 42, 0.8)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    color: "#f8fafc",
+                    background: "#ffffff",
+                    border: "1px solid #ede7dd",
+                    color: "#111827",
                     fontSize: "14px",
                     boxSizing: "border-box",
                   }}
@@ -764,7 +767,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
               </div>
 
               <div>
-                <label style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                <label style={{ fontSize: "13px", fontWeight: "600", color: "#374151", display: "block", marginBottom: "4px" }}>
                   Notes / Description
                 </label>
                 <textarea
@@ -773,9 +776,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                     minHeight: "80px",
                     padding: "10px",
                     borderRadius: "8px",
-                    background: "rgba(15, 23, 42, 0.8)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    color: "#f8fafc",
+                    background: "#ffffff",
+                    border: "1px solid #ede7dd",
+                    color: "#111827",
                     fontSize: "14px",
                     boxSizing: "border-box",
                   }}
@@ -785,8 +788,8 @@ export default function AdminSubmissionsReview({ search = "" }) {
               </div>
 
               {/* Allow Member Editing Window */}
-              <div style={{ background: "rgba(99, 102, 241, 0.1)", border: "1px solid rgba(99, 102, 241, 0.25)", padding: "14px", borderRadius: "10px", marginTop: "6px" }}>
-                <label style={{ fontSize: "13px", fontWeight: "700", color: "#818cf8", display: "block", marginBottom: "6px" }}>
+              <div style={{ background: "#fff7ed", border: "1px solid #fdba74", padding: "14px", borderRadius: "10px", marginTop: "6px" }}>
+                <label style={{ fontSize: "13px", fontWeight: "700", color: "#ea580c", display: "block", marginBottom: "6px" }}>
                   ⏳ Grant Temporary Edit Window to Members
                 </label>
                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -794,9 +797,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                     style={{
                       padding: "8px 12px",
                       borderRadius: "6px",
-                      background: "#0f172a",
-                      border: "1px solid rgba(255, 255, 255, 0.15)",
-                      color: "#f8fafc",
+                      background: "#ffffff",
+                      border: "1px solid #ede7dd",
+                      color: "#111827",
                     }}
                     value={editForm.memberEditHours}
                     onChange={(e) => setEditForm((p) => ({ ...p, memberEditHours: e.target.value }))}
@@ -812,7 +815,7 @@ export default function AdminSubmissionsReview({ search = "" }) {
                     style={{
                       padding: "8px 14px",
                       borderRadius: "6px",
-                      background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+                      background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
                       color: "#fff",
                       border: "none",
                       fontWeight: "600",
@@ -832,9 +835,9 @@ export default function AdminSubmissionsReview({ search = "" }) {
                   style={{
                     padding: "10px 18px",
                     borderRadius: "8px",
-                    background: "rgba(255, 255, 255, 0.08)",
-                    color: "#94a3b8",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    background: "#fbf9f5",
+                    color: "#4b5563",
+                    border: "1px solid #ede7dd",
                     fontWeight: "600",
                     cursor: "pointer",
                   }}
@@ -848,14 +851,14 @@ export default function AdminSubmissionsReview({ search = "" }) {
                   style={{
                     padding: "10px 22px",
                     borderRadius: "8px",
-                    background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+                    background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
                     color: "#ffffff",
                     border: "none",
                     fontWeight: "600",
                     cursor: "pointer",
                   }}
                 >
-                  {savingEdit ? "Saving…" : "Save Admin Edits"}
+                  {savingEdit ? "Saving…" : "Save Changes"}
                 </button>
               </div>
             </div>

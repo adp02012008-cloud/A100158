@@ -93,20 +93,19 @@ export default function AddMemberModal({ onClose, onCreated }) {
   const inputStyle = {
     width: "100%",
     padding: "10px 14px",
-    background: "rgba(15, 23, 42, 0.6)",
-    border: "1px solid rgba(255, 255, 255, 0.12)",
+    background: "#ffffff",
+    border: "1.5px solid #ede7dd",
     borderRadius: "8px",
-    color: "#f8fafc",
+    color: "#111827",
     fontSize: "14px",
     outline: "none",
     boxSizing: "border-box",
-    colorScheme: "dark",
   };
 
   const labelStyle = {
     fontSize: "13px",
     fontWeight: "600",
-    color: "#cbd5e1",
+    color: "#374151",
     marginBottom: "4px",
   };
 
@@ -115,8 +114,9 @@ export default function AddMemberModal({ onClose, onCreated }) {
       style={{
         position: "fixed",
         inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.75)",
-        backdropFilter: "blur(6px)",
+        backgroundColor: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -132,12 +132,13 @@ export default function AddMemberModal({ onClose, onCreated }) {
           maxWidth: "640px",
           maxHeight: "90vh",
           overflowY: "auto",
-          background: "rgba(26, 15, 52, 0.96)",
-          border: "1px solid rgba(167, 139, 250, 0.25)",
+          background: "#ffffff",
+          border: "1.5px solid #ede7dd",
           borderRadius: "16px",
-          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.12)",
           padding: "28px",
           position: "relative",
+          color: "#111827",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -149,7 +150,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
             right: "20px",
             background: "none",
             border: "none",
-            color: "#94a3b8",
+            color: "#6b7280",
             fontSize: "18px",
             cursor: "pointer",
           }}
@@ -157,7 +158,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
           ✕
         </button>
 
-        <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#f8fafc", fontWeight: "700" }}>
+        <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#111827", fontWeight: "700" }}>
           ➕ Add New Member
         </h3>
 
@@ -226,15 +227,15 @@ export default function AddMemberModal({ onClose, onCreated }) {
             <select
               style={{
                 ...inputStyle,
-                background: "#0f172a",
-                color: "#f8fafc",
+                background: "#ffffff",
+                color: "#111827",
                 cursor: "pointer",
               }}
               value={form.clusterName}
               onChange={(e) => handleChange("clusterName", e.target.value)}
             >
               {existingClusters.map((cName) => (
-                <option key={cName} value={cName} style={{ background: "#0f172a", color: "#f8fafc" }}>
+                <option key={cName} value={cName} style={{ background: "#ffffff", color: "#111827" }}>
                   {cName}
                 </option>
               ))}
@@ -271,7 +272,7 @@ export default function AddMemberModal({ onClose, onCreated }) {
               gap: "10px",
               marginTop: "12px",
               paddingTop: "16px",
-              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+              borderTop: "1px solid #ede7dd",
             }}
           >
             <button
@@ -281,9 +282,9 @@ export default function AddMemberModal({ onClose, onCreated }) {
               style={{
                 padding: "10px 20px",
                 borderRadius: "8px",
-                background: "rgba(255, 255, 255, 0.05)",
-                color: "#94a3b8",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
+                background: "#fbf9f5",
+                color: "#4b5563",
+                border: "1.5px solid #ede7dd",
                 fontSize: "14px",
                 fontWeight: "600",
                 cursor: "pointer",
@@ -297,12 +298,12 @@ export default function AddMemberModal({ onClose, onCreated }) {
               style={{
                 padding: "10px 22px",
                 borderRadius: "8px",
-                background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
+                background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
                 color: "#ffffff",
                 border: "none",
                 fontSize: "14px",
-                fontWeight: "600",
-                boxShadow: "0 4px 14px rgba(99, 102, 241, 0.3)",
+                fontWeight: "700",
+                boxShadow: "0 4px 14px rgba(234, 88, 12, 0.25)",
                 cursor: "pointer",
               }}
             >

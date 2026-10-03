@@ -458,12 +458,12 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
           position: "relative",
           maxWidth: "760px",
           width: "92%",
-          background: "#0f172a",
-          border: "1px solid rgba(167, 139, 250, 0.35)",
+          background: "#ffffff",
+          border: "1px solid #ede7dd",
           borderRadius: "24px",
           padding: "28px",
-          boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
-          color: "#f8fafc",
+          boxShadow: "0 25px 70px rgba(0, 0, 0, 0.15)",
+          color: "#111827",
         }}
         onMouseDown={(e) => e.stopPropagation()}
       >
@@ -478,9 +478,9 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
             width: "36px",
             height: "36px",
             borderRadius: "50%",
-            background: "rgba(255, 255, 255, 0.08)",
-            border: "1px solid rgba(255, 255, 255, 0.15)",
-            color: "#cbd5e1",
+            background: "#fbf9f5",
+            border: "1px solid #ede7dd",
+            color: "#6b7280",
             fontSize: "16px",
             fontWeight: "700",
             cursor: "pointer",
@@ -489,7 +489,7 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
           ✕
         </button>
 
-        <h3 style={{ margin: "0 0 16px 0", fontSize: "20px", fontWeight: "800", color: "#f8fafc", display: "flex", alignItems: "center", gap: "10px" }}>
+        <h3 style={{ margin: "0 0 16px 0", fontSize: "20px", fontWeight: "800", color: "#111827", display: "flex", alignItems: "center", gap: "10px" }}>
           <span>✂️</span> Crop & Adjust Photo Framing
         </h3>
 
@@ -504,7 +504,7 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
             position: "relative",
             width: "100%",
             height: "380px",
-            background: "#020617",
+            background: "#1e293b",
             borderRadius: "16px",
             overflow: "hidden",
             cursor: isDragging ? "grabbing" : "grab",
@@ -512,7 +512,7 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
             alignItems: "center",
             justifyContent: "center",
             userSelect: "none",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
+            border: "1px solid #ede7dd",
           }}
         >
           {/* Background Image */}
@@ -561,7 +561,7 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
         <div style={{ marginTop: "20px", display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "center", justifyContent: "space-between" }}>
           {/* Aspect Ratio Presets */}
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <span style={{ fontSize: "12.5px", color: "#94a3b8", fontWeight: "700" }}>Presets:</span>
+            <span style={{ fontSize: "12.5px", color: "#6b7280", fontWeight: "700" }}>Presets:</span>
             {["4:3", "16:9", "1:1"].map((r) => (
               <button
                 key={r}
@@ -573,9 +573,9 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
                   fontSize: "12px",
                   fontWeight: "700",
                   cursor: "pointer",
-                  background: aspect === r ? "rgba(99, 102, 241, 0.3)" : "rgba(30, 41, 59, 0.8)",
-                  border: aspect === r ? "1px solid #6366f1" : "1px solid rgba(255,255,255,0.12)",
-                  color: aspect === r ? "#818cf8" : "#cbd5e1",
+                  background: aspect === r ? "#fff7ed" : "#fbf9f5",
+                  border: aspect === r ? "1px solid #ea580c" : "1px solid #ede7dd",
+                  color: aspect === r ? "#ea580c" : "#4b5563",
                 }}
               >
                 {r}
@@ -585,7 +585,7 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
 
           {/* Zoom Slider */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "12.5px", color: "#94a3b8", fontWeight: "700" }}>Zoom:</span>
+            <span style={{ fontSize: "12.5px", color: "#6b7280", fontWeight: "700" }}>Zoom:</span>
             <input
               type="range"
               min="0.8"
@@ -593,33 +593,33 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
               step="0.05"
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
-              style={{ accentColor: "#6366f1", width: "110px", cursor: "pointer" }}
+              style={{ accentColor: "#ea580c", width: "110px", cursor: "pointer" }}
             />
-            <span style={{ fontSize: "12px", color: "#cbd5e1", fontWeight: "700", minWidth: "35px" }}>
+            <span style={{ fontSize: "12px", color: "#111827", fontWeight: "700", minWidth: "35px" }}>
               {Math.round(zoom * 100)}%
             </span>
           </div>
 
           {/* Dimension Controls Matching Screenshot 2 */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(15, 23, 42, 0.8)", border: "1px solid rgba(255, 255, 255, 0.12)", padding: "6px 12px", borderRadius: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#fbf9f5", border: "1px solid #ede7dd", padding: "6px 12px", borderRadius: "12px" }}>
             <input
               type="number"
               value={cropWidth}
               onChange={(e) => { setCropWidth(Math.max(100, parseInt(e.target.value) || 100)); setAspect("custom"); }}
-              style={{ width: "55px", background: "rgba(30, 41, 59, 0.9)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "6px", color: "#ffffff", padding: "4px 8px", fontSize: "13px", fontWeight: "700", textAlign: "center" }}
+              style={{ width: "55px", background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "6px", color: "#111827", padding: "4px 8px", fontSize: "13px", fontWeight: "700", textAlign: "center" }}
             />
-            <span style={{ color: "#94a3b8", fontWeight: "700" }}>×</span>
+            <span style={{ color: "#6b7280", fontWeight: "700" }}>×</span>
             <input
               type="number"
               value={cropHeight}
               onChange={(e) => { setCropHeight(Math.max(100, parseInt(e.target.value) || 100)); setAspect("custom"); }}
-              style={{ width: "55px", background: "rgba(30, 41, 59, 0.9)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "6px", color: "#ffffff", padding: "4px 8px", fontSize: "13px", fontWeight: "700", textAlign: "center" }}
+              style={{ width: "55px", background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "6px", color: "#111827", padding: "4px 8px", fontSize: "13px", fontWeight: "700", textAlign: "center" }}
             />
             <button
               type="button"
               onClick={handleSwapDimensions}
               title="Swap Width / Height"
-              style={{ background: "transparent", border: "none", color: "#818cf8", fontSize: "16px", cursor: "pointer", padding: "0 4px" }}
+              style={{ background: "transparent", border: "none", color: "#ea580c", fontSize: "16px", cursor: "pointer", padding: "0 4px" }}
             >
               ⇆
             </button>
@@ -627,7 +627,7 @@ function ImageCropperModal({ imageSrc, onCropComplete, onClose }) {
         </div>
 
         {/* Footer Action Buttons */}
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px", paddingTop: "18px", borderTop: "1px solid #ede7dd" }}>
           <button
             type="button"
             className="team-secondary-btn"
@@ -1451,12 +1451,12 @@ export default function TeamCollectionPage({ config, search = "" }) {
             className="team-modal-box team-form-modal"
             style={{
               position: "relative",
-              background: "#0f172a",
-              border: "1px solid rgba(167, 139, 250, 0.35)",
+              background: "#ffffff",
+              border: "1px solid #ede7dd",
               borderRadius: "24px",
               padding: "32px",
               maxWidth: "800px",
-              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
+              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.15)",
             }}
             onMouseDown={(event) => event.stopPropagation()}
           >
@@ -1472,9 +1472,9 @@ export default function TeamCollectionPage({ config, search = "" }) {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#cbd5e1",
+                background: "#fbf9f5",
+                border: "1px solid #ede7dd",
+                color: "#6b7280",
                 fontSize: "16px",
                 fontWeight: "700",
                 display: "flex",
@@ -1488,14 +1488,14 @@ export default function TeamCollectionPage({ config, search = "" }) {
             </button>
 
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px", paddingRight: "44px" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "rgba(167, 139, 250, 0.18)", border: "1px solid rgba(167, 139, 250, 0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>
+              <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "rgba(234, 88, 12, 0.12)", border: "1px solid rgba(234, 88, 12, 0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>
                 {config.icon}
               </div>
               <div>
-                <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: "800", color: "#f8fafc" }}>
+                <h2 style={{ margin: "0 0 4px 0", fontSize: "22px", fontWeight: "800", color: "#111827" }}>
                   {formMode === "edit" ? "Edit" : "Add"} {config.pageTitle.replace(/s$/, "")}
                 </h2>
-                <p style={{ margin: 0, fontSize: "13px", color: "#94a3b8" }}>
+                <p style={{ margin: 0, fontSize: "13px", color: "#6b7280" }}>
                   {formMode === "edit"
                     ? "Changes are saved directly to database."
                     : "The record is added directly. There is no approval step."}
@@ -1652,10 +1652,10 @@ export default function TeamCollectionPage({ config, search = "" }) {
               position: "relative",
               maxWidth: "680px",
               borderRadius: "24px",
-              border: "1px solid rgba(167, 139, 250, 0.35)",
+              border: "1px solid #ede7dd",
               padding: "32px",
-              background: "#0f172a",
-              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.8)",
+              background: "#ffffff",
+              boxShadow: "0 25px 70px rgba(0, 0, 0, 0.15)",
             }}
             onMouseDown={(event) => event.stopPropagation()}
           >
@@ -1670,9 +1670,9 @@ export default function TeamCollectionPage({ config, search = "" }) {
                 width: "36px",
                 height: "36px",
                 borderRadius: "50%",
-                background: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#cbd5e1",
+                background: "#fbf9f5",
+                border: "1px solid #ede7dd",
+                color: "#6b7280",
                 fontSize: "16px",
                 fontWeight: "700",
                 display: "flex",

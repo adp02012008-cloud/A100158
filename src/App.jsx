@@ -84,7 +84,8 @@ export default function App() {
 
   // Start the speculative background prefetch pipeline immediately on mount and whenever role updates
   useEffect(() => {
-    initGlobalPrefetchPipeline(auth?.role || "member");
+    const isAuthed = Boolean(auth?.isLoggedIn && auth?.role !== "public");
+    initGlobalPrefetchPipeline(auth?.role || "public", isAuthed);
   }, [auth?.isLoggedIn, auth?.role]);
 
   const visiblePage =

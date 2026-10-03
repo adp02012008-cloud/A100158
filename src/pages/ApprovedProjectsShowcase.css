@@ -665,7 +665,7 @@
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  background: rgba(6, 4, 18, 0.85) !important;
+  background: rgba(15, 23, 42, 0.45) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
   display: flex !important;
@@ -681,20 +681,20 @@
   max-width: 960px;
   height: 85vh;
   max-height: min(88vh, 760px);
-  background: #130e26;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: #ffffff;
+  border: 1.5px solid #ede7dd;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
   box-sizing: border-box;
 }
 
 .ppt-modal-header {
   padding: 16px 22px;
-  background: rgba(20, 14, 40, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: #fbf9f5;
+  border-bottom: 1px solid #ede7dd;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -706,7 +706,7 @@
   gap: 10px;
   font-size: 16px;
   font-weight: 700;
-  color: #fbbf24;
+  color: #ea580c;
 }
 
 .ppt-modal-actions {
@@ -716,25 +716,30 @@
 }
 
 .ppt-modal-close-btn {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  font-size: 20px;
+  background: #f7f3ea;
+  border: 1px solid #ede7dd;
+  color: #6b7280;
+  font-size: 16px;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
   transition: all 0.2s ease;
 }
 
 .ppt-modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
 }
 
 .ppt-modal-body {
   flex: 1;
   position: relative;
-  background: #000;
+  background: #fbf9f5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -836,13 +841,13 @@
 
 .lightbox-thumb.active {
   opacity: 1;
-  border-color: #34d399;
+  border-color: #ea580c;
 }
 
 /* ── Modern Form Controls in Direct Add & Edit Modals ── */
 .modal-form-section {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #fbf9f5;
+  border: 1px solid #ede7dd;
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 14px;
@@ -851,7 +856,7 @@
 .modal-section-heading {
   font-size: 13px;
   font-weight: 700;
-  color: #34d399;
+  color: #ea580c;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 12px;

@@ -1302,6 +1302,7 @@ export default function Courses({ search: initialSearch = "" }) {
           userId: targetUserId,
           courseId: course._id,
           levelName,
+          levelIndex,
           completed: willBeCompleted,
           pointsEarned,
         },
@@ -1311,6 +1312,15 @@ export default function Courses({ search: initialSearch = "" }) {
         invalidateApiCache("/courses/progress");
         invalidateApiCache("/users/dashboard");
         invalidateApiCache("/users");
+        if (willBeCompleted) {
+          if (levelIndex > 0) {
+            showToast(`✓ Completed ${levelName} — all preceding levels auto-selected!`, "success");
+          } else {
+            showToast(`✓ Marked ${levelName} completed!`, "success");
+          }
+        } else {
+          showToast(`Updated completion for ${levelName}.`, "info");
+        }
         await loadData();
       }
     } catch (err) {

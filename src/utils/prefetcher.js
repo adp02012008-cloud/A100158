@@ -1,5 +1,6 @@
 import { prefetchApi, getCachedApi } from "./api";
 import { isChunkLoadError, recoverFromStaleChunk } from "./chunkRecovery";
+import { auth as firebaseAuth } from "../firebase";
 
 // Page component module chunk loaders
 const PAGE_CHUNK_LOADERS = {
@@ -61,6 +62,11 @@ export function preloadPageChunk(pageKey) {
  * Preload API endpoints for a specific page into memory cache
  */
 export function preloadPageData(pageKey) {
+  // If no user is signed in to Firebase, only public endpoints can be preloaded
+  if (!firebaseAuth.currentUser && pageKey !== "dashboard" && pageKey !== "leaderboard") {
+    return;
+  }
+
   const endpoints = PAGE_ENDPOINTS[pageKey] || [];
   endpoints.forEach((endpoint) => {
     if (!preloadedEndpoints.has(endpoint)) {
@@ -101,15 +107,25 @@ let pipelineRunForRole = "";
 /**
  * Global Background Speculative Preload Pipeline
  * Runs quietly in the background while the user stays on their current page,
- * ensuring all other pages have their code chunks and API data preloaded
+ * ensuring relevant pages have their code chunks and API data preloaded
  * before the user ever clicks on them.
  */
-export function initGlobalPrefetchPipeline(userRole = "member") {
+export function initGlobalPrefetchPipeline(userRole = "member", isAuthenticated = false) {
   const roleKey = String(userRole || "member").toLowerCase();
-  if (pipelineRunForRole === roleKey) return;
-  pipelineRunForRole = roleKey;
+  const cacheKey = `${roleKey}_${isAuthenticated ? "auth" : "anon"}`;
+  if (pipelineRunForRole === cacheKey) return;
+  pipelineRunForRole = cacheKey;
 
-  // Staggered priority tiers
+  // Unauthenticated or public viewer: only preload public code chunks and public endpoints
+  if (!isAuthenticated || roleKey === "public") {
+    preloadPageChunk("dashboard");
+    preloadPageChunk("leaderboard");
+    preloadPageData("dashboard");
+    preloadPageData("leaderboard");
+    return;
+  }
+
+  // Staggered priority tiers for authenticated users
   const primaryPages = ["courses", "leaderboard", "opportunities", "projects"];
   const secondaryPages = ["profile", "my-tasks", "hackathons", "gallery", "certificates"];
   const adminPages = roleKey === "admin" ? ["manage-users", "assign-tasks", "review-deliverables"] : [];

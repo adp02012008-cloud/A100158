@@ -231,10 +231,10 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
           width: "95%",
           padding: "26px",
           borderRadius: "18px",
-          background: "#120b24",
-          border: "1px solid rgba(139, 92, 246, 0.25)",
-          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
-          color: "#f8fafc",
+          background: "#ffffff",
+          border: "1px solid #ede7dd",
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.15)",
+          color: "#111827",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -252,11 +252,12 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
               display: "flex",
               alignItems: "center",
               gap: "10px",
+              color: "#111827",
             }}
           >
             <span>📤</span> Bulk Import &amp; Overwrite Courses
           </h3>
-          <p style={{ fontSize: "13px", color: "#94a3b8", margin: "6px 0 0 0", lineHeight: "1.5" }}>
+          <p style={{ fontSize: "13px", color: "#6b7280", margin: "6px 0 0 0", lineHeight: "1.5" }}>
             Upload a JSON or CSV file to import 50+ courses directly into MongoDB Atlas.
           </p>
         </div>
@@ -264,13 +265,13 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
         {/* Notice Banner */}
         <div
           style={{
-            background: "rgba(59, 130, 246, 0.12)",
-            border: "1px solid rgba(59, 130, 246, 0.3)",
+            background: "#eff6ff",
+            border: "1px solid #bfdbfe",
             borderRadius: "10px",
             padding: "12px 16px",
             marginBottom: "18px",
             fontSize: "13px",
-            color: "#93c5fd",
+            color: "#1d4ed8",
             display: "flex",
             alignItems: "flex-start",
             gap: "10px",
@@ -320,18 +321,18 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "24px",
-                border: "2px dashed rgba(255, 255, 255, 0.2)",
+                border: "2px dashed #d1d5db",
                 borderRadius: "14px",
-                background: "rgba(255, 255, 255, 0.03)",
+                background: "#fbf9f5",
                 cursor: "pointer",
                 transition: "border-color 0.2s ease",
               }}
             >
               <span style={{ fontSize: "32px", marginBottom: "8px" }}>📄</span>
-              <span style={{ fontSize: "14px", fontWeight: "600", color: "#e2e8f0" }}>
+              <span style={{ fontSize: "14px", fontWeight: "600", color: "#111827" }}>
                 {file ? file.name : "Click to select or drag & drop .JSON or .CSV file"}
               </span>
-              <span style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
+              <span style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
                 Supports standard JSON arrays or CSV files
               </span>
               <input
@@ -356,9 +357,9 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
                 width: "100%",
                 padding: "12px 14px",
                 borderRadius: "10px",
-                background: "#0a0618",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#f8fafc",
+                background: "#fbf9f5",
+                border: "1px solid #ede7dd",
+                color: "#111827",
                 fontSize: "12.5px",
                 fontFamily: "monospace",
                 outline: "none",
@@ -379,8 +380,8 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
         {activeTab === "help" && (
           <div
             style={{
-              background: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              background: "#fbf9f5",
+              border: "1px solid #ede7dd",
               borderRadius: "12px",
               padding: "16px",
               marginBottom: "20px",
@@ -389,13 +390,13 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
               overflowY: "auto",
             }}
           >
-            <h4 style={{ margin: "0 0 10px 0", color: "#a7f3d0", fontSize: "15px" }}>
+            <h4 style={{ margin: "0 0 10px 0", color: "#065f46", fontSize: "15px", fontWeight: "700" }}>
               📌 File &amp; Header Formatting Rules
             </h4>
-            <p style={{ margin: "0 0 10px 0", color: "#cbd5e1", lineHeight: "1.5" }}>
+            <p style={{ margin: "0 0 10px 0", color: "#4b5563", lineHeight: "1.5" }}>
               Your CSV, TSV, or JSON file should contain the following fields for each course level:
             </p>
-            <ul style={{ paddingLeft: "20px", margin: "0 0 14px 0", color: "#e2e8f0", lineHeight: "1.6" }}>
+            <ul style={{ paddingLeft: "20px", margin: "0 0 14px 0", color: "#374151", lineHeight: "1.6" }}>
               <li><strong>Course Name</strong> — <em>Required</em>. Main subject title (e.g., <code>Algebra</code>, <code>Advanced Modelling &amp; Simulation</code>).</li>
               <li><strong>Level</strong> — <em>Required</em>. Level code/name (e.g., <code>Level 0</code>, <code>Level 1</code>, <code>Level 1A</code>, <code>Level 2.0</code>).</li>
               <li><strong>Points</strong> — <em>Optional</em>. Points awarded for completing this level (e.g., <code>100</code>, <code>200</code>, <code>300</code>).</li>
@@ -440,17 +441,17 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
         {parsedCourses.length > 0 && (
           <div
             style={{
-              background: "rgba(16, 185, 129, 0.1)",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
+              background: "#ecfdf5",
+              border: "1px solid #a7f3d0",
               borderRadius: "10px",
               padding: "12px 16px",
               marginBottom: "20px",
             }}
           >
-            <div style={{ fontWeight: "700", color: "#6ee7b7", fontSize: "14px", marginBottom: "6px" }}>
+            <div style={{ fontWeight: "700", color: "#047857", fontSize: "14px", marginBottom: "6px" }}>
               ✅ Ready to Import: {parsedCourses.length} Courses Detected
             </div>
-            <div style={{ fontSize: "12.5px", color: "#cbd5e1" }}>
+            <div style={{ fontSize: "12.5px", color: "#374151" }}>
               <strong>Sample Courses:</strong>{" "}
               {parsedCourses
                 .slice(0, 5)
@@ -476,9 +477,9 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
         {error && (
           <div
             style={{
-              background: "rgba(239, 68, 68, 0.18)",
-              border: "1px solid rgba(239, 68, 68, 0.4)",
-              color: "#fca5a5",
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              color: "#b91c1c",
               padding: "10px 14px",
               borderRadius: "8px",
               marginBottom: "16px",
@@ -492,9 +493,9 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
         {resultMsg && (
           <div
             style={{
-              background: "rgba(16, 185, 129, 0.2)",
-              border: "1px solid rgba(16, 185, 129, 0.5)",
-              color: "#a7f3d0",
+              background: "#ecfdf5",
+              border: "1px solid #a7f3d0",
+              color: "#047857",
               padding: "10px 14px",
               borderRadius: "8px",
               marginBottom: "16px",
@@ -525,7 +526,7 @@ export default function BulkImportCoursesModal({ onClose, onSuccess }) {
             style={{
               fontSize: "13px",
               padding: "10px 22px",
-              background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
               color: "#fff",
               border: "none",
               borderRadius: "10px",

@@ -406,20 +406,20 @@ export default function MyTasksMember({ search = "" }) {
               if (taskSubs.length === 0) return null;
 
               return (
-                <div style={{ background: "#0f172a", padding: "12px", borderRadius: "8px", border: "1px solid #334155", marginBottom: "16px" }}>
-                  <h4 style={{ margin: "0 0 8px 0", color: "#38bdf8", fontSize: "0.95rem" }}>📜 Submission & Admin Review History:</h4>
+                <div style={{ background: "#fbf9f5", padding: "12px", borderRadius: "8px", border: "1px solid #ede7dd", marginBottom: "16px" }}>
+                  <h4 style={{ margin: "0 0 8px 0", color: "#ea580c", fontSize: "0.95rem", fontWeight: 700 }}>📜 Submission & Admin Review History:</h4>
                   {taskSubs.map((sub) => {
                     const subRevs = taskRevs.filter((r) => r.submissionId === sub.id || r.submissionId === sub.submissionId);
                     return (
-                      <div key={sub.id || sub.submissionId} style={{ background: "#1e293b", padding: "10px", borderRadius: "6px", marginBottom: "8px", fontSize: "0.85rem" }}>
+                      <div key={sub.id || sub.submissionId} style={{ background: "#ffffff", border: "1px solid #ede7dd", padding: "10px", borderRadius: "6px", marginBottom: "8px", fontSize: "0.85rem" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <div>
                             {(() => {
                               const submitterName = typeof sub.submittedBy === "object" ? sub.submittedBy?.name || sub.submittedBy?.email : (sub.submittedBy || sub.studentEmail);
                               return (
                                 <>
-                                  <strong style={{ color: "#f8fafc" }}>Version V{sub.version || 1}</strong>
-                                  <span style={{ marginLeft: "8px", color: "#94a3b8", fontSize: "0.75rem" }}>
+                                  <strong style={{ color: "#111827" }}>Version V{sub.version || 1}</strong>
+                                  <span style={{ marginLeft: "8px", color: "#6b7280", fontSize: "0.75rem" }}>
                                     by {submitterName} on {new Date(sub.submittedAt).toLocaleDateString()}
                                   </span>
                                 </>
@@ -430,11 +430,11 @@ export default function MyTasksMember({ search = "" }) {
                             {sub.status || "SUBMITTED"}
                           </span>
                         </div>
-                        {sub.notes && <div style={{ color: "#cbd5e1", marginTop: "4px" }}>Notes: {sub.notes}</div>}
+                        {sub.notes && <div style={{ color: "#4b5563", marginTop: "4px" }}>Notes: {sub.notes}</div>}
                         {subRevs.length > 0 && (
-                          <div style={{ marginTop: "6px", borderTop: "1px dashed #334155", paddingTop: "6px" }}>
+                          <div style={{ marginTop: "6px", borderTop: "1px dashed #ede7dd", paddingTop: "6px" }}>
                             {subRevs.map((rev) => (
-                              <div key={rev.id || rev.reviewId} style={{ color: rev.decision === "APPROVED" ? "#4ade80" : rev.decision === "CHANGES_REQUESTED" ? "#f87171" : "#38bdf8", fontSize: "0.8rem" }}>
+                              <div key={rev.id || rev.reviewId} style={{ color: rev.decision === "APPROVED" ? "#15803d" : rev.decision === "CHANGES_REQUESTED" ? "#b91c1c" : "#0369a1", fontSize: "0.8rem" }}>
                                 💬 <strong>{rev.reviewerEmail}:</strong> {rev.decision} {rev.feedback ? `- "${rev.feedback}"` : ""}
                               </div>
                             ))}
@@ -451,8 +451,8 @@ export default function MyTasksMember({ search = "" }) {
 
             <form onSubmit={handleSubmitDeliverable} className="task-form">
               {activeTask.submissionMode !== "INDIVIDUAL" && (
-                <div className="form-group" style={{ background: "#0f172a", padding: "12px", borderRadius: "8px", border: "1px solid #334155" }}>
-                  <label style={{ color: "#38bdf8", fontWeight: 700 }}>Submission Representation Method</label>
+                <div className="form-group" style={{ background: "#fbf9f5", padding: "12px", borderRadius: "8px", border: "1px solid #ede7dd" }}>
+                  <label style={{ color: "#ea580c", fontWeight: 700 }}>Submission Representation Method</label>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "6px" }}>
                     <label style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
                       <input

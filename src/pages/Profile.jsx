@@ -591,14 +591,14 @@ export default function Profile() {
 
       {/* EDIT MODE FORM */}
       {isEditing ? (
-        <form onSubmit={handleSave} style={{ background: "rgba(15, 23, 42, 0.8)", border: "1px solid rgba(99, 102, 241, 0.3)", borderRadius: "20px", padding: "32px", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
-          <h3 style={{ margin: "0 0 20px 0", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px", color: "#f8fafc", fontSize: "20px" }}>
+        <form onSubmit={handleSave} style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "20px", padding: "32px", boxShadow: "0 10px 30px rgba(0,0,0,0.06)" }}>
+          <h3 style={{ margin: "0 0 20px 0", borderBottom: "1px solid #ede7dd", paddingBottom: "12px", color: "#111827", fontSize: "20px", fontWeight: "700" }}>
             ✏️ Edit Personal Profile Information
           </h3>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
             {/* Profile Picture / Google Photo Sync Section */}
-            <div style={{ gridColumn: "1 / -1", padding: "16px", background: "rgba(30, 41, 59, 0.5)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ gridColumn: "1 / -1", padding: "16px", background: "#fbf9f5", borderRadius: "12px", border: "1px solid #ede7dd", display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
               <UserAvatar
                 src={formData.avatar || profile?.avatar || currentUser?.avatar || firebaseAuth.currentUser?.photoURL}
                 name={formData.name || currentUser?.name || "User"}
@@ -607,7 +607,7 @@ export default function Profile() {
                 showBorder={true}
               />
               <div style={{ flex: 1, minWidth: "240px" }}>
-                <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>
+                <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>
                   Profile Photo URL (Google / Custom)
                 </label>
                 <div style={{ display: "flex", gap: "10px" }}>
@@ -616,7 +616,7 @@ export default function Profile() {
                     placeholder="https://lh3.googleusercontent.com/... or image link"
                     value={formData.avatar}
                     onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                    style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: "13px" }}
+                    style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", fontSize: "13px", outline: "none" }}
                   />
                   <button
                     type="button"
@@ -637,116 +637,116 @@ export default function Profile() {
                     🔄 Sync Google Photo
                   </button>
                 </div>
-                <span style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px", display: "block" }}>
+                <span style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px", display: "block" }}>
                   Automatically synced from your Google sign-in. You can also paste an image URL or clear to use initials.
                 </span>
               </div>
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>Full Name *</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>Full Name *</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>Personal Email</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>Personal Email</label>
               <input
                 type="email"
                 placeholder="name@personal.com"
                 value={formData.personalEmail}
                 onChange={(e) => setFormData({ ...formData, personalEmail: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>BIT / Institutional Email</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>BIT / Institutional Email</label>
               <input
                 type="email"
                 placeholder="user.cs25@bitsathy.ac.in"
                 value={formData.bitEmail}
                 onChange={(e) => setFormData({ ...formData, bitEmail: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>Mobile Number</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>Mobile Number</label>
               <input
                 type="text"
                 placeholder="+91 9876543210"
                 value={formData.mobile}
                 onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>GitHub Profile URL</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>GitHub Profile URL</label>
               <input
                 type="text"
                 placeholder="https://github.com/username"
                 value={formData.github}
                 onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>LinkedIn Profile URL</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>LinkedIn Profile URL</label>
               <input
                 type="text"
                 placeholder="https://linkedin.com/in/username"
                 value={formData.linkedin}
                 onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "20px" }}>
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>Primary Interests (comma-separated)</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>Primary Interests (comma-separated)</label>
               <input
                 type="text"
                 placeholder="Web Development, Artificial Intelligence, Mobile Apps"
                 value={formData.primaryInterests}
                 onChange={(e) => setFormData({ ...formData, primaryInterests: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>Secondary Interests (comma-separated)</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>Secondary Interests (comma-separated)</label>
               <input
                 type="text"
                 placeholder="Cloud Computing, UI/UX Design, Open Source"
                 value={formData.secondaryInterests}
                 onChange={(e) => setFormData({ ...formData, secondaryInterests: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>Specializations (comma-separated)</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", fontWeight: "700", color: "#374151" }}>Specializations (comma-separated)</label>
               <input
                 type="text"
                 placeholder="React.js, Node.js, Python, MongoDB"
                 value={formData.specializations}
                 onChange={(e) => setFormData({ ...formData, specializations: e.target.value })}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#0f172a", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", background: "#ffffff", border: "1px solid #ede7dd", color: "#111827", boxSizing: "border-box", outline: "none" }}
               />
             </div>
           </div>
 
-          <div style={{ marginTop: "20px", padding: "14px", background: "rgba(255,255,255,0.04)", borderRadius: "10px", borderLeft: "4px solid #6366f1" }}>
-            <span style={{ fontSize: "12px", color: "#94a3b8" }}>
+          <div style={{ marginTop: "20px", padding: "14px", background: "#fff7ed", borderRadius: "10px", borderLeft: "4px solid #ea580c" }}>
+            <span style={{ fontSize: "12px", color: "#c2410c", fontWeight: "600" }}>
               🔒 Protected fields (Role, Status, Position, Cluster, Enrolment Number, Points) remain administrator-controlled.
             </span>
           </div>
@@ -756,14 +756,14 @@ export default function Profile() {
               type="button"
               onClick={handleCancelEdit}
               disabled={saving}
-              style={{ padding: "10px 18px", borderRadius: "8px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#cbd5e1", fontWeight: "600", cursor: "pointer" }}
+              style={{ padding: "10px 18px", borderRadius: "8px", background: "#fbf9f5", border: "1px solid #ede7dd", color: "#4b5563", fontWeight: "600", cursor: "pointer" }}
             >
               ❌ Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              style={{ padding: "10px 20px", borderRadius: "8px", background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none", color: "#fff", fontWeight: "700", cursor: "pointer" }}
+              style={{ padding: "10px 20px", borderRadius: "8px", background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)", border: "none", color: "#fff", fontWeight: "700", cursor: "pointer", boxShadow: "0 4px 14px rgba(234, 88, 12, 0.25)" }}
             >
               {saving ? "💾 Saving..." : "💾 Save Changes"}
             </button>
@@ -776,40 +776,40 @@ export default function Profile() {
           {activeTab === "OVERVIEW" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               {/* Personal Information */}
-              <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "18px", padding: "24px" }}>
-                <h3 style={{ margin: "0 0 18px 0", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px", color: "#f8fafc", fontSize: "18px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
+                <h3 style={{ margin: "0 0 18px 0", borderBottom: "1px solid #ede7dd", paddingBottom: "10px", color: "#111827", fontSize: "18px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
                   👤 Personal Information
                 </h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px" }}>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Full Name</label>
-                    <div style={{ fontWeight: "700", color: "#f8fafc", fontSize: "15px" }}>{profile?.name || "-"}</div>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Full Name</label>
+                    <div style={{ fontWeight: "700", color: "#111827", fontSize: "15px" }}>{profile?.name || "-"}</div>
                   </div>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Account Email (System)</label>
-                    <div style={{ fontWeight: "600", color: "#cbd5e1", fontSize: "14px" }}>{profile?.email || "-"}</div>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Account Email (System)</label>
+                    <div style={{ fontWeight: "600", color: "#374151", fontSize: "14px" }}>{profile?.email || "-"}</div>
                   </div>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Personal Email</label>
-                    <div style={{ fontSize: "14px", color: profile?.personalEmail ? "#f8fafc" : "#64748b" }}>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Personal Email</label>
+                    <div style={{ fontSize: "14px", color: profile?.personalEmail ? "#111827" : "#9ca3af" }}>
                       {profile?.personalEmail || "Not specified"}
                     </div>
                   </div>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>BIT / Institutional Email</label>
-                    <div style={{ fontSize: "14px", color: profile?.bitEmail ? "#f8fafc" : "#64748b" }}>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>BIT / Institutional Email</label>
+                    <div style={{ fontSize: "14px", color: profile?.bitEmail ? "#111827" : "#9ca3af" }}>
                       {profile?.bitEmail || "Not specified"}
                     </div>
                   </div>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Mobile Number</label>
-                    <div style={{ fontSize: "14px", color: profile?.mobile ? "#f8fafc" : "#64748b" }}>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Mobile Number</label>
+                    <div style={{ fontSize: "14px", color: profile?.mobile ? "#111827" : "#9ca3af" }}>
                       {profile?.mobile || "Not specified"}
                     </div>
                   </div>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Enrolment Number (Protected)</label>
-                    <div style={{ fontSize: "14px", fontFamily: "monospace", color: profile?.enrolmentNumber ? "#60a5fa" : "#64748b", fontWeight: "700" }}>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "4px", fontWeight: "600" }}>Enrolment Number (Protected)</label>
+                    <div style={{ fontSize: "14px", fontFamily: "monospace", color: profile?.enrolmentNumber ? "#ea580c" : "#9ca3af", fontWeight: "700" }}>
                       {profile?.enrolmentNumber || "Not assigned"}
                     </div>
                   </div>
@@ -817,17 +817,17 @@ export default function Profile() {
               </div>
 
               {/* Professional & Social Profiles */}
-              <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "18px", padding: "24px" }}>
-                <h3 style={{ margin: "0 0 18px 0", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px", color: "#f8fafc", fontSize: "18px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
+                <h3 style={{ margin: "0 0 18px 0", borderBottom: "1px solid #ede7dd", paddingBottom: "10px", color: "#111827", fontSize: "18px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
                   🔗 Professional & Social Profiles
                 </h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px" }}>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "6px", fontWeight: "600" }}>Position (Admin Managed)</label>
-                    <div style={{ fontSize: "15px", fontWeight: "700", color: "#f8fafc" }}>{profile?.position || "Member"}</div>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "6px", fontWeight: "600" }}>Position (Admin Managed)</label>
+                    <div style={{ fontSize: "15px", fontWeight: "700", color: "#111827" }}>{profile?.position || "Member"}</div>
                   </div>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "6px", fontWeight: "600" }}>GitHub Profile</label>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "6px", fontWeight: "600" }}>GitHub Profile</label>
                     <div>
                       {profile?.github ? (
                         <a
@@ -840,9 +840,9 @@ export default function Profile() {
                             gap: "6px",
                             padding: "6px 14px",
                             borderRadius: "8px",
-                            background: "rgba(255,255,255,0.08)",
-                            border: "1px solid rgba(255,255,255,0.2)",
-                            color: "#60a5fa",
+                            background: "#fbf9f5",
+                            border: "1px solid #ede7dd",
+                            color: "#111827",
                             textDecoration: "none",
                             fontSize: "13px",
                             fontWeight: "600",
@@ -851,12 +851,12 @@ export default function Profile() {
                           📦 {profile.github}
                         </a>
                       ) : (
-                        <span style={{ color: "#64748b", fontSize: "14px" }}>Not specified</span>
+                        <span style={{ color: "#9ca3af", fontSize: "14px" }}>Not specified</span>
                       )}
                     </div>
                   </div>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "6px", fontWeight: "600" }}>LinkedIn Profile</label>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "6px", fontWeight: "600" }}>LinkedIn Profile</label>
                     <div>
                       {profile?.linkedin ? (
                         <a
@@ -869,9 +869,9 @@ export default function Profile() {
                             gap: "6px",
                             padding: "6px 14px",
                             borderRadius: "8px",
-                            background: "rgba(59, 130, 246, 0.15)",
-                            border: "1px solid rgba(59, 130, 246, 0.3)",
-                            color: "#93c5fd",
+                            background: "#eff6ff",
+                            border: "1px solid #bfdbfe",
+                            color: "#1d4ed8",
                             textDecoration: "none",
                             fontSize: "13px",
                             fontWeight: "600",
@@ -880,7 +880,7 @@ export default function Profile() {
                           🔗 {profile.linkedin}
                         </a>
                       ) : (
-                        <span style={{ color: "#64748b", fontSize: "14px" }}>Not specified</span>
+                        <span style={{ color: "#9ca3af", fontSize: "14px" }}>Not specified</span>
                       )}
                     </div>
                   </div>
@@ -888,52 +888,52 @@ export default function Profile() {
               </div>
 
               {/* Interests & Specializations */}
-              <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "18px", padding: "24px" }}>
-                <h3 style={{ margin: "0 0 18px 0", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px", color: "#f8fafc", fontSize: "18px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
+                <h3 style={{ margin: "0 0 18px 0", borderBottom: "1px solid #ede7dd", paddingBottom: "10px", color: "#111827", fontSize: "18px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
                   💡 Interests & Specializations
                 </h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "8px", fontWeight: "600" }}>Primary Interests</label>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "8px", fontWeight: "600" }}>Primary Interests</label>
                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                       {profile?.primaryInterests?.length > 0 ? (
                         profile.primaryInterests.map((item, idx) => (
-                          <span key={idx} style={{ background: "rgba(99, 102, 241, 0.2)", border: "1px solid rgba(99, 102, 241, 0.4)", color: "#a5b4fc", padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600" }}>
+                          <span key={idx} style={{ background: "#fff7ed", border: "1px solid #fdba74", color: "#ea580c", padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600" }}>
                             {item}
                           </span>
                         ))
                       ) : (
-                        <span style={{ color: "#64748b", fontSize: "13px" }}>None added yet</span>
+                        <span style={{ color: "#9ca3af", fontSize: "13px" }}>None added yet</span>
                       )}
                     </div>
                   </div>
 
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "8px", fontWeight: "600" }}>Secondary Interests</label>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "8px", fontWeight: "600" }}>Secondary Interests</label>
                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                       {profile?.secondaryInterests?.length > 0 ? (
                         profile.secondaryInterests.map((item, idx) => (
-                          <span key={idx} style={{ background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#cbd5e1", padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600" }}>
+                          <span key={idx} style={{ background: "#fbf9f5", border: "1px solid #ede7dd", color: "#374151", padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600" }}>
                             {item}
                           </span>
                         ))
                       ) : (
-                        <span style={{ color: "#64748b", fontSize: "13px" }}>None added yet</span>
+                        <span style={{ color: "#9ca3af", fontSize: "13px" }}>None added yet</span>
                       )}
                     </div>
                   </div>
 
                   <div>
-                    <label style={{ color: "#94a3b8", fontSize: "12px", display: "block", marginBottom: "8px", fontWeight: "600" }}>Specializations</label>
+                    <label style={{ color: "#6b7280", fontSize: "12px", display: "block", marginBottom: "8px", fontWeight: "600" }}>Specializations</label>
                     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                       {profile?.specializations?.length > 0 ? (
                         profile.specializations.map((item, idx) => (
-                          <span key={idx} style={{ background: "rgba(168, 85, 247, 0.2)", border: "1px solid rgba(168, 85, 247, 0.4)", color: "#d8b4fe", padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600" }}>
+                          <span key={idx} style={{ background: "#faf5ff", border: "1px solid #e9d5ff", color: "#7c3aed", padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: "600" }}>
                             {item}
                           </span>
                         ))
                       ) : (
-                        <span style={{ color: "#64748b", fontSize: "13px" }}>None added yet</span>
+                        <span style={{ color: "#9ca3af", fontSize: "13px" }}>None added yet</span>
                       )}
                     </div>
                   </div>
@@ -941,33 +941,33 @@ export default function Profile() {
               </div>
 
               {/* Protected System Status */}
-              <div style={{ background: "rgba(15, 23, 42, 0.5)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "18px", padding: "24px" }}>
-                <h3 style={{ margin: "0 0 16px 0", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "10px", color: "#94a3b8", fontSize: "15px", fontWeight: "700" }}>
+              <div style={{ background: "#fbf9f5", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px" }}>
+                <h3 style={{ margin: "0 0 16px 0", borderBottom: "1px solid #ede7dd", paddingBottom: "10px", color: "#6b7280", fontSize: "15px", fontWeight: "700" }}>
                   🔒 Protected System Metadata (Administrator Controlled)
                 </h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
                   <div>
-                    <label style={{ color: "#64748b", fontSize: "12px", display: "block", marginBottom: "4px" }}>System User ID</label>
-                    <div style={{ fontFamily: "monospace", color: "#94a3b8", fontWeight: "600" }}>{profile?.userId || "-"}</div>
+                    <label style={{ color: "#9ca3af", fontSize: "12px", display: "block", marginBottom: "4px" }}>System User ID</label>
+                    <div style={{ fontFamily: "monospace", color: "#4b5563", fontWeight: "600" }}>{profile?.userId || "-"}</div>
                   </div>
                   <div>
-                    <label style={{ color: "#64748b", fontSize: "12px", display: "block", marginBottom: "4px" }}>Role Status</label>
-                    <div style={{ fontWeight: "700", color: profile?.role === "ADMIN" ? "#eab308" : "#cbd5e1" }}>{profile?.role}</div>
+                    <label style={{ color: "#9ca3af", fontSize: "12px", display: "block", marginBottom: "4px" }}>Role Status</label>
+                    <div style={{ fontWeight: "700", color: profile?.role === "ADMIN" ? "#ea580c" : "#374151" }}>{profile?.role}</div>
                   </div>
                   <div>
-                    <label style={{ color: "#64748b", fontSize: "12px", display: "block", marginBottom: "4px" }}>Account Status</label>
-                    <div style={{ fontWeight: "700", color: profile?.status === "ACTIVE" ? "#22c55e" : "#ef4444" }}>{profile?.status}</div>
+                    <label style={{ color: "#9ca3af", fontSize: "12px", display: "block", marginBottom: "4px" }}>Account Status</label>
+                    <div style={{ fontWeight: "700", color: profile?.status === "ACTIVE" ? "#15803d" : "#b91c1c" }}>{profile?.status}</div>
                   </div>
                   <div>
-                    <label style={{ color: "#64748b", fontSize: "12px", display: "block", marginBottom: "4px" }}>Cluster Assignment</label>
-                    <div style={{ fontWeight: "600", color: "#f8fafc" }}>{profile?.clusterName || "Core"}</div>
+                    <label style={{ color: "#9ca3af", fontSize: "12px", display: "block", marginBottom: "4px" }}>Cluster Assignment</label>
+                    <div style={{ fontWeight: "600", color: "#111827" }}>{profile?.clusterName || "Core"}</div>
                   </div>
                   <div>
-                    <label style={{ color: "#64748b", fontSize: "12px", display: "block", marginBottom: "4px" }}>Activity Points</label>
-                    <div style={{ fontWeight: "800", color: "#38bdf8", fontSize: "16px" }}>{profile?.activityPoints || 0} pts</div>
+                    <label style={{ color: "#9ca3af", fontSize: "12px", display: "block", marginBottom: "4px" }}>Activity Points</label>
+                    <div style={{ fontWeight: "800", color: "#ea580c", fontSize: "16px" }}>{profile?.activityPoints || 0} pts</div>
                   </div>
                   <div>
-                    <label style={{ color: "#64748b", fontSize: "12px", display: "block", marginBottom: "4px" }}>Reward Points</label>
+                    <label style={{ color: "#9ca3af", fontSize: "12px", display: "block", marginBottom: "4px" }}>Reward Points</label>
                     <div style={{ fontWeight: "800", color: "#f59e0b", fontSize: "16px" }}>{profile?.rewardPoints || profile?.rewardPts || 0} pts</div>
                   </div>
                 </div>
@@ -977,16 +977,16 @@ export default function Profile() {
 
           {/* TAB 2: COMPLETED COURSES */}
           {activeTab === "COURSES" && (
-            <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "18px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 20px 0", color: "#818cf8", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)" }}>
+              <h3 style={{ margin: "0 0 20px 0", color: "#4f46e5", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
                 🎓 Verified Completed Courses
               </h3>
 
               {userCourses.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#6b7280" }}>
                   <div style={{ fontSize: "40px", marginBottom: "12px" }}>📚</div>
-                  <p style={{ fontSize: "15px", fontWeight: "600" }}>No completed courses recorded yet.</p>
-                  <small style={{ color: "#64748b" }}>Complete assigned courses on the Dashboard to earn completion badges!</small>
+                  <p style={{ fontSize: "15px", fontWeight: "600", color: "#374151" }}>No completed courses recorded yet.</p>
+                  <small style={{ color: "#9ca3af" }}>Complete assigned courses on the Dashboard to earn completion badges!</small>
                 </div>
               ) : (
                 <div className="profile-showcase-grid">
@@ -1001,9 +1001,9 @@ export default function Profile() {
                             width: "42px",
                             height: "42px",
                             borderRadius: "12px",
-                            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)",
-                            border: "1px solid rgba(99, 102, 241, 0.4)",
-                            color: "#a5b4fc",
+                            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%)",
+                            border: "1px solid rgba(99, 102, 241, 0.25)",
+                            color: "#4f46e5",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -1015,11 +1015,11 @@ export default function Profile() {
                           🎓
                         </div>
                         <div>
-                          <h4 style={{ margin: "0 0 4px 0", color: "#f8fafc", fontSize: "15px", fontWeight: "700" }}>
+                          <h4 style={{ margin: "0 0 4px 0", color: "#111827", fontSize: "15px", fontWeight: "700" }}>
                             {c.title || c.courseName || c.display || c}
                           </h4>
-                          <span style={{ fontSize: "12px", color: "#94a3b8" }}>
-                            Level: <strong style={{ color: "#c084fc", fontWeight: "700" }}>{c.level || c.currentLevel || "Completed"}</strong>
+                          <span style={{ fontSize: "12px", color: "#6b7280" }}>
+                            Level: <strong style={{ color: "#7c3aed", fontWeight: "700" }}>{c.level || c.currentLevel || "Completed"}</strong>
                           </span>
                         </div>
                       </div>
@@ -1028,9 +1028,9 @@ export default function Profile() {
                         style={{
                           fontSize: "12px",
                           fontWeight: "700",
-                          color: "#4ade80",
-                          background: "rgba(34, 197, 94, 0.15)",
-                          border: "1px solid rgba(34, 197, 94, 0.3)",
+                          color: "#15803d",
+                          background: "rgba(34, 197, 94, 0.12)",
+                          border: "1px solid rgba(34, 197, 94, 0.25)",
                           padding: "4px 12px",
                           borderRadius: "20px",
                           whiteSpace: "nowrap",
@@ -1047,16 +1047,16 @@ export default function Profile() {
 
           {/* TAB 3: PUBLISHED PROJECTS */}
           {activeTab === "PROJECTS" && (
-            <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "18px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 20px 0", color: "#34d399", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)" }}>
+              <h3 style={{ margin: "0 0 20px 0", color: "#059669", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
                 🏆 Submitted & Published Showcase Projects
               </h3>
 
               {userProjects.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#6b7280" }}>
                   <div style={{ fontSize: "40px", marginBottom: "12px" }}>💻</div>
-                  <p style={{ fontSize: "15px", fontWeight: "600" }}>No published showcase projects found for your account.</p>
-                  <small style={{ color: "#64748b" }}>Submit assigned deliverables to get them approved and published to the Projects Showcase!</small>
+                  <p style={{ fontSize: "15px", fontWeight: "600", color: "#374151" }}>No published showcase projects found for your account.</p>
+                  <small style={{ color: "#9ca3af" }}>Submit assigned deliverables to get them approved and published to the Projects Showcase!</small>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
@@ -1068,32 +1068,32 @@ export default function Profile() {
                       <div
                         key={p._id}
                         style={{
-                          background: "rgba(15, 23, 42, 0.9)",
-                          border: "1px solid rgba(52, 211, 153, 0.3)",
+                          background: "#fbf9f5",
+                          border: "1px solid #ede7dd",
                           borderRadius: "16px",
                           padding: "22px",
                           display: "flex",
                           flexDirection: "column",
-                          justify: "space-between",
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                          justifyContent: "space-between",
+                          boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
                         }}
                       >
                         <div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#34d399", background: "rgba(16, 185, 129, 0.15)", padding: "4px 10px", borderRadius: "20px" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#059669", background: "rgba(16, 185, 129, 0.12)", padding: "4px 10px", borderRadius: "20px" }}>
                               {domain}
                             </span>
-                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#38bdf8", background: "rgba(56, 189, 248, 0.15)", padding: "4px 10px", borderRadius: "20px" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#0284c7", background: "rgba(56, 189, 248, 0.12)", padding: "4px 10px", borderRadius: "20px" }}>
                               Version {p.version || "V1"}
                             </span>
                           </div>
 
-                          <h4 style={{ margin: "6px 0 10px 0", color: "#f8fafc", fontSize: "18px", fontWeight: "800" }}>
+                          <h4 style={{ margin: "6px 0 10px 0", color: "#111827", fontSize: "18px", fontWeight: "800" }}>
                             {title}
                           </h4>
 
                           {p.notes && (
-                            <p style={{ margin: "0 0 14px 0", color: "#cbd5e1", fontSize: "13px", lineHeight: "1.5" }}>
+                            <p style={{ margin: "0 0 14px 0", color: "#4b5563", fontSize: "13px", lineHeight: "1.5" }}>
                               {p.notes.substring(0, 110)}{p.notes.length > 110 ? "…" : ""}
                             </p>
                           )}
@@ -1132,9 +1132,9 @@ export default function Profile() {
                                   textAlign: "center",
                                   padding: "8px 12px",
                                   borderRadius: "8px",
-                                  background: "rgba(255, 255, 255, 0.08)",
-                                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                                  color: "#f8fafc",
+                                  background: "#ffffff",
+                                  border: "1px solid #d1d5db",
+                                  color: "#111827",
                                   fontWeight: "700",
                                   fontSize: "12px",
                                   textDecoration: "none",
@@ -1155,16 +1155,16 @@ export default function Profile() {
 
           {/* TAB 4: HACKATHONS */}
           {activeTab === "HACKATHONS" && (
-            <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "18px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 20px 0", color: "#fbbf24", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)" }}>
+              <h3 style={{ margin: "0 0 20px 0", color: "#d97706", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
                 🚀 Hackathons Participated
               </h3>
 
               {userHackathons.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#6b7280" }}>
                   <div style={{ fontSize: "40px", marginBottom: "12px" }}>🏆</div>
-                  <p style={{ fontSize: "15px", fontWeight: "600" }}>No hackathon records matched your profile.</p>
-                  <small style={{ color: "#64748b" }}>Register and participate in hackathons on the Hackathons page to showcase team achievements!</small>
+                  <p style={{ fontSize: "15px", fontWeight: "600", color: "#374151" }}>No hackathon records matched your profile.</p>
+                  <small style={{ color: "#9ca3af" }}>Register and participate in hackathons on the Hackathons page to showcase team achievements!</small>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "18px" }}>
@@ -1172,37 +1172,38 @@ export default function Profile() {
                     <div
                       key={h.EVENT_ID || h._id || idx}
                       style={{
-                        background: "rgba(15, 23, 42, 0.9)",
-                        border: "1px solid rgba(245, 158, 11, 0.3)",
+                        background: "#fbf9f5",
+                        border: "1px solid #ede7dd",
                         borderRadius: "16px",
                         padding: "20px",
                         display: "flex",
                         flexDirection: "column",
-                        justify: "space-between",
+                        justifyContent: "space-between",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
                       }}
                     >
                       <div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#fbbf24", background: "rgba(245, 158, 11, 0.15)", padding: "3px 10px", borderRadius: "20px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#b45309", background: "rgba(245, 158, 11, 0.12)", padding: "3px 10px", borderRadius: "20px" }}>
                             {h.STATUS || "Participated"}
                           </span>
                           {h.POSITION && (
-                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#38bdf8", background: "rgba(56, 189, 248, 0.15)", padding: "3px 10px", borderRadius: "20px" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#0284c7", background: "rgba(56, 189, 248, 0.12)", padding: "3px 10px", borderRadius: "20px" }}>
                               {h.POSITION}
                             </span>
                           )}
                         </div>
 
-                        <h4 style={{ margin: "6px 0 4px 0", color: "#f8fafc", fontSize: "17px", fontWeight: "800" }}>
+                        <h4 style={{ margin: "6px 0 4px 0", color: "#111827", fontSize: "17px", fontWeight: "800" }}>
                           {h.TITLE || h.title}
                         </h4>
 
-                        <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "10px" }}>
+                        <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "10px" }}>
                           🏛️ {h.ORGANIZER || h.organizer || "College Competition"} • 📅 {h.DATE || "Recent"}
                         </div>
 
                         {(h.PROJECT || h.project) && (
-                          <div style={{ padding: "8px 12px", background: "rgba(255,255,255,0.04)", borderRadius: "8px", marginBottom: "10px", fontSize: "12px", color: "#cbd5e1" }}>
+                          <div style={{ padding: "8px 12px", background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "8px", marginBottom: "10px", fontSize: "12px", color: "#4b5563" }}>
                             <strong>Project:</strong> {h.PROJECT || h.project}
                           </div>
                         )}
@@ -1214,7 +1215,7 @@ export default function Profile() {
                             href={String(h.GITHUB || h.github).startsWith("http") ? (h.GITHUB || h.github) : `https://${h.GITHUB || h.github}`}
                             target="_blank"
                             rel="noreferrer"
-                            style={{ flex: 1, textAlign: "center", padding: "6px 10px", borderRadius: "6px", background: "rgba(255,255,255,0.08)", color: "#fff", fontSize: "12px", textDecoration: "none", fontWeight: "600" }}
+                            style={{ flex: 1, textAlign: "center", padding: "6px 10px", borderRadius: "6px", background: "#ffffff", border: "1px solid #d1d5db", color: "#111827", fontSize: "12px", textDecoration: "none", fontWeight: "600" }}
                           >
                             📦 Code
                           </a>
@@ -1224,7 +1225,7 @@ export default function Profile() {
                             href={String(h.DEMO || h.demo).startsWith("http") ? (h.DEMO || h.demo) : `https://${h.DEMO || h.demo}`}
                             target="_blank"
                             rel="noreferrer"
-                            style={{ flex: 1, textAlign: "center", padding: "6px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.2)", color: "#34d399", fontSize: "12px", textDecoration: "none", fontWeight: "600" }}
+                            style={{ flex: 1, textAlign: "center", padding: "6px 10px", borderRadius: "6px", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.25)", color: "#059669", fontSize: "12px", textDecoration: "none", fontWeight: "600" }}
                           >
                             🚀 Demo
                           </a>
@@ -1239,16 +1240,16 @@ export default function Profile() {
 
           {/* TAB 5: CERTIFICATES */}
           {activeTab === "CERTIFICATES" && (
-            <div style={{ background: "rgba(15, 23, 42, 0.7)", border: "1px solid rgba(255, 255, 255, 0.12)", borderRadius: "18px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 20px 0", color: "#c084fc", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)" }}>
+              <h3 style={{ margin: "0 0 20px 0", color: "#7c3aed", fontSize: "20px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
                 📜 Submitted & Verified Certificates
               </h3>
 
               {userCertificates.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#6b7280" }}>
                   <div style={{ fontSize: "40px", marginBottom: "12px" }}>📜</div>
-                  <p style={{ fontSize: "15px", fontWeight: "600" }}>No certificates linked to your enrolment number or email.</p>
-                  <small style={{ color: "#64748b" }}>Upload your course and hackathon certificates on the Certificates page!</small>
+                  <p style={{ fontSize: "15px", fontWeight: "600", color: "#374151" }}>No certificates linked to your enrolment number or email.</p>
+                  <small style={{ color: "#9ca3af" }}>Upload your course and hackathon certificates on the Certificates page!</small>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "18px" }}>
@@ -1256,35 +1257,36 @@ export default function Profile() {
                     <div
                       key={cert.CERTIFICATE_ID || cert._id || idx}
                       style={{
-                        background: "rgba(15, 23, 42, 0.9)",
-                        border: "1px solid rgba(168, 85, 247, 0.3)",
+                        background: "#fbf9f5",
+                        border: "1px solid #ede7dd",
                         borderRadius: "16px",
                         padding: "20px",
                         display: "flex",
                         flexDirection: "column",
-                        justify: "space-between",
+                        justifyContent: "space-between",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
                       }}
                     >
                       <div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#c084fc", background: "rgba(168, 85, 247, 0.15)", padding: "3px 10px", borderRadius: "20px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#7c3aed", background: "rgba(168, 85, 247, 0.12)", padding: "3px 10px", borderRadius: "20px" }}>
                             {cert.CATEGORY || "Certificate"}
                           </span>
-                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#4ade80", background: "rgba(34, 197, 94, 0.15)", padding: "3px 10px", borderRadius: "20px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: "700", color: "#15803d", background: "rgba(34, 197, 94, 0.12)", padding: "3px 10px", borderRadius: "20px" }}>
                             {cert.STATUS || "Verified"}
                           </span>
                         </div>
 
-                        <h4 style={{ margin: "6px 0 4px 0", color: "#f8fafc", fontSize: "17px", fontWeight: "800" }}>
+                        <h4 style={{ margin: "6px 0 4px 0", color: "#111827", fontSize: "17px", fontWeight: "800" }}>
                           {cert.TITLE || cert.title}
                         </h4>
 
-                        <div style={{ fontSize: "13px", color: "#94a3b8", marginBottom: "8px" }}>
+                        <div style={{ fontSize: "13px", color: "#6b7280", marginBottom: "8px" }}>
                           🏛️ {cert.ISSUER || cert.issuer || "Issuing Organization"}
                         </div>
 
                         {cert.DATE && (
-                          <div style={{ fontSize: "12px", color: "#cbd5e1" }}>
+                          <div style={{ fontSize: "12px", color: "#4b5563" }}>
                             📅 Completion: {cert.DATE}
                           </div>
                         )}

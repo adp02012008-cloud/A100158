@@ -227,7 +227,7 @@ export default function EditModal({ student, onClose, onSaved }) {
               <label className="edit-label">Cluster</label>
               <select
                 className="edit-input"
-                style={{ background: "#0f172a", color: "#f8fafc" }}
+                style={{ background: "#ffffff", color: "#111827", border: "1.5px solid #ede7dd" }}
                 value={personalForm.CLUSTER}
                 onChange={(e) => setPersonal("CLUSTER", e.target.value)}
               >
@@ -247,7 +247,7 @@ export default function EditModal({ student, onClose, onSaved }) {
                   <label className="edit-label">Role (Permission)</label>
                   <select
                     className="edit-input"
-                    style={{ background: "#0f172a", color: "#f8fafc" }}
+                    style={{ background: "#ffffff", color: "#111827", border: "1.5px solid #ede7dd" }}
                     value={adminForm.ROLE}
                     onChange={(e) => setAdmin("ROLE", e.target.value)}
                   >
@@ -260,7 +260,7 @@ export default function EditModal({ student, onClose, onSaved }) {
                   <label className="edit-label">Account Status</label>
                   <select
                     className="edit-input"
-                    style={{ background: "#0f172a", color: "#f8fafc" }}
+                    style={{ background: "#ffffff", color: "#111827", border: "1.5px solid #ede7dd" }}
                     value={adminForm.STATUS}
                     onChange={(e) => setAdmin("STATUS", e.target.value)}
                   >
@@ -364,7 +364,7 @@ function EditField({ label, value, onChange, type = "text", placeholder }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-      <label className="edit-label" style={{ fontSize: "13px", fontWeight: "600", color: "#cbd5e1" }}>{label}</label>
+      <label className="edit-label" style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>{label}</label>
       <input
         className="edit-input"
         type={type}
@@ -372,14 +372,13 @@ function EditField({ label, value, onChange, type = "text", placeholder }) {
         style={{
           width: "100%",
           padding: "10px 14px",
-          background: "rgba(15, 23, 42, 0.6)",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
+          background: "#ffffff",
+          border: "1.5px solid #ede7dd",
           borderRadius: "8px",
-          color: "#f8fafc",
+          color: "#111827",
           fontSize: "14px",
           outline: "none",
           boxSizing: "border-box",
-          colorScheme: type === "date" ? "dark" : undefined,
         }}
         value={inputValue}
         onChange={(e) => onChange(e.target.value)}

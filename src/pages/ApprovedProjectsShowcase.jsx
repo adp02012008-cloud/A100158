@@ -7,21 +7,21 @@ import "./ApprovedProjectsShowcase.css";
 
 // Vector & emoji icons per domain
 const DOMAIN_CONFIG = {
-  "Full-Stack Software Development": { icon: "💻", color: "#10b981", bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)" },
-  "UI/UX Design & Prototyping": { icon: "🎨", color: "#ec4899", bg: "linear-gradient(135deg, #180927 0%, #31103f 100%)" },
-  "AI / Machine Learning": { icon: "🤖", color: "#8b5cf6", bg: "linear-gradient(135deg, #091a2f 0%, #1e1b4b 100%)" },
-  "Mobile App Development": { icon: "📱", color: "#0ea5e9", bg: "linear-gradient(135deg, #0c1a2c 0%, #0f2e46 100%)" },
-  "Cloud & DevOps Engineering": { icon: "☁️", color: "#f59e0b", bg: "linear-gradient(135deg, #1f1607 0%, #2f200c 100%)" },
-  "Cyber Security": { icon: "🛡️", color: "#ef4444", bg: "linear-gradient(135deg, #240b0b 0%, #3b1111 100%)" },
-  "Core": { icon: "⚡", color: "#6366f1", bg: "linear-gradient(135deg, #110d29 0%, #1a1542 100%)" },
+  "Full-Stack Software Development": { icon: "💻", color: "#059669", bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)" },
+  "UI/UX Design & Prototyping": { icon: "🎨", color: "#db2777", bg: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)" },
+  "AI / Machine Learning": { icon: "🤖", color: "#7c3aed", bg: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)" },
+  "Mobile App Development": { icon: "📱", color: "#0284c7", bg: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)" },
+  "Cloud & DevOps Engineering": { icon: "☁️", color: "#d97706", bg: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)" },
+  "Cyber Security": { icon: "🛡️", color: "#dc2626", bg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)" },
+  "Core": { icon: "⚡", color: "#4f46e5", bg: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)" },
 };
 
 function getDomainMeta(domain = "Core") {
   return (
     DOMAIN_CONFIG[domain] || {
       icon: "🚀",
-      color: "#34d399",
-      bg: "linear-gradient(135deg, #0f172a 0%, #181135 100%)",
+      color: "#059669",
+      bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
     }
   );
 }
@@ -531,19 +531,20 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
       ) : filteredProjects.length === 0 ? (
         <div
           style={{
-            background: "rgba(24, 16, 46, 0.6)",
-            border: "1px dashed rgba(255, 255, 255, 0.15)",
+            background: "#ffffff",
+            border: "1.5px dashed #ede7dd",
             borderRadius: "20px",
             padding: "60px 24px",
             textAlign: "center",
-            color: "#94a3b8",
+            color: "#6b7280",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.03)",
           }}
         >
           <div style={{ fontSize: "38px", marginBottom: "12px" }}>🔍</div>
-          <h3 style={{ margin: "0 0 8px 0", color: "#f8fafc", fontSize: "18px" }}>
+          <h3 style={{ margin: "0 0 8px 0", color: "#111827", fontSize: "18px", fontWeight: "700" }}>
             No projects matched your criteria
           </h3>
-          <p style={{ margin: 0, fontSize: "14px" }}>
+          <p style={{ margin: 0, fontSize: "14px", color: "#6b7280" }}>
             Try adjusting your search query or selecting a different domain category.
           </p>
         </div>
@@ -925,28 +926,28 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
             style={{
               width: "100%",
               maxWidth: "500px",
-              background: "#181033",
-              border: "1px solid rgba(52, 211, 153, 0.35)",
+              background: "#ffffff",
+              border: "1.5px solid #ede7dd",
               borderRadius: "20px",
               padding: "24px",
-              boxShadow: "0 25px 50px rgba(0,0,0,0.7)",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.12)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h3 style={{ margin: 0, color: "#34d399", fontSize: "18px" }}>
+              <h3 style={{ margin: 0, color: "#059669", fontSize: "18px", fontWeight: "700" }}>
                 🏆 Recognized Squad Contributors
               </h3>
               <button
                 type="button"
                 onClick={() => setTeamModal({ open: false, title: "", members: [] })}
-                style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "16px", cursor: "pointer" }}
+                style={{ background: "#f7f3ea", border: "1px solid #ede7dd", color: "#6b7280", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", cursor: "pointer" }}
               >
                 ✕
               </button>
             </div>
 
-            <p style={{ margin: "0 0 16px 0", color: "#cbd5e1", fontSize: "13px" }}>
+            <p style={{ margin: "0 0 16px 0", color: "#4b5563", fontSize: "13px" }}>
               Team members recognized for contributing to <strong>"{teamModal.title}"</strong>:
             </p>
 
@@ -961,8 +962,8 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       display: "flex",
                       alignItems: "center",
                       gap: "12px",
-                      background: "rgba(15, 23, 42, 0.6)",
-                      border: "1px solid rgba(255, 255, 255, 0.08)",
+                      background: "#fbf9f5",
+                      border: "1px solid #ede7dd",
                       padding: "10px 14px",
                       borderRadius: "12px",
                     }}
@@ -973,11 +974,11 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       size={34}
                     />
                     <div>
-                      <div style={{ fontWeight: "700", color: "#f8fafc", fontSize: "14px" }}>
+                      <div style={{ fontWeight: "700", color: "#111827", fontSize: "14px" }}>
                         {name}
                       </div>
                       {email && (
-                        <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+                        <div style={{ fontSize: "12px", color: "#6b7280" }}>
                           {email}
                         </div>
                       )}
@@ -999,22 +1000,22 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
               maxWidth: "640px",
               maxHeight: "90vh",
               overflowY: "auto",
-              background: "#160f2e",
-              border: "1px solid rgba(52, 211, 153, 0.35)",
+              background: "#ffffff",
+              border: "1.5px solid #ede7dd",
               borderRadius: "20px",
               padding: "28px",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.12)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h3 style={{ margin: 0, color: "#34d399", fontSize: "20px", fontWeight: "800" }}>
+              <h3 style={{ margin: 0, color: "#059669", fontSize: "20px", fontWeight: "800" }}>
                 ⚡ Direct Publish Project to Showcase
               </h3>
               <button
                 type="button"
                 onClick={() => setDirectAddOpen(false)}
-                style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "18px", cursor: "pointer" }}
+                style={{ background: "#f7f3ea", border: "1px solid #ede7dd", color: "#6b7280", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", cursor: "pointer" }}
               >
                 ✕
               </button>
@@ -1028,7 +1029,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                 </div>
 
                 <div style={{ marginBottom: "12px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#111827", display: "block", marginBottom: "6px" }}>
                     Project Title *
                   </label>
                   <input
@@ -1037,18 +1038,18 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                     placeholder="e.g. AI-Powered Team Analytics Dashboard"
                     value={directForm.title}
                     onChange={(e) => setDirectForm({ ...directForm, title: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827" }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#111827", display: "block", marginBottom: "6px" }}>
                     Domain / Category *
                   </label>
                   <select
                     value={directForm.domain}
                     onChange={(e) => setDirectForm({ ...directForm, domain: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827" }}
                   >
                     <option value="Full-Stack Software Development">💻 Full-Stack Software Development</option>
                     <option value="UI/UX Design & Prototyping">🎨 UI/UX Design & Prototyping</option>
@@ -1062,7 +1063,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
 
                   {directForm.domain === "Other" && (
                     <div style={{ marginTop: "10px" }}>
-                      <label style={{ fontSize: "12px", fontWeight: "700", color: "#34d399", display: "block", marginBottom: "4px" }}>
+                      <label style={{ fontSize: "12px", fontWeight: "700", color: "#059669", display: "block", marginBottom: "4px" }}>
                         Type Custom Domain Name *
                       </label>
                       <input
@@ -1071,7 +1072,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                         placeholder="e.g. Blockchain & Web3, Game Development, Data Science…"
                         value={customDomain}
                         onChange={(e) => setCustomDomain(e.target.value)}
-                        style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#0c081e", border: "1px solid #34d399", color: "#fff" }}
+                        style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#ffffff", border: "1.5px solid #059669", color: "#111827" }}
                       />
                     </div>
                   )}
@@ -1085,13 +1086,13 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                 </div>
 
                 <div style={{ marginBottom: "12px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#111827", display: "block", marginBottom: "6px" }}>
                     Lead Submitter / Creator *
                   </label>
                   <select
                     value={directForm.submittedBy}
                     onChange={(e) => setDirectForm({ ...directForm, submittedBy: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827" }}
                   >
                     {users.map((u) => (
                       <option key={u._id} value={u._id}>
@@ -1103,21 +1104,21 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                    <label style={{ fontSize: "13px", fontWeight: "700", color: "#cbd5e1" }}>
+                    <label style={{ fontSize: "13px", fontWeight: "700", color: "#111827" }}>
                       Team Contributors (Recognize collaborators)
                     </label>
                     <div style={{ display: "flex", gap: "6px" }}>
                       <button
                         type="button"
                         onClick={() => setDirectForm({ ...directForm, submittedFor: users.map((u) => u._id) })}
-                        style={{ fontSize: "11px", color: "#34d399", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(52, 211, 153, 0.3)", padding: "2px 8px", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}
+                        style={{ fontSize: "11px", color: "#059669", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.25)", padding: "2px 8px", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}
                       >
                         ✓ Select All
                       </button>
                       <button
                         type="button"
                         onClick={() => setDirectForm({ ...directForm, submittedFor: [] })}
-                        style={{ fontSize: "11px", color: "#f87171", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "2px 8px", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}
+                        style={{ fontSize: "11px", color: "#dc2626", background: "rgba(239, 68, 68, 0.12)", border: "1px solid rgba(239, 68, 68, 0.25)", padding: "2px 8px", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}
                       >
                         ✕ Clear
                       </button>
@@ -1132,8 +1133,8 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       maxHeight: "140px",
                       overflowY: "auto",
                       padding: "10px",
-                      background: "#0c081e",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
+                      background: "#fbf9f5",
+                      border: "1.5px solid #ede7dd",
                       borderRadius: "10px",
                     }}
                   >
@@ -1159,9 +1160,9 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                             transition: "all 0.2s ease",
                             background: isSelected
                               ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                              : "rgba(255, 255, 255, 0.06)",
-                            border: isSelected ? "1px solid #34d399" : "1px solid rgba(255, 255, 255, 0.12)",
-                            color: isSelected ? "#ffffff" : "#94a3b8",
+                              : "#ffffff",
+                            border: isSelected ? "1px solid #10b981" : "1px solid #ede7dd",
+                            color: isSelected ? "#ffffff" : "#4b5563",
                           }}
                         >
                           {isSelected ? "✓ " : "+ "} {u.name}
@@ -1180,7 +1181,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
 
                 {/* PPT Option */}
                 <div style={{ marginBottom: "16px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#fbbf24", display: "block", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#d97706", display: "block", marginBottom: "6px" }}>
                     Presentation / PPT URL (Google Slides, Canva, Microsoft PowerPoint Online, or OneDrive)
                   </label>
                   <input
@@ -1188,16 +1189,16 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                     placeholder="https://docs.google.com/presentation/d/... or PPTX link"
                     value={directForm.presentationUrl}
                     onChange={(e) => setDirectForm({ ...directForm, presentationUrl: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#0c081e", border: "1px solid rgba(245, 158, 11, 0.3)", color: "#fff" }}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827" }}
                   />
-                  <small style={{ color: "#94a3b8", fontSize: "11px", marginTop: "4px", display: "block" }}>
+                  <small style={{ color: "#6b7280", fontSize: "11px", marginTop: "4px", display: "block" }}>
                     Supports Google Slides, PowerPoint Online, Canva decks, or direct presentation links.
                   </small>
                 </div>
 
                 {/* Screenshots / Images Option */}
                 <div>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#38bdf8", display: "block", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#0284c7", display: "block", marginBottom: "6px" }}>
                     Project Images & Screenshots Gallery
                   </label>
 
@@ -1207,9 +1208,9 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       style={{
                         padding: "8px 14px",
                         borderRadius: "10px",
-                        background: "rgba(56, 189, 248, 0.15)",
-                        border: "1px solid rgba(56, 189, 248, 0.3)",
-                        color: "#38bdf8",
+                        background: "rgba(14, 165, 233, 0.1)",
+                        border: "1px solid rgba(14, 165, 233, 0.25)",
+                        color: "#0284c7",
                         fontWeight: "700",
                         fontSize: "12px",
                         cursor: "pointer",
@@ -1234,12 +1235,12 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                         placeholder="Or paste image URL (https://…)"
                         value={directImgInput}
                         onChange={(e) => setDirectImgInput(e.target.value)}
-                        style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "12px" }}
+                        style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "12px" }}
                       />
                       <button
                         type="button"
                         onClick={() => handleAddImageUrl("direct")}
-                        style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", fontWeight: "600", fontSize: "12px", cursor: "pointer" }}
+                        style={{ padding: "8px 14px", borderRadius: "8px", background: "#fbf9f5", border: "1px solid #ede7dd", color: "#111827", fontWeight: "600", fontSize: "12px", cursor: "pointer" }}
                       >
                         + Add
                       </button>
@@ -1274,7 +1275,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "700", color: "#111827", display: "block", marginBottom: "4px" }}>
                       Live Demo URL
                     </label>
                     <input
@@ -1282,11 +1283,11 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       placeholder="https://my-app.vercel.app"
                       value={directForm.demoUrl}
                       onChange={(e) => setDirectForm({ ...directForm, demoUrl: e.target.value })}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "13px" }}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "13px" }}
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: "700", color: "#111827", display: "block", marginBottom: "4px" }}>
                       GitHub Repository URL
                     </label>
                     <input
@@ -1294,13 +1295,13 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       placeholder="https://github.com/..."
                       value={directForm.githubUrl}
                       onChange={(e) => setDirectForm({ ...directForm, githubUrl: e.target.value })}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "13px" }}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "13px" }}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label style={{ fontSize: "12px", fontWeight: "700", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "700", color: "#111827", display: "block", marginBottom: "4px" }}>
                     Project Description / Key Highlights
                   </label>
                   <textarea
@@ -1308,7 +1309,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                     placeholder="Key architectural highlights, tech stack, and achievements…"
                     value={directForm.notes}
                     onChange={(e) => setDirectForm({ ...directForm, notes: e.target.value })}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "13px" }}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "13px" }}
                   />
                 </div>
               </div>
@@ -1318,7 +1319,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                 <button
                   type="button"
                   onClick={() => setDirectAddOpen(false)}
-                  style={{ padding: "10px 18px", borderRadius: "10px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#cbd5e1", fontWeight: "600", cursor: "pointer" }}
+                  style={{ padding: "10px 18px", borderRadius: "10px", background: "#fbf9f5", border: "1.5px solid #ede7dd", color: "#4b5563", fontWeight: "600", cursor: "pointer" }}
                 >
                   Cancel
                 </button>
@@ -1344,22 +1345,22 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
               maxWidth: "600px",
               maxHeight: "90vh",
               overflowY: "auto",
-              background: "#160f2e",
-              border: "1px solid rgba(56, 189, 248, 0.35)",
+              background: "#ffffff",
+              border: "1.5px solid #ede7dd",
               borderRadius: "20px",
               padding: "26px",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.12)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h3 style={{ margin: 0, fontSize: "18px", color: "#38bdf8", fontWeight: "700" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", color: "#0284c7", fontWeight: "700" }}>
                 ✏️ Edit Project Deliverable — {editModalSub.taskId?.title}
               </h3>
               <button
                 type="button"
                 onClick={() => setEditModalSub(null)}
-                style={{ background: "none", border: "none", color: "#94a3b8", fontSize: "18px", cursor: "pointer" }}
+                style={{ background: "#f7f3ea", border: "1px solid #ede7dd", color: "#6b7280", width: "32px", height: "32px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", cursor: "pointer" }}
               >
                 ✕
               </button>
@@ -1373,7 +1374,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
 
                 {/* PPT Input */}
                 <div style={{ marginBottom: "14px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#fbbf24", display: "block", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#d97706", display: "block", marginBottom: "6px" }}>
                     Presentation / PPT URL (Google Slides, PowerPoint Online, Canva)
                   </label>
                   <input
@@ -1381,13 +1382,13 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                     placeholder="https://docs.google.com/presentation/d/... or PPTX link"
                     value={editForm.presentationUrl}
                     onChange={(e) => setEditForm({ ...editForm, presentationUrl: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#0c081e", border: "1px solid rgba(245, 158, 11, 0.3)", color: "#fff" }}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827" }}
                   />
                 </div>
 
                 {/* Images Input */}
                 <div>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#38bdf8", display: "block", marginBottom: "6px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#0284c7", display: "block", marginBottom: "6px" }}>
                     Project Screenshots & Media Gallery
                   </label>
 
@@ -1396,9 +1397,9 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                       style={{
                         padding: "8px 14px",
                         borderRadius: "10px",
-                        background: "rgba(56, 189, 248, 0.15)",
-                        border: "1px solid rgba(56, 189, 248, 0.3)",
-                        color: "#38bdf8",
+                        background: "rgba(14, 165, 233, 0.1)",
+                        border: "1px solid rgba(14, 165, 233, 0.25)",
+                        color: "#0284c7",
                         fontWeight: "700",
                         fontSize: "12px",
                         cursor: "pointer",
@@ -1423,12 +1424,12 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                         placeholder="Paste image URL…"
                         value={editImgInput}
                         onChange={(e) => setEditImgInput(e.target.value)}
-                        style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "12px" }}
+                        style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "12px" }}
                       />
                       <button
                         type="button"
                         onClick={() => handleAddImageUrl("edit")}
-                        style={{ padding: "8px 12px", borderRadius: "8px", background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", fontWeight: "600", fontSize: "12px", cursor: "pointer" }}
+                        style={{ padding: "8px 14px", borderRadius: "8px", background: "#fbf9f5", border: "1px solid #ede7dd", color: "#111827", fontWeight: "600", fontSize: "12px", cursor: "pointer" }}
                       >
                         + Add
                       </button>
@@ -1462,50 +1463,50 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                 </div>
 
                 <div style={{ marginBottom: "10px" }}>
-                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#111827", display: "block", marginBottom: "4px" }}>
                     Live Demo URL
                   </label>
                   <input
                     type="text"
                     value={editForm.demoUrl}
                     onChange={(e) => setEditForm({ ...editForm, demoUrl: e.target.value })}
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "13px" }}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "13px" }}
                   />
                 </div>
 
                 <div style={{ marginBottom: "10px" }}>
-                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#111827", display: "block", marginBottom: "4px" }}>
                     GitHub Code Repo URL
                   </label>
                   <input
                     type="text"
                     value={editForm.githubUrl}
                     onChange={(e) => setEditForm({ ...editForm, githubUrl: e.target.value })}
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "13px" }}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "13px" }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#cbd5e1", display: "block", marginBottom: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", color: "#111827", display: "block", marginBottom: "4px" }}>
                     Notes / Highlights
                   </label>
                   <textarea
                     rows={3}
                     value={editForm.notes}
                     onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontSize: "13px" }}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #ede7dd", color: "#111827", fontSize: "13px" }}
                   />
                 </div>
               </div>
 
               {/* Admin Temporary Edit Window Grant */}
               {isUserAdmin && (
-                <div style={{ background: "rgba(245, 158, 11, 0.1)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: "12px", padding: "14px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#fbbf24", display: "block", marginBottom: "6px" }}>
+                <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "12px", padding: "14px" }}>
+                  <label style={{ fontSize: "13px", fontWeight: "700", color: "#b45309", display: "block", marginBottom: "6px" }}>
                     ⏱️ Grant Temporary Member Edit Window
                   </label>
                   <select
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#0c081e", border: "1px solid rgba(245, 158, 11, 0.4)", color: "#f8fafc", fontSize: "13px", fontWeight: "600" }}
+                    style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "#ffffff", border: "1.5px solid #fde68a", color: "#111827", fontSize: "13px", fontWeight: "600" }}
                     value={editForm.editHours || "0"}
                     onChange={(e) => setEditForm({ ...editForm, editHours: e.target.value })}
                   >
@@ -1522,14 +1523,14 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                 <button
                   type="button"
                   onClick={() => setEditModalSub(null)}
-                  style={{ padding: "9px 16px", borderRadius: "8px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#cbd5e1", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
+                  style={{ padding: "9px 16px", borderRadius: "8px", background: "#fbf9f5", border: "1.5px solid #ede7dd", color: "#4b5563", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  style={{ padding: "9px 22px", borderRadius: "8px", background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)", border: "none", color: "#fff", fontWeight: "700", fontSize: "13px", cursor: "pointer" }}
+                  style={{ padding: "9px 22px", borderRadius: "8px", background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)", border: "none", color: "#fff", fontWeight: "700", fontSize: "13px", cursor: "pointer", boxShadow: "0 4px 14px rgba(234, 88, 12, 0.25)" }}
                 >
                   {savingEdit ? "Saving…" : "Save Changes"}
                 </button>
@@ -1546,28 +1547,28 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
             style={{
               width: "100%",
               maxWidth: "460px",
-              background: "#180f24",
-              border: "1px solid rgba(239, 68, 68, 0.4)",
+              background: "#ffffff",
+              border: "1.5px solid #fecaca",
               borderRadius: "20px",
               padding: "26px",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.7)",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.1)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: "0 0 10px 0", color: "#f87171", fontSize: "18px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <h3 style={{ margin: "0 0 10px 0", color: "#dc2626", fontSize: "18px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
               ⚠️ Confirm Permanent Project Deletion
             </h3>
 
-            <p style={{ color: "#cbd5e1", fontSize: "13px", lineHeight: "1.5" }}>
+            <p style={{ color: "#4b5563", fontSize: "13px", lineHeight: "1.5" }}>
               Are you sure you want to permanently remove <strong>"{deleteSub.taskId?.title || "this project"}"</strong> from the showcase?
             </p>
 
-            <div style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "10px", padding: "12px 14px", margin: "14px 0" }}>
-              <p style={{ margin: 0, color: "#fca5a5", fontSize: "12px", fontWeight: "700" }}>
+            <div style={{ background: "#fef2f2", border: "1px solid #fee2e2", borderRadius: "10px", padding: "12px 14px", margin: "14px 0" }}>
+              <p style={{ margin: 0, color: "#991b1b", fontSize: "12px", fontWeight: "700" }}>
                 🔒 Two-Step Security Verification:
               </p>
-              <p style={{ margin: "4px 0 0 0", color: "#e2e8f0", fontSize: "12px" }}>
-                Type <strong style={{ color: "#f87171", letterSpacing: "1px" }}>DELETE</strong> to confirm:
+              <p style={{ margin: "4px 0 0 0", color: "#4b5563", fontSize: "12px" }}>
+                Type <strong style={{ color: "#dc2626", letterSpacing: "1px" }}>DELETE</strong> to confirm:
               </p>
             </div>
 
@@ -1580,9 +1581,9 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                 width: "100%",
                 padding: "11px 14px",
                 borderRadius: "8px",
-                background: "#0d0718",
-                border: deleteConfirmText === "DELETE" ? "1px solid #ef4444" : "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#f8fafc",
+                background: "#ffffff",
+                border: deleteConfirmText === "DELETE" ? "1.5px solid #ef4444" : "1.5px solid #d1d5db",
+                color: "#111827",
                 fontSize: "13px",
                 fontWeight: "700",
                 letterSpacing: "1px",
@@ -1595,7 +1596,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
               <button
                 type="button"
                 onClick={() => setDeleteSub(null)}
-                style={{ padding: "9px 16px", borderRadius: "8px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#cbd5e1", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
+                style={{ padding: "9px 16px", borderRadius: "8px", background: "#fbf9f5", border: "1.5px solid #ede7dd", color: "#4b5563", fontWeight: "600", cursor: "pointer", fontSize: "13px" }}
               >
                 Cancel
               </button>
@@ -1606,7 +1607,7 @@ export default function ApprovedProjectsShowcase({ search: navbarSearch = "" }) 
                 style={{
                   padding: "9px 20px",
                   borderRadius: "8px",
-                  background: deleteConfirmText === "DELETE" ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : "rgba(239, 68, 68, 0.2)",
+                  background: deleteConfirmText === "DELETE" ? "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)" : "rgba(239, 68, 68, 0.15)",
                   border: "none",
                   color: "#ffffff",
                   fontWeight: "700",

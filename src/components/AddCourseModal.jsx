@@ -228,8 +228,8 @@ export default function AddCourseModal({ onClose, onCreated }) {
             </label>
 
             <div style={{
-              background: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              background: "#fbf9f5",
+              border: "1px solid #ede7dd",
               borderRadius: "10px",
               padding: "12px",
               display: "flex",
@@ -237,12 +237,12 @@ export default function AddCourseModal({ onClose, onCreated }) {
               gap: "10px"
             }}>
               {/* Select All Checkbox */}
-              <label style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "600", color: "#f8fafc", cursor: "pointer", paddingBottom: "6px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "10px", fontWeight: "600", color: "#111827", cursor: "pointer", paddingBottom: "6px", borderBottom: "1px solid #ede7dd" }}>
                 <input
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={handleToggleSelectAll}
-                  style={{ width: "16px", height: "16px", accentColor: "#6366f1", cursor: "pointer" }}
+                  style={{ width: "16px", height: "16px", accentColor: "#ea580c", cursor: "pointer" }}
                 />
                 <span>🌟 Select All Clusters (Both / Universal Access)</span>
               </label>
@@ -259,10 +259,11 @@ export default function AddCourseModal({ onClose, onCreated }) {
                         alignItems: "center",
                         gap: "8px",
                         padding: "6px 10px",
-                        background: isChecked ? "rgba(99, 102, 241, 0.18)" : "rgba(255,255,255,0.02)",
-                        border: `1px solid ${isChecked ? "rgba(99, 102, 241, 0.5)" : "rgba(255,255,255,0.08)"}`,
+                        background: isChecked ? "#fff7ed" : "#ffffff",
+                        border: `1px solid ${isChecked ? "#fdba74" : "#ede7dd"}`,
                         borderRadius: "6px",
-                        color: isChecked ? "#a5b4fc" : "#cbd5e1",
+                        color: isChecked ? "#ea580c" : "#374151",
+                        fontWeight: isChecked ? "600" : "500",
                         cursor: "pointer",
                         fontSize: "13px",
                         transition: "all 0.2s"
@@ -272,7 +273,7 @@ export default function AddCourseModal({ onClose, onCreated }) {
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => handleToggleCluster(clusterName)}
-                        style={{ width: "15px", height: "15px", accentColor: "#6366f1", cursor: "pointer" }}
+                        style={{ width: "15px", height: "15px", accentColor: "#ea580c", cursor: "pointer" }}
                       />
                       <span>{clusterName}</span>
                     </label>
@@ -295,7 +296,7 @@ export default function AddCourseModal({ onClose, onCreated }) {
                   <button
                     type="button"
                     className="btn primary"
-                    style={{ fontSize: "12px", padding: "6px 12px" }}
+                    style={{ fontSize: "12px", padding: "6px 12px", background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)", color: "#fff", border: "none", borderRadius: "8px" }}
                     onClick={handleAddCustomCluster}
                   >
                     Add
@@ -303,7 +304,7 @@ export default function AddCourseModal({ onClose, onCreated }) {
                   <button
                     type="button"
                     className="btn secondary"
-                    style={{ fontSize: "12px", padding: "6px 10px" }}
+                    style={{ fontSize: "12px", padding: "6px 10px", background: "#fbf9f5", border: "1px solid #ede7dd", borderRadius: "8px" }}
                     onClick={() => setShowCustomInput(false)}
                   >
                     Cancel
@@ -315,7 +316,8 @@ export default function AddCourseModal({ onClose, onCreated }) {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "#818cf8",
+                    color: "#ea580c",
+                    fontWeight: "600",
                     cursor: "pointer",
                     fontSize: "12px",
                     textAlign: "left",
@@ -330,20 +332,20 @@ export default function AddCourseModal({ onClose, onCreated }) {
             </div>
           </div>
 
-          <div style={{ marginTop: "10px", padding: "14px", background: "rgba(255,255,255,0.03)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ marginTop: "10px", padding: "14px", background: "#fbf9f5", borderRadius: "10px", border: "1px solid #ede7dd" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
               <h4 className="edit-section-title" style={{ margin: 0 }}>🎯 Dynamic Level & Points Configuration</h4>
               <button
                 type="button"
                 className="btn secondary"
-                style={{ fontSize: "12px", padding: "4px 10px" }}
+                style={{ fontSize: "12px", padding: "4px 10px", background: "#ffffff", border: "1px solid #ede7dd", borderRadius: "6px" }}
                 onClick={handleAddLevelRow}
               >
                 ➕ Add Level Row
               </button>
             </div>
 
-            <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 12px 0" }}>
+            <p style={{ fontSize: "12px", color: "#6b7280", margin: "0 0 12px 0" }}>
               Configure custom level names (e.g. LEVEL-0, LEVEL-1, Level 0, Beginner, Master) and their point rewards.
             </p>
 
@@ -377,9 +379,9 @@ export default function AddCourseModal({ onClose, onCreated }) {
                   <button
                     type="button"
                     style={{
-                      background: "rgba(239, 68, 68, 0.2)",
-                      color: "#f87171",
-                      border: "1px solid rgba(239, 68, 68, 0.4)",
+                      background: "#fee2e2",
+                      color: "#b91c1c",
+                      border: "1px solid #fecaca",
                       borderRadius: "8px",
                       padding: "8px 12px",
                       cursor: "pointer",

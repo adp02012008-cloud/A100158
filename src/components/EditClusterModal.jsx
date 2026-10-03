@@ -96,9 +96,9 @@ export default function EditClusterModal({ cluster, onClose, onSaved }) {
               type="button"
               className="delete-user-btn"
               style={{
-                backgroundColor: "rgba(239, 68, 68, 0.2)",
-                border: "1px solid rgba(239, 68, 68, 0.4)",
-                color: "#f87171",
+                backgroundColor: "#fee2e2",
+                border: "1px solid #fecaca",
+                color: "#b91c1c",
                 padding: "8px 16px",
                 borderRadius: "8px",
                 cursor: "pointer",

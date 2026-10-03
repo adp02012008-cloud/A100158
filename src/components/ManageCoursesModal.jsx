@@ -112,9 +112,9 @@ export default function ManageCoursesModal({ onClose }) {
           display: "flex",
           flexDirection: "column",
           borderRadius: "18px",
-          background: "#131127",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
-          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+          background: "#ffffff",
+          border: "1px solid #ede7dd",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -123,10 +123,10 @@ export default function ManageCoursesModal({ onClose }) {
         {/* Modal Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "18px", paddingRight: "36px", flexWrap: "wrap", gap: "16px" }}>
           <div>
-            <h3 className="edit-modal-title" style={{ margin: 0, fontSize: "22px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px", color: "#f8fafc" }}>
+            <h3 className="edit-modal-title" style={{ margin: 0, fontSize: "22px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px", color: "#111827", borderBottom: "none", paddingBottom: 0 }}>
               <span>📚</span> Manage System Courses
             </h3>
-            <p style={{ fontSize: "13px", color: "#94a3b8", margin: "6px 0 0 0", lineHeight: "1.5" }}>
+            <p style={{ fontSize: "13px", color: "#6b7280", margin: "6px 0 0 0", lineHeight: "1.5" }}>
               Add new courses, configure dynamic level points, or edit cluster access.
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function ManageCoursesModal({ onClose }) {
                   border: "none",
                   borderRadius: "10px",
                   fontWeight: "600",
-                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.3)",
+                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.25)",
                   cursor: "pointer",
                   display: "inline-flex",
                   alignItems: "center",
@@ -166,12 +166,12 @@ export default function ManageCoursesModal({ onClose }) {
               style={{
                 fontSize: "13px",
                 padding: "10px 16px",
-                background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+                background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
                 color: "#fff",
                 border: "none",
                 borderRadius: "10px",
                 fontWeight: "600",
-                boxShadow: "0 4px 14px rgba(124, 58, 237, 0.3)",
+                boxShadow: "0 4px 14px rgba(234, 88, 12, 0.25)",
                 cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",
@@ -193,7 +193,7 @@ export default function ManageCoursesModal({ onClose }) {
                 border: "none",
                 borderRadius: "10px",
                 fontWeight: "600",
-                boxShadow: "0 4px 14px rgba(16, 185, 129, 0.3)",
+                boxShadow: "0 4px 14px rgba(16, 185, 129, 0.25)",
                 cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",
@@ -220,7 +220,7 @@ export default function ManageCoursesModal({ onClose }) {
                 position: "absolute",
                 left: "14px",
                 fontSize: "15px",
-                color: "#94a3b8",
+                color: "#9ca3af",
                 pointerEvents: "none",
               }}
             >
@@ -240,9 +240,9 @@ export default function ManageCoursesModal({ onClose }) {
                 paddingBottom: "10px",
                 fontSize: "13.5px",
                 borderRadius: "12px",
-                background: "rgba(255, 255, 255, 0.04)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                color: "#f8fafc",
+                background: "#fbf9f5",
+                border: "1px solid #ede7dd",
+                color: "#111827",
                 outline: "none",
                 transition: "all 0.2s ease",
               }}
@@ -256,7 +256,7 @@ export default function ManageCoursesModal({ onClose }) {
                   right: "12px",
                   background: "none",
                   border: "none",
-                  color: "#94a3b8",
+                  color: "#9ca3af",
                   fontSize: "14px",
                   cursor: "pointer",
                   padding: "4px",
@@ -268,8 +268,8 @@ export default function ManageCoursesModal({ onClose }) {
             )}
           </div>
           {searchQuery.trim() && (
-            <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "6px", marginLeft: "4px" }}>
-              Found <strong style={{ color: "#a5b4fc" }}>{filteredCourses.length}</strong> of {courses.length} courses
+            <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px", marginLeft: "4px" }}>
+              Found <strong style={{ color: "#ea580c" }}>{filteredCourses.length}</strong> of {courses.length} courses
             </div>
           )}
         </div>
@@ -283,16 +283,16 @@ export default function ManageCoursesModal({ onClose }) {
             minHeight="220px"
           />
         ) : courses.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "50px 20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
+          <div style={{ textAlign: "center", padding: "50px 20px", background: "#fbf9f5", borderRadius: "12px", border: "1px dashed #d1d5db" }}>
             <div style={{ fontSize: "40px", marginBottom: "12px" }}>📚</div>
-            <h4 style={{ color: "#f8fafc", margin: "0 0 6px 0", fontSize: "16px" }}>No courses found</h4>
-            <p style={{ color: "#94a3b8", fontSize: "13px", margin: 0 }}>Click "Add New Course" above to create your first course.</p>
+            <h4 style={{ color: "#111827", margin: "0 0 6px 0", fontSize: "16px" }}>No courses found</h4>
+            <p style={{ color: "#6b7280", fontSize: "13px", margin: 0 }}>Click "Add New Course" above to create your first course.</p>
           </div>
         ) : filteredCourses.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 20px", background: "rgba(255,255,255,0.02)", borderRadius: "12px", border: "1px dashed rgba(255,255,255,0.1)" }}>
+          <div style={{ textAlign: "center", padding: "40px 20px", background: "#fbf9f5", borderRadius: "12px", border: "1px dashed #d1d5db" }}>
             <div style={{ fontSize: "36px", marginBottom: "10px" }}>🔍</div>
-            <h4 style={{ color: "#f8fafc", margin: "0 0 6px 0", fontSize: "15px" }}>No courses match "{searchQuery}"</h4>
-            <p style={{ color: "#94a3b8", fontSize: "13px", margin: "0 0 12px 0" }}>Try checking spelling or search for another keyword.</p>
+            <h4 style={{ color: "#111827", margin: "0 0 6px 0", fontSize: "15px" }}>No courses match "{searchQuery}"</h4>
+            <p style={{ color: "#6b7280", fontSize: "13px", margin: "0 0 12px 0" }}>Try checking spelling or search for another keyword.</p>
             <button
               type="button"
               className="btn secondary"
@@ -347,10 +347,10 @@ export default function ManageCoursesModal({ onClose }) {
                   key={course._id}
                   style={{
                     padding: "18px 20px",
-                    background: "rgba(255, 255, 255, 0.03)",
+                    background: "#fbf9f5",
                     borderRadius: "14px",
-                    border: "1px solid rgba(255, 255, 255, 0.08)",
-                    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.2)",
+                    border: "1px solid #ede7dd",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
                     display: "flex",
                     flexDirection: "column",
                     gap: "12px",
@@ -374,7 +374,7 @@ export default function ManageCoursesModal({ onClose }) {
                             margin: 0,
                             fontSize: "17px",
                             fontWeight: "700",
-                            color: "#f8fafc",
+                            color: "#111827",
                             wordBreak: "break-word",
                             lineHeight: "1.3",
                           }}
@@ -388,9 +388,9 @@ export default function ManageCoursesModal({ onClose }) {
                               fontSize: "11px",
                               padding: "3px 10px",
                               borderRadius: "20px",
-                              background: "rgba(99, 102, 241, 0.18)",
-                              color: "#a5b4fc",
-                              border: "1px solid rgba(99, 102, 241, 0.3)",
+                              background: "#e0e7ff",
+                              color: "#4338ca",
+                              border: "1px solid #c7d2fe",
                               fontWeight: "600",
                               letterSpacing: "0.3px",
                             }}
@@ -403,9 +403,9 @@ export default function ManageCoursesModal({ onClose }) {
                               fontSize: "11px",
                               padding: "3px 10px",
                               borderRadius: "20px",
-                              background: "rgba(234, 179, 8, 0.15)",
-                              color: "#fde047",
-                              border: "1px solid rgba(234, 179, 8, 0.3)",
+                              background: "#fef3c7",
+                              color: "#b45309",
+                              border: "1px solid #fde68a",
                               fontWeight: "600",
                               display: "inline-flex",
                               alignItems: "center",
@@ -425,9 +425,9 @@ export default function ManageCoursesModal({ onClose }) {
                         style={{
                           fontSize: "12px",
                           padding: "7px 14px",
-                          background: "rgba(99, 102, 241, 0.15)",
-                          color: "#818cf8",
-                          border: "1px solid rgba(99, 102, 241, 0.3)",
+                          background: "#e0e7ff",
+                          color: "#4338ca",
+                          border: "1px solid #c7d2fe",
                           borderRadius: "8px",
                           fontWeight: "600",
                           cursor: "pointer",
@@ -446,9 +446,9 @@ export default function ManageCoursesModal({ onClose }) {
                         style={{
                           fontSize: "12px",
                           padding: "7px 14px",
-                          background: "rgba(239, 68, 68, 0.12)",
-                          color: "#f87171",
-                          border: "1px solid rgba(239, 68, 68, 0.3)",
+                          background: "#fee2e2",
+                          color: "#b91c1c",
+                          border: "1px solid #fecaca",
                           borderRadius: "8px",
                           fontWeight: "600",
                           cursor: "pointer",
@@ -468,7 +468,7 @@ export default function ManageCoursesModal({ onClose }) {
                   <div
                     style={{
                       paddingTop: "10px",
-                      borderTop: "1px solid rgba(255, 255, 255, 0.05)",
+                      borderTop: "1px solid #ede7dd",
                       marginTop: "2px",
                     }}
                   >
@@ -480,20 +480,20 @@ export default function ManageCoursesModal({ onClose }) {
                             style={{
                               fontSize: "11px",
                               padding: "4px 10px",
-                              background: "rgba(99, 102, 241, 0.12)",
-                              border: "1px solid rgba(99, 102, 241, 0.25)",
+                              background: "#f3f4f6",
+                              border: "1px solid #e5e7eb",
                               borderRadius: "6px",
-                              color: "#c7d2fe",
+                              color: "#374151",
                               display: "inline-flex",
                               gap: "4px",
                               alignItems: "center",
                             }}
                           >
-                            <strong style={{ color: "#e2e8f0" }}>{lvl.name}:</strong> {lvl.pts} pts
+                            <strong style={{ color: "#111827" }}>{lvl.name}:</strong> {lvl.pts} pts
                           </span>
                         ))
                       ) : (
-                        <span style={{ fontSize: "11px", color: "#64748b" }}>
+                        <span style={{ fontSize: "11px", color: "#6b7280" }}>
                           No level rules configured
                         </span>
                       )}
@@ -506,7 +506,7 @@ export default function ManageCoursesModal({ onClose }) {
         )}
 
         {/* Modal Actions Footer */}
-        <div className="edit-actions" style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
+        <div className="edit-actions" style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid #ede7dd", display: "flex", justifyContent: "flex-end", flexShrink: 0 }}>
           <button
             type="button"
             className="edit-cancel-btn"
@@ -516,9 +516,9 @@ export default function ManageCoursesModal({ onClose }) {
               borderRadius: "10px",
               fontWeight: "600",
               fontSize: "13px",
-              background: "rgba(255, 255, 255, 0.08)",
-              color: "#cbd5e1",
-              border: "1px solid rgba(255, 255, 255, 0.12)",
+              background: "#fbf9f5",
+              color: "#374151",
+              border: "1px solid #ede7dd",
               cursor: "pointer",
             }}
           >
@@ -571,10 +571,10 @@ export default function ManageCoursesModal({ onClose }) {
                 width: "90%",
                 padding: "26px",
                 borderRadius: "18px",
-                background: "#180a0a",
-                border: "1px solid rgba(239, 68, 68, 0.4)",
-                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
-                color: "#f8fafc",
+                background: "#ffffff",
+                border: "1px solid #fecaca",
+                boxShadow: "0 20px 60px rgba(0, 0, 0, 0.15)",
+                color: "#111827",
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -588,29 +588,29 @@ export default function ManageCoursesModal({ onClose }) {
 
               <div style={{ textAlign: "center", marginBottom: "18px" }}>
                 <span style={{ fontSize: "42px" }}>⚠️</span>
-                <h3 style={{ margin: "10px 0 6px 0", color: "#fca5a5", fontSize: "20px", fontWeight: "700" }}>
+                <h3 style={{ margin: "10px 0 6px 0", color: "#b91c1c", fontSize: "20px", fontWeight: "700" }}>
                   Delete All Courses (Permanent Action)
                 </h3>
-                <p style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: "1.5", margin: 0 }}>
+                <p style={{ fontSize: "13px", color: "#4b5563", lineHeight: "1.5", margin: 0 }}>
                   This will permanently delete all <strong>{courses.length} courses</strong>, point rules, and user course progress from MongoDB Atlas. This action <strong>cannot be undone</strong>.
                 </p>
               </div>
 
               <div
                 style={{
-                  background: "rgba(239, 68, 68, 0.12)",
-                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
                   borderRadius: "12px",
                   padding: "14px",
                   marginBottom: "20px",
                   fontSize: "12.5px",
                 }}
               >
-                <div style={{ fontWeight: "700", color: "#f87171", marginBottom: "8px" }}>
+                <div style={{ fontWeight: "700", color: "#b91c1c", marginBottom: "8px" }}>
                   🔒 Step 2 of 2: Security Verification
                 </div>
-                <label style={{ display: "block", marginBottom: "6px", color: "#cbd5e1" }}>
-                  Please type <strong style={{ color: "#ef4444" }}>DELETE ALL COURSES</strong> below to confirm:
+                <label style={{ display: "block", marginBottom: "6px", color: "#374151" }}>
+                  Please type <strong style={{ color: "#dc2626" }}>DELETE ALL COURSES</strong> below to confirm:
                 </label>
                 <input
                   type="text"
@@ -621,9 +621,9 @@ export default function ManageCoursesModal({ onClose }) {
                     width: "100%",
                     padding: "10px 14px",
                     borderRadius: "8px",
-                    background: "#0d0404",
-                    border: "1px solid rgba(239, 68, 68, 0.4)",
-                    color: "#ffffff",
+                    background: "#ffffff",
+                    border: "1px solid #fca5a5",
+                    color: "#991b1b",
                     fontWeight: "700",
                     fontSize: "13px",
                     outline: "none",
@@ -652,13 +652,13 @@ export default function ManageCoursesModal({ onClose }) {
                     padding: "10px 20px",
                     background: confirmInputText.trim() === "DELETE ALL COURSES"
                       ? "linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)"
-                      : "rgba(239, 68, 68, 0.2)",
-                    color: "#fff",
+                      : "#fee2e2",
+                    color: confirmInputText.trim() === "DELETE ALL COURSES" ? "#fff" : "#991b1b",
                     border: "none",
                     borderRadius: "10px",
                     fontWeight: "700",
                     cursor: confirmInputText.trim() === "DELETE ALL COURSES" && !deletingAll ? "pointer" : "not-allowed",
-                    opacity: confirmInputText.trim() === "DELETE ALL COURSES" && !deletingAll ? 1 : 0.5,
+                    opacity: confirmInputText.trim() === "DELETE ALL COURSES" && !deletingAll ? 1 : 0.6,
                   }}
                 >
                   {deletingAll ? "Deleting All Courses..." : "💥 CONFIRM & DELETE ALL COURSES"}

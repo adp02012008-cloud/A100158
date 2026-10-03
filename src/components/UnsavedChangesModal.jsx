@@ -20,7 +20,7 @@ export default function UnsavedChangesModal({
         left: 0,
         width: "100%",
         height: "100%",
-        background: "rgba(3, 1, 10, 0.82)",
+        background: "rgba(15, 23, 42, 0.45)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         display: "grid",
@@ -37,14 +37,14 @@ export default function UnsavedChangesModal({
     >
       <div
         style={{
-          background: "linear-gradient(145deg, rgba(22, 14, 45, 0.98), rgba(12, 7, 28, 0.99))",
-          border: "1px solid rgba(245, 158, 11, 0.35)",
+          background: "#ffffff",
+          border: "1.5px solid #ede7dd",
           borderRadius: "16px",
           padding: "24px 26px",
           maxWidth: "460px",
           width: "100%",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(245, 158, 11, 0.15)",
-          color: "#f8fafc",
+          boxShadow: "0 20px 50px -12px rgba(0, 0, 0, 0.15), 0 0 30px rgba(234, 88, 12, 0.08)",
+          color: "#111827",
           fontFamily: "inherit",
           animation: "scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
           boxSizing: "border-box",
@@ -58,8 +58,8 @@ export default function UnsavedChangesModal({
               width: "42px",
               height: "42px",
               borderRadius: "12px",
-              background: "rgba(245, 158, 11, 0.15)",
-              border: "1px solid rgba(245, 158, 11, 0.35)",
+              background: "#fff7ed",
+              border: "1px solid #fed7aa",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -70,10 +70,10 @@ export default function UnsavedChangesModal({
             ⚠️
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: "17px", fontWeight: "700", color: "#fef3c7" }}>
+            <h3 style={{ margin: 0, fontSize: "17px", fontWeight: "800", color: "#111827" }}>
               {title}
             </h3>
-            <span style={{ fontSize: "12px", color: "#fbbf24", fontWeight: "500" }}>
+            <span style={{ fontSize: "12px", color: "#ea580c", fontWeight: "600" }}>
               Action Required
             </span>
           </div>
@@ -85,7 +85,7 @@ export default function UnsavedChangesModal({
             margin: "0 0 22px 0",
             fontSize: "14px",
             lineHeight: "1.55",
-            color: "#cbd5e1",
+            color: "#4b5563",
           }}
         >
           {message}
@@ -108,16 +108,22 @@ export default function UnsavedChangesModal({
             style={{
               padding: "9px 15px",
               borderRadius: "8px",
-              background: "rgba(255, 255, 255, 0.06)",
-              border: "1px solid rgba(255, 255, 255, 0.14)",
-              color: "#e2e8f0",
+              background: "#fbf9f5",
+              border: "1.5px solid #ede7dd",
+              color: "#4b5563",
               fontSize: "13px",
               fontWeight: "600",
               cursor: "pointer",
               transition: "all 0.2s ease",
             }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.12)")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)")}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "#ede7dd";
+              e.currentTarget.style.color = "#111827";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "#fbf9f5";
+              e.currentTarget.style.color = "#4b5563";
+            }}
           >
             Keep Editing
           </button>
@@ -129,16 +135,16 @@ export default function UnsavedChangesModal({
             style={{
               padding: "9px 15px",
               borderRadius: "8px",
-              background: "rgba(239, 68, 68, 0.15)",
-              border: "1px solid rgba(239, 68, 68, 0.35)",
-              color: "#f87171",
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              color: "#b91c1c",
               fontSize: "13px",
               fontWeight: "600",
               cursor: "pointer",
               transition: "all 0.2s ease",
             }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "rgba(239, 68, 68, 0.25)")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "rgba(239, 68, 68, 0.15)")}
+            onMouseOver={(e) => (e.currentTarget.style.background = "#fee2e2")}
+            onMouseOut={(e) => (e.currentTarget.style.background = "#fef2f2")}
           >
             Discard Changes
           </button>
@@ -151,20 +157,20 @@ export default function UnsavedChangesModal({
               style={{
                 padding: "9px 18px",
                 borderRadius: "8px",
-                background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
+                background: "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
                 border: "none",
                 color: "#ffffff",
                 fontSize: "13px",
                 fontWeight: "700",
                 cursor: saving ? "not-allowed" : "pointer",
-                boxShadow: "0 4px 12px rgba(139, 92, 246, 0.35)",
+                boxShadow: "0 4px 12px rgba(234, 88, 12, 0.25)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "6px",
                 transition: "all 0.2s ease",
               }}
               onMouseOver={(e) => {
-                if (!saving) e.currentTarget.style.filter = "brightness(1.1)";
+                if (!saving) e.currentTarget.style.filter = "brightness(1.05)";
               }}
               onMouseOut={(e) => (e.currentTarget.style.filter = "none")}
             >
