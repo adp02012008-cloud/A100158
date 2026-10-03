@@ -269,11 +269,8 @@ export default function Modal({ student, onClose, onEdit }) {
     });
   }, [student?.SUGGESTION_COMBINATIONS, priorityMode]);
 
-  if (!student) return null;
-
-  const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
-
   const userCourses = useMemo(() => {
+    if (!student) return [];
     const courseMap = new Map();
 
     const addCourseEntry = (courseName, levels, courseId) => {
@@ -319,6 +316,12 @@ export default function Modal({ student, onClose, onEdit }) {
     return Array.from(courseMap.values());
   }, [student?.COURSE_DETAILS, student?.COURSES]);
 
+  const [copied, setCopied] = useState(false);
+
+  if (!student) return null;
+
+  const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
+
   const skills = [
     student.Primary1, student.Primary2,
     student.Secondary1, student.Secondary2,
@@ -332,8 +335,6 @@ export default function Modal({ student, onClose, onEdit }) {
   const modeLabel =
     priorityMode === "best"    ? "⭐ BEST OPTION"    :
     priorityMode === "fastest" ? "⚡ FASTEST OPTION" : "💡 EASY OPTION";
-
-  const [copied, setCopied] = useState(false);
 
   const copyId = () => {
     const id = student["ENROLMENT NUMBER"] || student["REGISTER NUMBER"] || student.enrolmentNumber || student.registerNumber || "";

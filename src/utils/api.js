@@ -298,7 +298,7 @@ export async function apiFetch(endpoint, options = {}, isRetry = false) {
 /**
  * MongoDB Roster Helper: fetches active user roster from MongoDB backend
  */
-export async function fetchSheetData(sheetName = "Sheet1") {
+export async function fetchSheetData(_sheetName = "Sheet1") {
   try {
     const data = await apiFetch("/users/dashboard");
     if (Array.isArray(data?.users) && data.users.length > 0) {

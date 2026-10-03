@@ -1,4 +1,4 @@
-import { prefetchApi, getCachedApi } from "./api";
+import { prefetchApi } from "./api";
 import { isChunkLoadError, recoverFromStaleChunk } from "./chunkRecovery";
 import { auth as firebaseAuth } from "../firebase";
 

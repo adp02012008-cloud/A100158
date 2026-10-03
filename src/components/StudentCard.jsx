@@ -1,6 +1,4 @@
-import { useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
-import { apiFetch } from "../utils/api";
 import { isSuperAdminEmail, extractStudentEmails } from "../utils/roles";
 import { auth as firebaseAuth } from "../firebase";
 import UserAvatar from "./UserAvatar";
@@ -30,10 +28,11 @@ function GitHubIcon() {
 }
 
 export default function StudentCard({ student, onClick, onEdit, onRoleChanged, avgActivity, targetActivity = 0 }) {
+  const { auth, currentUser } = useAuth();
+
   if (student && (isSuperAdminEmail(student.email) || isSuperAdminEmail(student.emailId))) {
     return null;
   }
-  const { auth, currentUser } = useAuth();
 
   const fixLink = (url) => (!url ? "#" : url.startsWith("http") ? url : `https://${url}`);
 

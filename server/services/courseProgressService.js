@@ -48,7 +48,7 @@ export async function updateUserCourseLevel(userId, courseId, levelName, isCompl
       return (
         normalizeStr(lName) === normTarget ||
         normalizeStr(`${course.name}-${lName}`) === normTarget ||
-        normalizeStr(lName) === normalizeStr(`Level ${lvl?.levelNumber}`)
+        normalizeStr(`Level ${lvl?.levelNumber}`) === normTarget
       );
     });
   }
@@ -84,16 +84,28 @@ export async function updateUserCourseLevel(userId, courseId, levelName, isCompl
     }
   }
 
+  // Determine highest completed level among canonical sortedLevels
+  let highestCompletedLevel = "";
+  if (sortedLevels.length > 0) {
+    for (let i = sortedLevels.length - 1; i >= 0; i--) {
+      const lNorm = normalizeStr(sortedLevels[i].levelName || `Level ${sortedLevels[i].levelNumber}`);
+      if (completedLevels.some((c) => normalizeStr(c) === lNorm)) {
+        highestCompletedLevel = sortedLevels[i].levelName || `Level ${sortedLevels[i].levelNumber}`;
+        break;
+      }
+    }
+  }
+  if (!highestCompletedLevel && completedLevels.length > 0) {
+    highestCompletedLevel = completedLevels[completedLevels.length - 1];
+  }
+
   if (!progress) {
     if (!isCompleted || completedLevels.length === 0) return null;
-    const latestLevel = targetIdx !== -1 && sortedLevels[targetIdx]
-      ? (sortedLevels[targetIdx].levelName || cleanLevelName)
-      : cleanLevelName;
 
     progress = new UserCourseProgress({
       userId,
       courseId,
-      currentLevel: latestLevel,
+      currentLevel: highestCompletedLevel,
       completedLevels,
       completedAt: new Date(),
     });
@@ -103,19 +115,8 @@ export async function updateUserCourseLevel(userId, courseId, levelName, isCompl
       await UserCourseProgress.deleteOne({ _id: progress._id }, queryOpts);
       progress = null;
     } else {
-      // Find highest completed level among sortedLevels
-      let highestLevel = cleanLevelName;
-      if (sortedLevels.length > 0) {
-        for (let i = sortedLevels.length - 1; i >= 0; i--) {
-          const lNorm = normalizeStr(sortedLevels[i].levelName || `Level ${sortedLevels[i].levelNumber}`);
-          if (completedLevels.some((c) => normalizeStr(c) === lNorm)) {
-            highestLevel = sortedLevels[i].levelName || `Level ${sortedLevels[i].levelNumber}`;
-            break;
-          }
-        }
-      }
       progress.completedLevels = completedLevels;
-      progress.currentLevel = highestLevel || completedLevels[completedLevels.length - 1] || "";
+      progress.currentLevel = highestCompletedLevel;
       progress.completedAt = new Date();
       await progress.save(queryOpts);
     }

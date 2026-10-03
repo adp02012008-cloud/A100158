@@ -138,8 +138,6 @@ export default function MyTasksMember({ search = "" }) {
     setSubmitError("");
   };
 
-  const handleOpenModal = openSubmitModal;
-
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files || []);
     if (selected.length === 0) return;
