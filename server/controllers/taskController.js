@@ -266,9 +266,10 @@ export async function updateTask(req, res) {
           new Set(assignedEmails.map((e) => String(e).trim().toLowerCase()).filter(Boolean))
         );
 
+        let validUsers = [];
         // Validate targetEmails against active User records in MongoDB
         if (targetEmails.length > 0) {
-          const validUsers = await User.find(
+          validUsers = await User.find(
             {
               email: { $in: targetEmails },
               status: "ACTIVE",
