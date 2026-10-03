@@ -1059,7 +1059,7 @@ export default function Profile() {
                   <small style={{ color: "#9ca3af" }}>Submit assigned deliverables to get them approved and published to the Projects Showcase!</small>
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: "20px" }}>
                   {userProjects.map((p) => {
                     const title = p.taskId?.title || "Published Project";
                     const domain = p.taskId?.domain || "Software Development";
@@ -1167,7 +1167,7 @@ export default function Profile() {
                   <small style={{ color: "#9ca3af" }}>Register and participate in hackathons on the Hackathons page to showcase team achievements!</small>
                 </div>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "18px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))", gap: "18px" }}>
                   {userHackathons.map((h, idx) => (
                     <div
                       key={h.EVENT_ID || h._id || idx}

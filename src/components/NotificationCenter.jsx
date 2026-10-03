@@ -185,13 +185,12 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
 
       {open && (
         <div className="notif-popover">
-          <div className="notif-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h4 style={{ margin: 0 }}>Notifications 🔔</h4>
+          <div className="notif-header">
+            <h4>Notifications 🔔</h4>
             {unreadCount > 0 && (
               <button
                 type="button"
-                className="btn-secondary"
-                style={{ fontSize: "0.75rem", padding: "2px 8px" }}
+                className="notif-mark-read-btn"
                 onClick={handleMarkAllRead}
               >
                 Mark all read
@@ -199,19 +198,17 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
             )}
           </div>
 
-          <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid #ede7dd", padding: "8px 12px", background: "#fbf9f5" }}>
+          <div className="notif-tabs-bar">
             <button
               type="button"
-              className={`tab-pill ${viewTab === "unread" ? "active" : ""}`}
-              style={{ fontSize: "0.75rem", padding: "3px 10px" }}
+              className={`notif-tab-pill ${viewTab === "unread" ? "active" : ""}`}
               onClick={() => setViewTab("unread")}
             >
               Unread ({unreadCount})
             </button>
             <button
               type="button"
-              className={`tab-pill ${viewTab === "all" ? "active" : ""}`}
-              style={{ fontSize: "0.75rem", padding: "3px 10px" }}
+              className={`notif-tab-pill ${viewTab === "all" ? "active" : ""}`}
               onClick={() => setViewTab("all")}
             >
               All History ({notifications.length})
@@ -230,25 +227,11 @@ export default function NotificationCenter({ onSelectTask, onNavigate }) {
                   className={`notif-item ${!n.read && !n.readAt ? "unread" : ""}`}
                   onClick={() => handleItemClick(n)}
                 >
-                  <div className="notif-item-flex" style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-                    <div
-                      className="notif-category-icon"
-                      style={{
-                        fontSize: "1.2rem",
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "10px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "#f3f4f6",
-                        border: "1px solid #ede7dd",
-                        flexShrink: 0,
-                      }}
-                    >
+                  <div className="notif-item-flex">
+                    <div className="notif-category-icon">
                       {getNotifCategoryIcon(n.type)}
                     </div>
-                    <div className="notif-item-body" style={{ flex: 1, minWidth: 0 }}>
+                    <div className="notif-item-body">
                       <div className="notif-item-title">{n.title}</div>
                       <div className="notif-item-msg">{n.message}</div>
                       <div className="notif-item-time">

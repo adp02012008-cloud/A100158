@@ -467,8 +467,11 @@
    ========================================================================== */
 .my-levels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr));
   gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .level-item-card {
@@ -1838,9 +1841,11 @@
     justify-content: center;
     padding: 10px;
   }
-  .courses-grid {
-    grid-template-columns: 1fr;
+  .courses-grid,
+  .my-levels-grid {
+    grid-template-columns: 1fr !important;
     gap: 14px;
+    width: 100% !important;
   }
   .portal-course-card {
     border-radius: 12px;

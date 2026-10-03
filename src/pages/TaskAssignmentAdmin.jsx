@@ -409,21 +409,23 @@ export default function TaskAssignmentAdmin({ search = "" }) {
             return (
               <div key={t.id} className="task-admin-card">
                 {/* Domain Pill & Priority Badge Row */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "10px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", gap: "8px", flexWrap: "wrap" }}>
                   <span
                     style={{
                       fontSize: "11.5px",
-                      padding: "4px 12px",
+                      padding: "4px 10px",
                       borderRadius: "20px",
                       background: "rgba(59, 130, 246, 0.18)",
                       color: "#60a5fa",
                       border: "1px solid rgba(59, 130, 246, 0.35)",
                       fontWeight: "600",
                       letterSpacing: "0.2px",
-                      maxWidth: "70%",
+                      maxWidth: "100%",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
+                      flex: "1 1 auto",
+                      minWidth: 0,
                     }}
                     title={t.domain}
                   >
