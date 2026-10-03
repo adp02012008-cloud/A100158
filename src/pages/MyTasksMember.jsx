@@ -116,7 +116,7 @@ export default function MyTasksMember({ search = "" }) {
     });
   }, [tasks, submissions, reviews, userEmail, students, auth.role, search, filterTab]);
 
-  const handleOpenModal = (task, existingSub = null) => {
+  const openSubmitModal = (task, existingSub = null) => {
     setActiveTask(task);
     if (existingSub) {
       setGithubUrl(existingSub.githubUrl || "");
@@ -137,6 +137,8 @@ export default function MyTasksMember({ search = "" }) {
     }
     setSubmitError("");
   };
+
+  const handleOpenModal = openSubmitModal;
 
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files || []);
